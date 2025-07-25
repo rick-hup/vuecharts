@@ -1,0 +1,211 @@
+# Event Handling Guidelines
+
+## 1. Event System Architecture
+
+### 1.1 Event Flow
+```
+User Interaction → Event Action → Middleware → State Update → UI Update
+```
+
+### 1.2 Event Types
+```typescript
+// ✅ Event action types
+export const mouseClickAction = createAction<MouseEvent>('mouseClick')
+export const mouseMoveAction = createAction<MouseEvent>('mouseMove')
+export const mouseLeaveAction = createAction<MouseEvent>('mouseLeave')
+```
+
+## 2. Event Middleware
+
+### 2.1 Middleware Structure
+```typescript
+// ✅ Standard middleware structure
+const mouseEventsMiddleware = createListenerMiddleware()
+
+mouseEventsMiddleware.startListening({
+  actionCreator: mouseMoveAction,
+  effect: (action, listenerApi) => {
+    const state = listenerApi.getState()
+    // Handle mouse move event
+    if (shouldUpdateTooltip(state, action.payload)) {
+      listenerApi.dispatch(setTooltipActive(true))
+    }
+  }
+})
+```
+
+### 2.2 Event Filtering
+```typescript
+// ✅ Event filtering
+function shouldUpdateTooltip(state: RootState, event: MouseEvent): boolean {
+  // Check if event is within chart bounds
+  if (!isWithinChartBounds(event)) return false
+  
+  // Check if tooltip state should update
+  if (state.tooltip.active && !hasPositionChanged(event)) return false
+  
+  return true
+}
+```
+
+## 3. Chart Synchronization
+
+### 3.1 Sync Events
+```typescript
+// ✅ Sync event emission
+eventCenter.emit(TOOLTIP_SYNC_EVENT, {
+  syncId,
+  action: setSyncInteraction({
+    active: isTooltipActive,
+    coordinate: activeCoordinate,
+    dataKey: activeDataKey.value,
+    index: activeIndex
+  }),
+  emitter: eventEmitterSymbol
+})
+
+// ✅ Sync event handling
+eventCenter.on(TOOLTIP_SYNC_EVENT, (syncId, action, emitter) => {
+  if (myEmitter === emitter) return // Skip self-events
+  if (mySyncId !== syncId) return // Skip other sync groups
+  
+  dispatch(action) // Update local state
+})
+```
+
+### 3.2 Sync Methods
+```typescript
+// ✅ Index-based sync
+if (syncMethod === 'index') {
+  dispatch(action)
+  return
+}
+
+// ✅ Value-based sync
+if (syncMethod === 'value') {
+  const activeTick = tooltipTicks.find(
+    tick => String(tick.value) === action.payload.label
+  )
+  if (activeTick) {
+    dispatch(setSyncInteraction({
+      active: true,
+      index: String(activeTick.index)
+    }))
+  }
+}
+```
+
+## 4. Event Performance
+
+### 4.1 Event Throttling
+```typescript
+// ✅ Throttle frequent events
+import { throttle } from 'lodash-es'
+
+const handleMouseMove = throttle((e: MouseEvent) => {
+  dispatch(mouseMoveAction(e))
+}, 16) // ~60fps
+```
+
+### 4.2 Event Debouncing
+```typescript
+// ✅ Debounce event handlers
+import { debounce } from 'lodash-es'
+
+const updateTooltip = debounce((e: MouseEvent) => {
+  const point = getDataPoint(e)
+  setTooltipData(point)
+}, 100)
+```
+
+## 5. Event Cleanup
+
+### 5.1 Event Listener Cleanup
+```typescript
+// ✅ Proper event cleanup
+onMounted(() => {
+  eventCenter.on(TOOLTIP_SYNC_EVENT, handleSync)
+  
+  onUnmounted(() => {
+    eventCenter.off(TOOLTIP_SYNC_EVENT, handleSync)
+  })
+})
+```
+
+### 5.2 State Reset
+```typescript
+// ✅ Reset state on unmount
+onUnmounted(() => {
+  dispatch(mouseLeaveChart())
+  dispatch(setSyncInteraction(initialState))
+})
+```
+
+## 6. Error Handling
+
+### 6.1 Event Error Handling
+```typescript
+// ✅ Handle event errors
+try {
+  handleChartEvent(event)
+} catch (error) {
+  console.error('Event handling error:', error)
+  // Reset to safe state
+  dispatch(mouseLeaveChart())
+}
+```
+
+### 6.2 Sync Error Recovery
+```typescript
+// ✅ Sync error recovery
+function handleSyncEvent(action: PayloadAction<TooltipSyncState>) {
+  try {
+    processSyncAction(action)
+  } catch (error) {
+    console.error('Sync error:', error)
+    // Clear sync state
+    dispatch(setSyncInteraction({
+      active: false,
+      coordinate: undefined,
+      dataKey: undefined,
+      index: null
+    }))
+  }
+}
+```
+
+## 7. Event Testing
+
+### 7.1 Event Unit Tests
+```typescript
+// ✅ Test event handling
+describe('Chart Events', () => {
+  it('should handle mouse move', () => {
+    const store = createStore()
+    const event = new MouseEvent('mousemove', {
+      clientX: 100,
+      clientY: 100
+    })
+    
+    store.dispatch(mouseMoveAction(event))
+    expect(store.getState().tooltip.active).toBe(true)
+  })
+})
+```
+
+### 7.2 Sync Integration Tests
+```typescript
+// ✅ Test synchronization
+it('should sync between charts', async () => {
+  const chart1 = mount(AreaChart, { props: { syncId: '1' } })
+  const chart2 = mount(AreaChart, { props: { syncId: '1' } })
+  
+  await chart1.trigger('mousemove', {
+    clientX: 100,
+    clientY: 100
+  })
+  
+  await nextTick()
+  expect(chart2.vm.tooltipActive).toBe(true)
+})
+```

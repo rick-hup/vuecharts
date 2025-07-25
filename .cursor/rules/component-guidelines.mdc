@@ -1,0 +1,291 @@
+# Component Development Guidelines
+
+## 1. Component Structure
+
+### 1.1 Basic Structure
+```typescript
+// ✅ Standard component structure
+export const AreaChart = defineComponent({
+  name: 'AreaChart',
+  props: {...},
+  emits: [...],
+  setup(props, { emit }) {
+    // composables
+    // state
+    // computed
+    // methods
+    // lifecycle
+    // render
+  }
+})
+```
+
+### 1.2 Props Definition
+```typescript
+// ✅ Complete props definition
+props: {
+  data: {
+    type: Array as PropType<DataItem[]>,
+    required: true,
+    validator: (value: DataItem[]) => value.length > 0
+  },
+  width: {
+    type: Number,
+    default: 400
+  },
+  syncId: {
+    type: [String, Number] as PropType<string | number>,
+    default: undefined
+  }
+}
+```
+
+### 1.3 Chart Component Props Pattern
+```typescript
+// ✅ Define props in separate file/section
+export const AreaChartProps = {
+  data: {
+    type: Array as PropType<DataPoint[]>,
+    required: true
+  },
+  stroke: {
+    type: String,
+    default: '#000'
+    }
+} as const
+
+// ✅ Generate interface from props
+export type AreaChartProps = ExtractPropTypes<typeof AreaChartProps>
+
+// ✅ Use in chart generation
+export const AreaChart = generateCategoricalChart({
+  chartName: 'AreaChart',
+  chartProps: AreaChartProps,
+  // other options...
+})
+```
+
+### 1.4 Emits Definition
+```typescript
+// ✅ Type-safe emits
+emits: {
+  'update:active': (value: boolean) => true,
+  'mouseEnter': (e: MouseEvent, data: ChartData) => true
+}
+```
+
+## 2. Composition API Usage
+
+### 2.1 Composables
+```typescript
+// ✅ Recommended composable structure
+function useChartInteraction(props: ChartProps) {
+  // State
+  const isActive = ref(false)
+  
+  // Computed
+  const computedData = computed(() => {...})
+  
+  // Methods
+  function handleMouseMove(e: MouseEvent) {...}
+  
+  // Lifecycle
+  onMounted(() => {...})
+  
+  // Return
+  return {
+    isActive,
+    computedData,
+    handleMouseMove
+  }
+}
+```
+
+### 2.2 Reactivity
+```typescript
+// ✅ Reactivity best practices
+const data = reactive({
+  items: [],
+  loading: false
+})
+
+// ✅ Use ref for simple values
+const count = ref(0)
+
+// ✅ Use computed for derived values
+const total = computed(() => {
+  return data.items.reduce((sum, item) => sum + item.value, 0)
+})
+```
+
+## 3. Rendering Optimization
+
+### 3.1 v-memo Usage
+```typescript
+// ✅ Using v-memo for re-render optimization
+<template>
+  <g v-memo="[data.length, scale]">
+    <path :d="pathD" />
+  </g>
+</template>
+```
+
+### 3.2 Computed Property Caching
+```typescript
+// ✅ Cache complex computations
+const processedData = computed(() => {
+  return heavyDataProcessing(props.data)
+})
+```
+
+## 4. Type Safety
+
+### 4.1 Component Types
+```typescript
+// ✅ Component type definitions
+interface AreaChartProps {
+  data: DataItem[]
+  width?: number
+  height?: number
+  margin?: Partial<Margin>
+}
+
+// ✅ Using types
+const AreaChart = defineComponent<AreaChartProps>({...})
+```
+
+### 4.2 Event Types
+```typescript
+// ✅ Event handler types
+interface ChartEventHandlers {
+  onMouseMove?: (e: MouseEvent, data: ChartData) => void
+  onMouseLeave?: (e: MouseEvent) => void
+}
+```
+
+## 5. Lifecycle Management
+
+### 5.1 Resource Cleanup
+```typescript
+// ✅ Proper resource cleanup
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+  
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+  })
+})
+```
+
+### 5.2 Async Handling
+```typescript
+// ✅ Async operation handling
+const loading = ref(false)
+
+async function loadData() {
+  loading.value = true
+  try {
+    const data = await fetchData()
+    // Process data
+  } catch (error) {
+    // Handle error
+  } finally {
+    loading.value = false
+  }
+}
+```
+
+## 6. Component Communication
+
+### 6.1 Props/Emits
+```typescript
+// ✅ Two-way binding
+const props = defineProps<{
+  modelValue: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+}>()
+```
+
+### 6.2 Provide/Inject
+```typescript
+// ✅ Type-safe provide/inject
+const ChartKey = Symbol() as InjectionKey<ChartContext>
+
+// Provider component
+provide(ChartKey, {
+  width,
+  height,
+  scale
+})
+
+// Consumer component
+const chart = inject(ChartKey)
+```
+
+## 7. Error Handling
+
+### 7.1 Props Validation
+```typescript
+// ✅ Complete validation
+props: {
+  data: {
+    type: Array as PropType<DataItem[]>,
+    required: true,
+    validator: (value: DataItem[]) => {
+      if (!Array.isArray(value)) return false
+      if (value.length === 0) {
+        console.warn('Data array should not be empty')
+        return false
+      }
+      return value.every(item => 'value' in item)
+    }
+  }
+}
+```
+
+### 7.2 Error Boundaries
+```typescript
+// ✅ Error handling
+setup(props) {
+  const error = ref<Error | null>(null)
+  
+  try {
+    // Component logic
+  } catch (e) {
+    error.value = e as Error
+    // Error UI rendering
+  }
+}
+```
+
+## 8. Performance Optimization
+
+### 8.1 Large List Rendering
+```typescript
+// ✅ Virtual scrolling
+import { useVirtualList } from '@vueuse/core'
+
+const { list, containerProps, wrapperProps } = useVirtualList(
+  data,
+  {
+    itemHeight: 40,
+    overscan: 10
+  }
+)
+```
+
+### 8.2 Re-render Optimization
+```typescript
+// ✅ Avoid unnecessary re-renders
+const chartData = shallowRef(data)
+
+// ✅ Use toRef to maintain reactivity
+const { width } = toRefs(props)
+```
+
+// ✅ Use toRef to maintain reactivity
+const { width } = toRefs(props)
+```

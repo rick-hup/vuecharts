@@ -1,0 +1,12 @@
+export type LegendType =
+  | 'circle'
+  | 'cross'
+  | 'diamond'
+  | 'line'
+  | 'plainline'
+  | 'rect'
+  | 'square'
+  | 'star'
+  | 'triangle'
+  | 'wye'
+  | 'none'

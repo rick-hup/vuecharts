@@ -1,0 +1,258 @@
+---
+alwaysApply: true
+---
+
+# Vue Charts Architecture Overview
+
+## Project Structure
+
+```
+vue-charts/
+├── packages/
+│   └── vue/                 # Vue implementation
+│       ├── src/
+│       │   ├── cartesian/   # Cartesian chart components
+│       │   ├── chart/       # Core chart components
+│       │   ├── charts/      # Chart implementations
+│       │   ├── components/  # Shared components
+│       │   ├── context/     # Vue context providers
+│       │   ├── events/      # Event handling
+│       │   ├── state/       # State management
+│       │   ├── types/       # TypeScript types
+│       │   └── utils/       # Utility functions
+│       └── package.json
+└── stories/                 # Storybook stories
+```
+
+## Core Architecture Principles
+
+1. **State Management**
+   - Redux-style state management
+   - Feature-based state organization
+   - For details: [state-management.mdc](mdc:.cursor/rules/state-management.mdc)
+
+2. **Component Architecture**
+   - Vue 3 Composition API
+   - TypeScript for type safety
+   - For details: [component-guidelines.mdc](mdc:.cursor/rules/component-guidelines.mdc)
+
+3. **Event Handling**
+   - Centralized event management
+   - Event synchronization
+   - For details: [event-handling.mdc](mdc:.cursor/rules/event-handling.mdc)
+
+4. **Context System**
+   - Vue provide/inject pattern
+   - For details: [context-system.mdc](mdc:.cursor/rules/context-system.mdc)
+
+## Key Files
+
+1. **State Management**
+   - [packages/vue/src/state/tooltipSlice.ts](mdc:packages/vue/src/state/tooltipSlice.ts)
+   - [packages/vue/src/state/store.ts](mdc:packages/vue/src/state/store.ts)
+
+2. **Component Examples**
+   - [packages/vue/src/charts/AreaChart.vue](mdc:packages/vue/src/charts/AreaChart.vue)
+   - [packages/vue/src/components/Tooltip.tsx](mdc:packages/vue/src/components/Tooltip.tsx)
+
+3. **Event Handling**
+   - [packages/vue/src/events/useChartSynchronisation.tsx](mdc:packages/vue/src/events/useChartSynchronisation.tsx)
+   - [packages/vue/src/state/mouseEventsMiddleware.ts](mdc:packages/vue/src/state/mouseEventsMiddleware.ts)
+
+4. **Context Providers**
+   - [packages/vue/src/context/chartLayoutContext.tsx](mdc:packages/vue/src/context/chartLayoutContext.tsx)
+   - [packages/vue/src/context/TooltipPortalContext.ts](mdc:packages/vue/src/context/TooltipPortalContext.ts)
+
+## Development Guidelines
+
+1. **Code Organization**
+   - For details: [code-organization.mdc](mdc:.cursor/rules/code-organization.mdc)
+
+2. **Testing**
+   - For details: [testing-guidelines.mdc](mdc:.cursor/rules/testing-guidelines.mdc)
+
+3. **Performance**
+   - For details: [performance-guidelines.mdc](mdc:.cursor/rules/performance-guidelines.mdc)
+
+4. **Error Handling**
+   - For details: [error-handling.mdc](mdc:.cursor/rules/error-handling.mdc)
+
+## Related Documentation
+
+- [State Management Rules](mdc:.cursor/rules/state-management.mdc)
+- [Event Handling Rules](mdc:.cursor/rules/event-handling.mdc)
+- [Component Guidelines](mdc:.cursor/rules/component-guidelines.mdc)
+- [Testing Guidelines](mdc:.cursor/rules/testing-guidelines.mdc)
+- [Performance Guidelines](mdc:.cursor/rules/performance-guidelines.mdc)
+- [Error Handling Guidelines](mdc:.cursor/rules/error-handling.mdc)
+
+## Quick Start
+
+1. **Setting Up**
+   ```bash
+   pnpm install
+   ```
+
+2. **Development**
+   ```bash
+   pnpm dev
+   ```
+
+3. **Testing**
+   ```bash
+   pnpm test
+   ```
+
+4. **Building**
+   ```bash
+   pnpm build
+   ```
+
+## Best Practices
+
+1. **Code Style**
+   - Follow TypeScript best practices
+   - Use Vue 3 Composition API
+   - Maintain consistent naming conventions
+
+2. **State Management**
+   - Use Redux-style state management
+   - Implement proper state selectors
+   - Handle side effects in middleware
+
+3. **Performance**
+   - Optimize rendering
+   - Implement proper memoization
+   - Handle large datasets efficiently
+
+4. **Testing**
+   - Write comprehensive unit tests
+   - Implement integration tests
+   - Use snapshot testing where appropriate
+# Vue Charts Architecture Overview
+
+## Project Structure
+
+```
+vue-charts/
+├── packages/
+│   └── vue/                 # Vue implementation
+│       ├── src/
+│       │   ├── cartesian/   # Cartesian chart components
+│       │   ├── chart/       # Core chart components
+│       │   ├── charts/      # Chart implementations
+│       │   ├── components/  # Shared components
+│       │   ├── context/     # Vue context providers
+│       │   ├── events/      # Event handling
+│       │   ├── state/       # State management
+│       │   ├── types/       # TypeScript types
+│       │   └── utils/       # Utility functions
+│       └── package.json
+└── stories/                 # Storybook stories
+```
+
+## Core Architecture Principles
+
+1. **State Management**
+   - Redux-style state management
+   - Feature-based state organization
+   - For details: [state-management.mdc](mdc:.cursor/rules/state-management.mdc)
+
+2. **Component Architecture**
+   - Vue 3 Composition API
+   - TypeScript for type safety
+   - For details: [component-guidelines.mdc](mdc:.cursor/rules/component-guidelines.mdc)
+
+3. **Event Handling**
+   - Centralized event management
+   - Event synchronization
+   - For details: [event-handling.mdc](mdc:.cursor/rules/event-handling.mdc)
+
+4. **Context System**
+   - Vue provide/inject pattern
+   - For details: [context-system.mdc](mdc:.cursor/rules/context-system.mdc)
+
+## Key Files
+
+1. **State Management**
+   - [packages/vue/src/state/tooltipSlice.ts](mdc:packages/vue/src/state/tooltipSlice.ts)
+   - [packages/vue/src/state/store.ts](mdc:packages/vue/src/state/store.ts)
+
+2. **Component Examples**
+   - [packages/vue/src/charts/AreaChart.vue](mdc:packages/vue/src/charts/AreaChart.vue)
+   - [packages/vue/src/components/Tooltip.tsx](mdc:packages/vue/src/components/Tooltip.tsx)
+
+3. **Event Handling**
+   - [packages/vue/src/events/useChartSynchronisation.tsx](mdc:packages/vue/src/events/useChartSynchronisation.tsx)
+   - [packages/vue/src/state/mouseEventsMiddleware.ts](mdc:packages/vue/src/state/mouseEventsMiddleware.ts)
+
+4. **Context Providers**
+   - [packages/vue/src/context/chartLayoutContext.tsx](mdc:packages/vue/src/context/chartLayoutContext.tsx)
+   - [packages/vue/src/context/TooltipPortalContext.ts](mdc:packages/vue/src/context/TooltipPortalContext.ts)
+
+## Development Guidelines
+
+1. **Code Organization**
+   - For details: [code-organization.mdc](mdc:.cursor/rules/code-organization.mdc)
+
+2. **Testing**
+   - For details: [testing-guidelines.mdc](mdc:.cursor/rules/testing-guidelines.mdc)
+
+3. **Performance**
+   - For details: [performance-guidelines.mdc](mdc:.cursor/rules/performance-guidelines.mdc)
+
+4. **Error Handling**
+   - For details: [error-handling.mdc](mdc:.cursor/rules/error-handling.mdc)
+
+## Related Documentation
+
+- [State Management Rules](mdc:.cursor/rules/state-management.mdc)
+- [Event Handling Rules](mdc:.cursor/rules/event-handling.mdc)
+- [Component Guidelines](mdc:.cursor/rules/component-guidelines.mdc)
+- [Testing Guidelines](mdc:.cursor/rules/testing-guidelines.mdc)
+- [Performance Guidelines](mdc:.cursor/rules/performance-guidelines.mdc)
+- [Error Handling Guidelines](mdc:.cursor/rules/error-handling.mdc)
+
+## Quick Start
+
+1. **Setting Up**
+   ```bash
+   pnpm install
+   ```
+
+2. **Development**
+   ```bash
+   pnpm dev
+   ```
+
+3. **Testing**
+   ```bash
+   pnpm test
+   ```
+
+4. **Building**
+   ```bash
+   pnpm build
+   ```
+
+## Best Practices
+
+1. **Code Style**
+   - Follow TypeScript best practices
+   - Use Vue 3 Composition API
+   - Maintain consistent naming conventions
+
+2. **State Management**
+   - Use Redux-style state management
+   - Implement proper state selectors
+   - Handle side effects in middleware
+
+3. **Performance**
+   - Optimize rendering
+   - Implement proper memoization
+   - Handle large datasets efficiently
+
+4. **Testing**
+   - Write comprehensive unit tests
+   - Implement integration tests
+   - Use snapshot testing where appropriate

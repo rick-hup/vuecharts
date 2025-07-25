@@ -1,0 +1,256 @@
+# 状态管理规范
+
+## 1. Store结构
+
+```typescript
+// ✅ Store类型定义
+export type RechartsRootState = {
+  tooltip: TooltipState
+  axis: AxisState
+  options: ChartOptions
+  rootProps: RootProps
+}
+
+// ✅ Store配置
+const store = configureStore({
+  reducer: {
+    tooltip: tooltipReducer,
+    axis: axisReducer,
+    options: optionsReducer,
+    rootProps: rootPropsReducer
+  },
+  middleware: [
+    mouseEventsMiddleware,
+    keyboardEventsMiddleware
+  ]
+})
+```
+
+## 2. State Slice规范
+
+### 2.1 Slice定义
+```typescript
+// ✅ 推荐的Slice结构
+const tooltipSlice = createSlice({
+  name: 'tooltip',
+  initialState,
+  reducers: {
+    // 同步action
+    setActive(state, action: PayloadAction<boolean>) {
+      state.active = action.payload
+    },
+    // 复杂更新使用prepare
+    setCoordinate: {
+      prepare: (x: number, y: number) => ({
+        payload: { x, y }
+      }),
+      reducer(state, action) {
+        state.coordinate = action.payload
+      }
+    }
+  }
+})
+```
+
+### 2.2 State类型
+```typescript
+// ✅ 状态类型定义
+export type TooltipState = {
+  active: boolean
+  coordinate?: Coordinate
+  dataKey?: DataKey<any>
+  index: TooltipIndex
+  label?: string
+}
+
+// ✅ 初始状态
+const initialState: TooltipState = {
+  active: false,
+  index: null
+}
+```
+
+## 3. Selector规范
+
+### 3.1 基础选择器
+```typescript
+// ✅ 基础选择器
+export const selectTooltipState = (state: RootState) => state.tooltip
+export const selectIsTooltipActive = (state: RootState) => state.tooltip.active
+```
+
+### 3.2 复合选择器
+```typescript
+// ✅ 使用createSelector优化性能
+export const selectTooltipInfo = createSelector(
+  [selectTooltipState, selectAxisData],
+  (tooltip, axis) => ({
+    isActive: tooltip.active,
+    coordinate: tooltip.coordinate,
+    axisLabel: axis.labels[tooltip.index]
+  })
+)
+```
+
+## 4. Action处理规范
+
+### 4.1 Action创建
+```typescript
+// ✅ Action定义
+export const setTooltipActive = createAction<boolean>('tooltip/setActive')
+export const clearTooltipState = createAction('tooltip/clear')
+
+// ✅ 带prepare的Action
+export const setTooltipCoordinate = createAction(
+  'tooltip/setCoordinate',
+  (x: number, y: number) => ({
+    payload: { x, y }
+  })
+)
+```
+
+### 4.2 异步Action
+```typescript
+// ✅ 异步Action处理
+export const fetchChartData = createAsyncThunk(
+  'chart/fetchData',
+  async (params: FetchParams) => {
+    const response = await api.fetchData(params)
+    return response.data
+  }
+)
+```
+
+## 5. 中间件规范
+
+### 5.1 事件中间件
+```typescript
+// ✅ 事件中间件定义
+export const mouseEventsMiddleware = createListenerMiddleware()
+
+mouseEventsMiddleware.startListening({
+  actionCreator: mouseMoveAction,
+  effect: (action, api) => {
+    const state = api.getState()
+    // 处理鼠标移动事件
+    if (shouldUpdateTooltip(state, action.payload)) {
+      api.dispatch(setTooltipActive(true))
+    }
+  }
+})
+```
+
+### 5.2 同步中间件
+```typescript
+// ✅ 同步中间件
+export const syncMiddleware = createListenerMiddleware()
+
+syncMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    // 检查是否需要同步
+    return shouldSync(action, currentState, previousState)
+  },
+  effect: (action, api) => {
+    // 处理同步逻辑
+  }
+})
+```
+
+## 6. 状态更新规范
+
+### 6.1 Immer使用
+```typescript
+// ✅ 使用Immer更新状态
+reducers: {
+  updateTooltip(state, action: PayloadAction<TooltipUpdate>) {
+    // Immer允许"直接"修改
+    state.active = action.payload.active
+    state.coordinate = action.payload.coordinate
+  }
+}
+```
+
+### 6.2 状态重置
+```typescript
+// ✅ 状态重置处理
+reducers: {
+  resetState: (state) => {
+    // 返回初始状态
+    return initialState
+  },
+  partialReset: (state) => {
+    // 部分重置
+    state.active = false
+    state.coordinate = undefined
+  }
+}
+```
+
+## 7. 性能优化
+
+### 7.1 选择器优化
+```typescript
+// ✅ 记忆化选择器
+export const selectFilteredData = createSelector(
+  [selectData, selectFilter],
+  (data, filter) => {
+    return data.filter(item => item.value > filter)
+  }
+)
+```
+
+### 7.2 状态分片
+```typescript
+// ✅ 状态分片
+const chartState = {
+  ui: uiReducer,        // UI相关状态
+  data: dataReducer,    // 数据相关状态
+  events: eventReducer  // 事件相关状态
+}
+```
+
+## 8. 错误处理
+
+### 8.1 Action错误
+```typescript
+// ✅ Action错误处理
+reducers: {
+  setData: {
+    prepare: (data: unknown) => {
+      try {
+        validateData(data)
+        return { payload: data, error: false }
+      } catch (error) {
+        return { payload: null, error: true }
+      }
+    },
+    reducer(state, action) {
+      if (action.error) {
+        state.error = 'Invalid data format'
+        return
+      }
+      state.data = action.payload
+    }
+  }
+}
+```
+
+### 8.2 异步错误
+```typescript
+// ✅ 异步错误处理
+export const fetchData = createAsyncThunk(
+  'chart/fetchData',
+  async (params, { rejectWithValue }) => {
+    try {
+      const response = await api.fetch(params)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+```
+description:
+globs:
+alwaysApply: false
+---

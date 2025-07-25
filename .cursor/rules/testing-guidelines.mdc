@@ -1,0 +1,265 @@
+# 测试指南
+
+## 1. 单元测试规范
+
+### 1.1 组件测试
+```typescript
+// ✅ 组件测试示例
+describe('AreaChart', () => {
+  it('should render with data', () => {
+    const wrapper = mount(AreaChart, {
+      props: {
+        data: mockData,
+        width: 400,
+        height: 300
+      }
+    })
+    
+    expect(wrapper.find('.area-path').exists()).toBe(true)
+    expect(wrapper.find('.area-path').attributes('d')).toBeDefined()
+  })
+
+  it('should emit mouse events', async () => {
+    const wrapper = mount(AreaChart)
+    await wrapper.find('.area-path').trigger('mouseenter')
+    expect(wrapper.emitted('mouseEnter')).toBeTruthy()
+  })
+})
+```
+
+### 1.2 Composable测试
+```typescript
+// ✅ Composable测试示例
+describe('useChartInteraction', () => {
+  it('should handle mouse move', () => {
+    const { result } = renderHook(() => useChartInteraction({
+      data: mockData
+    }))
+    
+    act(() => {
+      result.current.handleMouseMove(mockEvent)
+    })
+    
+    expect(result.current.isActive.value).toBe(true)
+  })
+})
+```
+
+## 2. 集成测试规范
+
+### 2.1 图表交互测试
+```typescript
+// ✅ 交互测试示例
+describe('Chart Interactions', () => {
+  it('should sync tooltips between charts', async () => {
+    const chart1 = mount(AreaChart, {
+      props: { syncId: '1', data: mockData }
+    })
+    const chart2 = mount(AreaChart, {
+      props: { syncId: '1', data: mockData }
+    })
+    
+    await chart1.find('.area-path').trigger('mousemove', {
+      clientX: 100,
+      clientY: 100
+    })
+    
+    await nextTick()
+    expect(chart2.find('.tooltip').exists()).toBe(true)
+  })
+})
+```
+
+### 2.2 状态同步测试
+```typescript
+// ✅ 状态同步测试
+describe('State Synchronization', () => {
+  it('should sync state between components', async () => {
+    const store = createStore({...})
+    
+    const wrapper = mount(ChartContainer, {
+      global: {
+        plugins: [store]
+      }
+    })
+    
+    // 触发状态变化
+    await wrapper.vm.$store.dispatch('setActive', true)
+    
+    // 验证状态同步
+    expect(wrapper.findComponent(Tooltip).props('active')).toBe(true)
+  })
+})
+```
+
+## 3. 快照测试规范
+
+### 3.1 组件快照
+```typescript
+// ✅ 快照测试示例
+describe('AreaChart Snapshots', () => {
+  it('should match snapshot with default props', () => {
+    const wrapper = mount(AreaChart, {
+      props: { data: mockData }
+    })
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+  
+  it('should match snapshot with custom styles', () => {
+    const wrapper = mount(AreaChart, {
+      props: {
+        data: mockData,
+        style: { fill: 'red' }
+      }
+    })
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+})
+```
+
+## 4. 性能测试规范
+
+### 4.1 渲染性能
+```typescript
+// ✅ 性能测试示例
+describe('Chart Performance', () => {
+  it('should render large datasets efficiently', async () => {
+    const startTime = performance.now()
+    
+    const wrapper = mount(AreaChart, {
+      props: { data: generateLargeDataset(1000) }
+    })
+    
+    const endTime = performance.now()
+    expect(endTime - startTime).toBeLessThan(100)
+  })
+})
+```
+
+### 4.2 内存泄漏测试
+```typescript
+// ✅ 内存泄漏测试
+describe('Memory Management', () => {
+  it('should cleanup resources', async () => {
+    const wrapper = mount(AreaChart)
+    
+    // 记录初始内存
+    const initialMemory = performance.memory.usedJSHeapSize
+    
+    // 多次更新组件
+    for (let i = 0; i < 100; i++) {
+      await wrapper.setProps({ data: generateData() })
+    }
+    
+    // 卸载组件
+    wrapper.unmount()
+    
+    // 验证内存使用
+    const finalMemory = performance.memory.usedJSHeapSize
+    expect(finalMemory - initialMemory).toBeLessThan(1000000)
+  })
+})
+```
+
+## 5. 测试工具和辅助函数
+
+### 5.1 Mock数据生成
+```typescript
+// ✅ 测试数据生成器
+export function generateChartData(count: number = 10): DataItem[] {
+  return Array.from({ length: count }, (_, i) => ({
+    name: `Item ${i}`,
+    value: Math.random() * 100
+  }))
+}
+
+// ✅ 事件模拟
+export const createMouseEvent = (x: number, y: number): MouseEvent => {
+  return new MouseEvent('mousemove', {
+    clientX: x,
+    clientY: y,
+    bubbles: true
+  })
+}
+```
+
+### 5.2 测试工具函数
+```typescript
+// ✅ 通用测试工具
+export const waitForAnimation = () => new Promise(resolve => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(resolve)
+  })
+})
+
+export const triggerResize = (width: number, height: number) => {
+  window.innerWidth = width
+  window.innerHeight = height
+  window.dispatchEvent(new Event('resize'))
+}
+```
+
+## 6. 测试覆盖率要求
+
+### 6.1 覆盖率目标
+- 单元测试覆盖率 > 80%
+- 关键路径覆盖率 > 90%
+- 分支覆盖率 > 75%
+
+### 6.2 必测场景
+1. 组件渲染
+2. 属性验证
+3. 事件处理
+4. 状态变更
+5. 错误处理
+6. 边界条件
+7. 性能临界点
+
+## 7. 测试最佳实践
+
+### 7.1 测试组织
+```typescript
+// ✅ 推荐的测试组织结构
+describe('ComponentName', () => {
+  // 准备阶段
+  beforeEach(() => {
+    // 设置测试环境
+  })
+  
+  // 分组测试
+  describe('Rendering', () => {
+    // 渲染相关测试
+  })
+  
+  describe('Interactions', () => {
+    // 交互相关测试
+  })
+  
+  describe('Edge Cases', () => {
+    // 边界情况测试
+  })
+  
+  // 清理阶段
+  afterEach(() => {
+    // 清理测试环境
+  })
+})
+```
+
+### 7.2 异步测试
+```typescript
+// ✅ 异步测试处理
+it('should handle async operations', async () => {
+  const wrapper = mount(AsyncComponent)
+  
+  // 等待异步操作
+  await flushPromises()
+  
+  // 验证结果
+  expect(wrapper.find('.data').text()).toBe('loaded')
+})
+```
+description:
+globs:
+alwaysApply: false
+---

@@ -1,22 +1,13 @@
 {
-  "name": "vue-lib",
+  "name": "vccs",
   "version": "0.0.1",
   "description": "vue lib",
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "npm run clean && vite build",
-    "dev": "vite build --watch",
-    "test": "vitest",
-    "bumpp": "bumpp package.json",
-    "pub:release": "pnpm publish --access public",
-    "size": "size-limit"
-  },
+  "author": "",
+  "license": "MIT",
   "keywords": [
-    "ui",
+    "charts",
     "vue"
   ],
-  "author": "",
-  "license": "ISC",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -28,15 +19,39 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.mjs",
   "types": "./dist/index.d.ts",
-  "typings": "./dist/index.d.ts",
   "files": [
     "./LICENSE",
     "./dist"
   ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && vite build",
+    "dev": "vite build --watch",
+    "test": "vitest",
+    "bumpp": "bumpp package.json",
+    "pub:release": "pnpm publish --access public",
+    "size": "size-limit"
+  },
+  "typings": "./dist/index.d.ts",
   "peerDependencies": {
     "vue": ">=3.0.0"
   },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.8.2",
+    "@reduxjs/vue-redux": "^1.0.1",
+    "@vueuse/core": "^13.1.0",
+    "es-toolkit": "^1.39.3",
+    "eventemitter3": "^5.0.1",
+    "immer": "^10.1.1",
+    "lodash-es": "^4.17.21",
+    "pinia": "^3.0.2",
+    "victory-vendor": "^37.3.6"
+  },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "@vue/babel-plugin-jsx": "^1.1.1",
+    "@vue/runtime-core": "^3.5.13",
     "vue": "^3.5.13"
   },
   "size-limit": [
