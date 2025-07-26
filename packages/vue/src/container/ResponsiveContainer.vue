@@ -4,7 +4,7 @@ import { useThrottleFn } from '@vueuse/core'
 import { isPercent } from '../utils/validate'
 import { normalizeStyle } from '@/utils/style'
 import { warn } from '@/utils/log'
-import { provideSizeContext } from './useSizeContext'
+import { provideSizeContext } from '@/container/useSizeContext'
 
 export interface ResponsiveContainerProps {
   aspect?: number

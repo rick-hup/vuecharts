@@ -43,7 +43,7 @@ export interface CartesianAxisProps {
   scale: RechartsScale
 }
 
-export default defineComponent({
+export const CartesianAxis = defineComponent({
   name: 'CartesianAxis',
   props: {
     x: { type: Number, default: 0 },
@@ -266,8 +266,8 @@ export default defineComponent({
       return (
         <Layer
           class={['v-charts-cartesian-axis', attrs.class]}
-          ref={(ref) => {
-            const elm = (ref as ComponentPublicInstance)?.$el as HTMLElement
+          ref={(ref: ComponentPublicInstance) => {
+            const elm = ref?.$el as HTMLElement
             if (elm) {
               const tick: Element | undefined = elm?.getElementsByClassName('v-charts-cartesian-axis-tick-value')[0]
               if (tick) {

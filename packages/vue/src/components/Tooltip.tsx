@@ -1,4 +1,4 @@
-import { Fragment, Teleport, computed, defineComponent, onUnmounted, reactive, ref, watch, watchEffect } from 'vue'
+import { Fragment, Teleport, computed, defineComponent, reactive, ref, watch, watchEffect } from 'vue'
 import type { CSSProperties, PropType } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useChartLayout, useOffsetInternal, useViewBox } from '@/context/chartLayoutContext'
@@ -13,7 +13,6 @@ import {
   selectActiveLabel,
   selectIsTooltipActive,
   selectTooltipPayload,
-  useChartName,
 } from '@/state/selectors/selectors'
 import { useElementBounding, useMagicKeys } from '@vueuse/core'
 import type { AxisId } from '@/state/cartesianAxisSlice'

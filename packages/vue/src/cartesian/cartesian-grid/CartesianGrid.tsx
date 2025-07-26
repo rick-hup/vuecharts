@@ -9,7 +9,7 @@ import type { CartesianGridProps, HorizontalCoordinatesGenerator, VerticalCoordi
 import { getCoordinatesOfGrid } from '@/utils/grid'
 import { getTicks } from '@/cartesian/utils/get-ticks'
 import { getTicksOfAxis } from '@/utils/chart'
-import CartesianAxis from '@/cartesian/cartesian-axis/CartesianAxis'
+import { CartesianAxis } from '@/cartesian/cartesian-axis/CartesianAxis'
 import { CartesianAxisDefaultProps } from '@/cartesian/cartesian-grid/const'
 import Background from './Background'
 import HorizontalStripes from './HorizontalStripes'

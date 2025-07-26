@@ -88,7 +88,7 @@ export const AreaVueProps = {
   class: { type: String, default: undefined },
 }
 
-export type AreaPropsWithOutSVG = VuePropsToType<typeof AreaVueProps>
-export type AreaProps = WithSVGProps<
+export type AreaProps = VuePropsToType<typeof AreaVueProps>
+export type AreaPropsWithSVG = WithSVGProps<
   typeof AreaVueProps
 >
