@@ -1,23 +1,22 @@
 import type { Meta, StoryContext, StoryObj } from '@storybook/vue3'
 import { AreaChart } from '@/chart/AreaChart'
-import ResponsiveContainer from './ResponsiveContainer.vue'
 import { pageData } from '@/storybook/data'
-import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
-import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { CartesianGrid } from '@/cartesian/cartesian-grid/CartesianGrid'
 import { XAxis, YAxis } from '@/cartesian/axis'
 import Area from '@/cartesian/area/Area'
 import { Tooltip } from '@/components/Tooltip'
 import { curveCardinal } from 'victory-vendor/d3-shape'
-import { Fragment, computed, markRaw, ref } from 'vue'
+import { Fragment, markRaw, ref } from 'vue'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { Legend } from '@/components/legend'
 import type { LegendContentProps } from '@/components/legend/type'
+import ResponsiveContainer from '@/chart/ResponsiveContainer.vue'
+import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
+import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 
 const meta = {
-  title: 'Charts/AreaChart',
+  title: 'examples/AreaChart',
   component: AreaChart,
-  tags: ['autodocs'],
   argTypes: {
     width: { control: 'number' },
     height: { control: 'number' },
@@ -122,30 +121,6 @@ export const PercentAreaChart = {
       return `${(decimal * 100).toFixed(fixed)}%`
     }
 
-    const getPercent = (value: number, total: number = 0) => {
-      const ratio = total > 0 ? value / total : 0
-
-      return toPercent(ratio, 2)
-    }
-
-    const renderTooltipContent = (o: { payload?: Array<{ value?: number }>, label?: string | number }) => {
-      const { payload, label } = o
-      const total = payload?.reduce((result, entry) => result + (entry.value ?? 0), 0)
-
-      return (
-        <div className="customized-tooltip-content">
-          <p className="total">{`${label} (Total: ${total})`}</p>
-          <ul className="list">
-            {payload?.map((entry: any) => (
-              <li key={`item-${entry.name}`} style={{ color: entry.color }}>
-                {`${entry.name}: ${entry.value}(${getPercent(entry.value, total)})`}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )
-    }
-
     return (
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart {...args}>
@@ -157,7 +132,7 @@ export const PercentAreaChart = {
           <Area type="monotone" dataKey="uv" stackId="1" stroke="#8884d8" fill="#8884d8" />
           <Area type="monotone" dataKey="pv" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
           <Area type="monotone" dataKey="amt" stackId="1" stroke="#ffc658" fill="#ffc658" />
-          <Tooltip content={renderTooltipContent} defaultIndex={3} active />
+          <Tooltip defaultIndex={3} active />
         </AreaChart>
       </ResponsiveContainer>
     )
