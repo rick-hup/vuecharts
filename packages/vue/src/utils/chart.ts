@@ -233,6 +233,7 @@ export function getCateCoordinateOfLine<T extends Record<string, unknown>>({
 export function getChartPointer(event: PointerEvent | MouseEvent): ChartPointer | undefined {
   const target = event.currentTarget as HTMLElement
   const rect = target.getBoundingClientRect()
+  console.log('rect', rect)
   const scaleX = rect.width / target.offsetWidth
   const scaleY = rect.height / target.offsetHeight
   return {

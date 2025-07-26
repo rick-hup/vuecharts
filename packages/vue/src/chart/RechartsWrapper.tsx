@@ -52,12 +52,13 @@ export const RechartsWrapper = defineComponent({
       dispatch(externalEventAction({ handler: props.onMouseEnter!, event: e }))
     }
 
-    const myOnMouseLeave = (e: PointerEvent) => {
+    const myOnMouseLeave = (e: MouseEvent) => {
       dispatch(mouseLeaveChart())
       dispatch(externalEventAction({ handler: props.onMouseLeave!, event: e }))
     }
 
-    const myOnMouseMove = (e: PointerEvent) => {
+    const myOnMouseMove = (e: MouseEvent) => {
+      console.log('myOnMouseMove', mouseMoveAction(e))
       dispatch(mouseMoveAction(e))
       dispatch(externalEventAction({ handler: props.onMouseMove!, event: e }))
     }
@@ -101,7 +102,7 @@ export const RechartsWrapper = defineComponent({
 
     return () => (
       <div
-        class={['vcharts-wrapper', props.class]}
+        class={['v-charts-wrapper', props.class]}
         style={{ position: 'relative', cursor: 'default', width: props.width, height: props.height, ...props.style }}
         role="application"
         onClick={myOnClick}
@@ -117,7 +118,7 @@ export const RechartsWrapper = defineComponent({
         onTouchend={myOnTouchEnd}
         onTouchmove={myOnTouchMove}
         onTouchstart={myOnTouchStart}
-        ref={innerRef}
+        ref={innerRef as any}
       >
         {slots.default?.()}
       </div>

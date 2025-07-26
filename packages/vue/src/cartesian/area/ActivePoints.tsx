@@ -1,13 +1,10 @@
 import { defineComponent, h } from 'vue'
-import type { PropType } from 'vue'
-import type { DataKey } from '@/types'
-import { useActiveTooltipDataPoints, useAppSelector } from '@/state/hooks'
-import { selectActiveLabel, selectActiveTooltipIndex } from '@/state/selectors/tooltipSelectors'
+import type { PropType, SlotsType, VNode } from 'vue'
+import type { DataKey, VuePropsToType } from '@/types'
+import { useAppSelector } from '@/state/hooks'
+import { selectActiveTooltipIndex } from '@/state/selectors/tooltipSelectors'
 import type { Point } from '@/shape/Curve'
-import { useTooltipAxis } from '@/context/useTooltipAxis'
-import { findEntryInArray } from '@/utils/data'
 import { isNullish } from '@/utils'
-import { filterProps } from '@/utils/VueUtils'
 import { Dot } from '@/shape/Dot'
 import { Layer } from '@/container/Layer'
 
@@ -18,18 +15,35 @@ export interface PointType {
   readonly payload?: any
 }
 
-/**
- * ActivePoints component for rendering the active point in Area chart.
- */
+const ActivePointsVueProps = {
+  points: { type: Array as PropType<ReadonlyArray<Point>>, required: true },
+  mainColor: { type: String, required: true },
+  itemDataKey: { type: [String, Number, Function] as PropType<DataKey<any>>, required: true },
+  activeDot: { type: [Object, Boolean, Function] as PropType<any>, required: true },
+}
+
+export type ActivePointsProps = VuePropsToType<typeof ActivePointsVueProps>
+
+export type ActivePointSlotProps = ActivePointsProps & {
+  'cx': number
+  'cy': number
+  'r': 4
+  'fill': string
+  'stroke-width': number
+  'stroke': string
+  'payload': any
+  'value': PointType
+}
+
+export type ActivePointsSlots = {
+  activeDot?: (props: ActivePointSlotProps) => VNode
+}
+
 export const ActivePoints = defineComponent({
   name: 'ActivePoints',
-  props: {
-    points: { type: Array as PropType<ReadonlyArray<Point>>, required: true },
-    mainColor: { type: String, required: true },
-    itemDataKey: { type: [String, Number, Function] as PropType<DataKey<any>>, required: true },
-    activeDot: { type: [Object, Boolean, Function] as PropType<any>, required: true },
-  },
-  setup(props) {
+  props: ActivePointsVueProps,
+  slots: Object as SlotsType<ActivePointsSlots>,
+  setup(props, { slots }) {
     const activeTooltipIndex = useAppSelector(selectActiveTooltipIndex)
 
     return () => {
@@ -45,9 +59,10 @@ export const ActivePoints = defineComponent({
       return renderActivePoint({
         point: activePoint!,
         childIndex: Number(activeTooltipIndex.value),
-        mainColor: props.mainColor,
-        dataKey: props.itemDataKey,
+        mainColor: props.mainColor!,
+        dataKey: props.itemDataKey!,
         activeDot: props.activeDot,
+        slots,
       })
     }
   },
@@ -59,6 +74,7 @@ function renderActivePoint({
   mainColor,
   activeDot,
   dataKey,
+  slots,
 }: {
   point: PointType
   activeDot: any
@@ -69,6 +85,7 @@ function renderActivePoint({
    * Sometimes stroke, sometimes fill, sometimes combination.
    */
   mainColor: string
+  slots: ActivePointsSlots
 }) {
   if (activeDot === false) {
     return null
@@ -84,12 +101,12 @@ function renderActivePoint({
     'stroke': '#fff',
     'payload': point.payload,
     'value': point.value,
-    ...filterProps(activeDot, false),
   }
 
   let dot
-  if (typeof activeDot === 'function') {
-    dot = activeDot(dotProps)
+  console.log('slots.activeDot', slots.activeDot)
+  if (slots.activeDot) {
+    dot = slots.activeDot(dotProps)
   }
   else {
     dot = <Dot {...dotProps} />

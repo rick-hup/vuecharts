@@ -16,12 +16,12 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     exclude: ['**/node_modules/**'],
-    include: ['./**/*.test.{ts,js,tsx}'],
+    include: ['./**/*.{test,spec}.{ts,js,tsx}'],
     coverage: {
-      provider: 'istanbul', // or 'v8'
+      provider: 'v8',
     },
-    globalSetup: './vitest.global.ts',
-    setupFiles: './vitest.setup.ts',
+    // globalSetup: './vitest.global.ts',
+    // setupFiles: './vitest.setup.ts',
     server: {
       deps: {
         inline: ['vitest-canvas-mock'],

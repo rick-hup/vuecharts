@@ -9,13 +9,11 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
+    "test": "pnpm --filter vccs test",
     "test:coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "prepare": "simple-git-hooks",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "pub:release": "pnpm --filter vccs pub:release"
   },
   "dependencies": {

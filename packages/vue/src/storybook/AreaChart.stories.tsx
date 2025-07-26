@@ -12,6 +12,8 @@ import { Legend } from '@/components/legend'
 import type { LegendContentProps } from '@/components/legend/type'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
+import type { ActivePointSlotProps } from '@/cartesian/area/ActivePoints'
+import { ActivePointsProps } from '@/cartesian/area/ActivePoints'
 
 const meta = {
   title: 'examples/AreaChart',
@@ -746,6 +748,45 @@ export const StackedAreaWithCustomLegend = {
               },
             }}
           </Legend>
+        </AreaChart>
+      </ResponsiveContainer>
+    )
+  },
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 400,
+    data: pageData,
+    margin: {
+      top: 10,
+      right: 30,
+      left: 0,
+      bottom: 0,
+    },
+  },
+}
+
+export const CustomizedActiveDot = {
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Area
+            type="monotone"
+            dataKey="uv"
+            stroke="#ff7300"
+            fill="#ff7300"
+            fillOpacity={0.6}
+          >
+            {{
+              activeDot: ({ cx, cy }: ActivePointSlotProps) => <circle cx={cx} cy={cy} r={10} class="customized-active-dot" fill="#ff7300" />,
+            }}
+          </Area>
+          {/* activeDot={({ cx, cy }) => <ActiveDot cx={cx} cy={cy} />} */}
+          <Tooltip />
         </AreaChart>
       </ResponsiveContainer>
     )
