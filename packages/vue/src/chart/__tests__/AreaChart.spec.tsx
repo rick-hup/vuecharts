@@ -108,66 +108,49 @@ describe('areaChart', () => {
     expect(dot).toHaveLength(1)
   })
 
-  // it('renders customized active dot when activeDot is set to be a function', async () => {
-  //   const activeDotRenderer = (props: any) => {
-  //     return {
-  //       ...props,
-  //       component: {
-  //         props: ['cx', 'cy'],
-  //         template: `<circle :cx="cx" :cy="cy" r="10" class="customized-active-dot" />`,
-  //       },
-  //       props,
-  //     }
-  //   }
+  it('renders customized active dot when activeDot is set to be a function', async () => {
+    const { container } = render(() => (
+      <div role="main" style={{ width: '400px', height: '400px' }}>
+        <AreaChart width={400} height={400} data={data}>
+          <Area type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300">
+            {{
+              activeDot: ({ cx, cy }: ActivePointSlotProps) => <circle cx={cx} cy={cy} r={10} class="customized-active-dot" />,
+            }}
+          </Area>
+          <Tooltip />
+        </AreaChart>
+      </div>
+    ))
 
-  //   const { container } = render({
-  //     components: { AreaChart, Area, Tooltip },
-  //     template: `
-  //       <div role="main" style="width: 400px; height: 400px;">
-  //         <AreaChart :width="400" :height="400" :data="data">
-  //           <Area :activeDot="activeDotRenderer" type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
-  //           <Tooltip />
-  //         </AreaChart>
-  //       </div>
-  //     `,
-  //     setup() {
-  //       return { data, activeDotRenderer }
-  //     },
-  //   })
+    const chart = container.querySelector('.v-charts-wrapper')
+    assertNotNull(chart)
+    await fireEvent(chart as Element, new MouseEvent('mousemove', {
+      clientX: 200,
+      clientY: 200,
+    }))
+    const dot = container.querySelectorAll('.customized-active-dot')
+    expect(dot).toHaveLength(1)
+  })
 
-  //   const chart = container.querySelector('.v-charts-wrapper')
-  //   assertNotNull(chart)
-  //   await fireEvent.mouseOver(chart, { clientX: 200, clientY: 200 })
+  it('renders 4 path in a stacked AreaChart', async () => {
+    const { container } = render(() => (
+      <AreaChart width={100} height={50} data={data}>
+        <Area type="monotone" dataKey="uv" stackId="test" stroke="#ff7300" fill="#ff7300" />
+        <Area type="monotone" dataKey="pv" stackId="test" stroke="#ff7300" fill="#ff7300" />
+      </AreaChart>
+    ))
+    expect(container.querySelectorAll('.v-charts-area-area')).toHaveLength(2)
+    expect(container.querySelectorAll('.v-charts-area-curve')).toHaveLength(2)
 
-  //   const dot = container.querySelectorAll('.customized-active-dot')
-  //   expect(dot).toHaveLength(1)
-  // })
-
-  // it('renders 4 path in a stacked AreaChart', async () => {
-  //   const { container } = render({
-  //     components: { AreaChart, Area },
-  //     template: `
-  //       <AreaChart :width="100" :height="50" :data="data">
-  //         <Area type="monotone" dataKey="uv" stackId="test" stroke="#ff7300" fill="#ff7300" />
-  //         <Area type="monotone" dataKey="pv" stackId="test" stroke="#ff7300" fill="#ff7300" />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { data }
-  //     },
-  //   })
-  //   expect(container.querySelectorAll('.recharts-area-area')).toHaveLength(2)
-  //   expect(container.querySelectorAll('.recharts-area-curve')).toHaveLength(2)
-
-  //   expectAreaCurve(container, [
-  //     {
-  //       d: 'M5,43.4C11,43.6,17,43.8,23,43.8C29,43.8,35,43.8,41,43.8C47,43.8,53,44.2,59,44.2C65,44.2,71,43.888,77,43.888C83,43.888,89,44.066,95,44.244',
-  //     },
-  //     {
-  //       d: 'M5,33.8C11,29.666,17,25.532,23,25.532C29,25.532,35,38.208,41,38.208C47,38.208,53,5,59,5C65,5,71,28.256,77,28.256C83,28.256,89,26.65,95,25.044',
-  //     },
-  //   ])
-  // })
+    expectAreaCurve(container, [
+      {
+        d: 'M5,5C11,10,17,15,23,15C29,15,35,15,41,15C47,15,53,25,59,25C65,25,71,17.2,77,17.2C83,17.2,89,21.65,95,26.1',
+      },
+      {
+        d: 'M5,33.8C11,29.666,17,25.532,23,25.532C29,25.532,35,38.208,41,38.208C47,38.208,53,5,59,5C65,5,71,28.256,77,28.256C83,28.256,89,26.65,95,25.044',
+      },
+    ])
+  })
 
   // it('renders a path in a vertical AreaChart', async () => {
   //   const { container } = render({

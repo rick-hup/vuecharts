@@ -58,7 +58,6 @@ export const RechartsWrapper = defineComponent({
     }
 
     const myOnMouseMove = (e: MouseEvent) => {
-      console.log('myOnMouseMove', mouseMoveAction(e))
       dispatch(mouseMoveAction(e))
       dispatch(externalEventAction({ handler: props.onMouseMove!, event: e }))
     }

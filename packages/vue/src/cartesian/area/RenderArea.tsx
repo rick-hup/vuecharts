@@ -176,13 +176,13 @@ export const StaticArea = defineComponent({
               {attrs.stroke !== 'none' && (
                 <Curve
                   {...curveAttrs}
-                  class="v-charts-area-curve"
                   layout={layout.value}
                   type={props.type}
                   connectNulls={props.connectNulls}
                   fill="none"
                   points={currentPoints.value}
                   stroke={props.stroke}
+                  class="v-charts-area-curve"
                 />
               )}
               {attrs.stroke !== 'none' && isRange && (

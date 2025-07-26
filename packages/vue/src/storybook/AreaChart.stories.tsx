@@ -804,3 +804,27 @@ export const CustomizedActiveDot = {
     },
   },
 }
+
+export const Test = {
+  render: (args: Record<string, any>) => {
+    return (
+      <AreaChart {...args}>
+        <Area type="monotone" dataKey="uv" stackId="test" stroke="#ff7300" fill="#ff7300" />
+        <Area type="monotone" dataKey="pv" stackId="test" stroke="#ff7300" fill="#ff7300" />
+      </AreaChart>
+    )
+  },
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 100,
+    height: 50,
+    data: [
+      { name: 'Page A', uv: 400, pv: 2400, amt: 2400 },
+      { name: 'Page B', uv: 300, pv: 4567, amt: 2400 },
+      { name: 'Page C', uv: 300, pv: 1398, amt: 2400 },
+      { name: 'Page D', uv: 200, pv: 9800, amt: 2400 },
+      { name: 'Page E', uv: 278, pv: 3908, amt: 2400 },
+      { name: 'Page F', uv: 189, pv: 4800, amt: 2400 },
+    ],
+  },
+}
