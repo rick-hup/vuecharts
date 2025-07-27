@@ -100,26 +100,8 @@ export function computeArea({
       }
     }
 
-    // For vertical layout
-    let xCoordinate
-    if (xAxis.type === 'number') {
-      // Use the same coordinate calculation logic as the axis
-      const xValue = getValueByDataKey(entry, xAxis.dataKey!)
-      xCoordinate = xAxis.scale(xValue)
-
-      // Find the exact tick if the value matches
-      const exactTick = xAxisTicks.find(tick => tick.value === xValue)
-      if (exactTick) {
-        xCoordinate = exactTick.coordinate
-      }
-    }
-    else {
-      // For category type x-axis
-      xCoordinate = getCateCoordinateOfLine({ axis: xAxis, ticks: xAxisTicks, bandSize, entry, index })
-    }
-
     return {
-      x: isBreakPoint ? null : xCoordinate,
+      x: isBreakPoint ? null : xAxis.scale(value[1]),
       y: getCateCoordinateOfLine({ axis: yAxis, ticks: yAxisTicks, bandSize, entry, index }),
       value,
       payload: entry,

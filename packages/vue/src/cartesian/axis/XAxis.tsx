@@ -67,7 +67,6 @@ const XAxisSettingsDispatcher = defineComponent({
     },
     dataKey: {
       type: [String, Number, Function] as PropType<DataKey<any>>,
-      default: '',
     },
     allowDuplicatedCategory: Boolean,
     allowDecimals: Boolean,

@@ -552,7 +552,7 @@ export function combineAppliedNumericalValuesIncludingErrorValues(data: ChartDat
           const relevantErrorBars = item.errorBars?.filter(errorBar =>
             isErrorBarRelevantForAxisType(axisType, errorBar),
           )
-          const valueByDataKey: unknown = getValueByDataKey(entry, axisSettings.dataKey ?? item.dataKey!)
+          const valueByDataKey: unknown = getValueByDataKey(entry, axisSettings.dataKey || item.dataKey!)
           return {
             value: valueByDataKey,
             errorDomain: getErrorDomainByDataKey(entry, valueByDataKey, relevantErrorBars!),
