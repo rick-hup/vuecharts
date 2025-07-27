@@ -18,6 +18,7 @@ const XAxisImpl = defineComponent({
   props: {
     xAxisId: {
       type: [String, Number],
+      default: 0,
     },
     ticks: Array,
   },

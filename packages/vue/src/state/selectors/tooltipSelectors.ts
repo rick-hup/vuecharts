@@ -46,7 +46,7 @@ import type { ReferenceAreaSettings, ReferenceDotSettings, ReferenceLineSettings
 import { selectChartName, selectStackOffsetType } from './rootPropsSelectors'
 // import { mathSign } from '../../util/DataUtils'
 import { combineAxisRangeWithReverse } from './combiners/combineAxisRangeWithReverse'
-import type { TooltipEntrySettings, TooltipIndex, TooltipInteractionState, TooltipPayload, TooltipPayloadEntry, TooltipSettingsState } from '../tooltipSlice'
+import type { TooltipEntrySettings, TooltipIndex, TooltipInteractionState, TooltipPayload, TooltipPayloadConfiguration, TooltipPayloadEntry, TooltipSettingsState } from '../tooltipSlice'
 
 import {
   combineTooltipEventType,
@@ -204,7 +204,7 @@ export function selectTooltipAxis(state: RechartsRootState): AxisWithTicksSettin
   return selectAxisSettings(state, axisType, axisId)
 }
 
-export const selectTooltipAxisRealScaleType: (state: RechartsRootState) => string | undefined = createSelector(
+export const selectTooltipAxisRealScaleType = createSelector(
   [selectTooltipAxis, selectChartLayout, selectHasBar, selectChartName, selectTooltipAxisType],
   combineRealScaleType,
 )
@@ -363,12 +363,11 @@ function selectTooltipAxisRange(state: RechartsRootState): AxisRange | undefined
   return selectAxisRange(state, axisType, axisId, isPanorama)
 }
 
-export const selectTooltipAxisRangeWithReverse: (state: RechartsRootState) => AxisRange | undefined = createSelector(
+export const selectTooltipAxisRangeWithReverse = createSelector(
   [selectTooltipAxis, selectTooltipAxisRange],
   combineAxisRangeWithReverse,
 )
 
-// @ts-expect-error
 export const selectTooltipAxisScale: (state: RechartsRootState) => RechartsScale | undefined = createSelector(
   [
     selectTooltipAxis,
@@ -390,7 +389,7 @@ export const selectTooltipCategoricalDomain: (state: RechartsRootState) => Reado
     combineCategoricalDomain,
   )
 
-function combineTicksOfTooltipAxis(layout: LayoutType, axis: AxisWithTicksSettings, realScaleType: string, scale: RechartsScale | undefined, range: AxisRange | undefined, duplicateDomain: ReadonlyArray<unknown> | undefined, categoricalDomain: ReadonlyArray<unknown> | undefined, axisType: XorYType): ReadonlyArray<TickItem> | null {
+function combineTicksOfTooltipAxis(layout: LayoutType, axis: AxisWithTicksSettings, realScaleType: string | undefined, scale: RechartsScale | undefined, range: AxisRange | undefined, duplicateDomain: ReadonlyArray<unknown> | undefined, categoricalDomain: ReadonlyArray<unknown> | undefined, axisType: XorYType): ReadonlyArray<TickItem> | null {
   if (!axis) {
     return null
   }
@@ -433,7 +432,7 @@ function combineTicksOfTooltipAxis(layout: LayoutType, axis: AxisWithTicksSettin
   )
 }
 
-export const selectTooltipAxisTicks: (state: RechartsRootState) => ReadonlyArray<TickItem> | null = createSelector(
+export const selectTooltipAxisTicks = createSelector(
   [
     selectChartLayout,
     selectTooltipAxis,

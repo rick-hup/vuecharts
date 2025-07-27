@@ -16,6 +16,7 @@ const YAxisImpl = defineComponent({
   props: {
     yAxisId: {
       type: [String, Number],
+      default: 0,
     },
   },
   inheritAttrs: false,
@@ -55,7 +56,10 @@ const YAxisImpl = defineComponent({
 const YAxisSettingsDispatcher = defineComponent({
   props: {
     interval: String,
-    yAxisId: [String, Number],
+    yAxisId: {
+      type: [String, Number],
+      default: 0,
+    },
     scale: [String, Function],
     type: String,
     padding: Object,

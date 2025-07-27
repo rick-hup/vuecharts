@@ -62,16 +62,22 @@ const defaultProps = {
   // The fill of colors of grid lines
   verticalFill: [],
   horizontalFill: [],
-  xAxisId: undefined,
-  yAxisId: undefined,
+  xAxisId: 0,
+  yAxisId: 0,
 } as const satisfies Partial<CartesianGridProps>
 
 export const CartesianGrid = defineComponent({
   name: 'CartesianGrid',
   inheritAttrs: false,
   props: {
-    xAxisId: [String, Number],
-    yAxisId: [String, Number],
+    xAxisId: {
+      type: [String, Number],
+      default: 0,
+    },
+    yAxisId: {
+      type: [String, Number],
+      default: 0,
+    },
     x: Number,
     y: Number,
     width: Number,

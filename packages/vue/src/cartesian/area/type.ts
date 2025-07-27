@@ -74,7 +74,7 @@ export const AreaVueProps = {
     default: undefined,
   },
   xAxisId: { type: [String, Number] as PropType<AxisId>, default: 0 },
-  yAxisId: { type: [String, Number] as PropType<AxisId> },
+  yAxisId: { type: [String, Number] as PropType<AxisId>, default: 0 },
   activeIndex: { type: Number, default: undefined },
   activePoint: { type: Object as PropType<any>, default: undefined },
   id: { type: String, default: undefined },

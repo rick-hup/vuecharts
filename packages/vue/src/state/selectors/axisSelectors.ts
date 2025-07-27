@@ -805,7 +805,6 @@ export function combineAxisDomain(
   if (stackOffsetType === 'expand') {
     return expandDomain
   }
-
   return numericalDomain
 }
 
@@ -891,8 +890,8 @@ function getD3ScaleFromType(realScaleType: string | undefined) {
 export function combineScaleFunction(
   axis: BaseCartesianAxis,
   realScaleType: string | undefined,
-  axisDomain: NumberDomain | CategoricalDomain,
-  axisRange: [number, number],
+  axisDomain: NumberDomain | CategoricalDomain | undefined,
+  axisRange: AxisRange | undefined,
 ): RechartsScale | undefined {
   if (axisDomain == null || axisRange == null) {
     return undefined

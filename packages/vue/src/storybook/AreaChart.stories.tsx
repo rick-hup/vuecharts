@@ -809,7 +809,7 @@ export const Test = {
   render: (args: Record<string, any>) => {
     return (
       <AreaChart {...args} layout="vertical">
-        <XAxis type="number" />
+        {/* <XAxis type="number" /> */}
         <YAxis dataKey="name" type="category" />
         <Area type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
       </AreaChart>

@@ -44,8 +44,9 @@ function pickDefaultIndex(_state: RechartsRootState, _tooltipEventType: TooltipE
   return defaultIndex
 }
 
-export const selectOrderedTooltipTicks = createSelector(selectTooltipAxisTicks, (ticks: ReadonlyArray<TickItem>) =>
-  sortBy(ticks, o => o.coordinate))
+export const selectOrderedTooltipTicks = createSelector(selectTooltipAxisTicks, (ticks: ReadonlyArray<TickItem> | null) => {
+  return sortBy(ticks, o => o.coordinate)
+})
 
 export const selectTooltipInteractionState: (
   state: RechartsRootState,
@@ -162,7 +163,7 @@ export const selectIsTooltipActive: (
   },
 )
 
-export function combineActiveProps(chartEvent: ChartPointer | undefined, layout: LayoutType | undefined, polarViewBox: PolarViewBoxRequired | undefined, tooltipAxisType: AxisType | undefined, tooltipAxisRange: AxisRange | undefined, tooltipTicks: ReadonlyArray<TickItem> | undefined, orderedTooltipTicks: ReadonlyArray<TickItem> | undefined, offset: ChartOffsetRequired): ActiveTooltipProps | undefined {
+export function combineActiveProps(chartEvent: ChartPointer | undefined, layout: LayoutType | undefined, polarViewBox: PolarViewBoxRequired | undefined, tooltipAxisType: AxisType | undefined, tooltipAxisRange: AxisRange | undefined, tooltipTicks: ReadonlyArray<TickItem> | undefined | null, orderedTooltipTicks: ReadonlyArray<TickItem> | undefined, offset: ChartOffsetRequired): ActiveTooltipProps | undefined {
   if (!chartEvent || !layout || !tooltipAxisType || !tooltipAxisRange || !tooltipTicks) {
     return undefined
   }

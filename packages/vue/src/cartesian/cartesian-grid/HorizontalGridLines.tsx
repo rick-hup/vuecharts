@@ -9,8 +9,14 @@ const HorizontalGridLines = defineComponent({
     width: Number,
     horizontal: Boolean,
     horizontalPoints: Array,
-    xAxisId: [String, Number],
-    yAxisId: [String, Number],
+    xAxisId: {
+      type: [String, Number],
+      default: 0,
+    },
+    yAxisId: {
+      type: [String, Number],
+      default: 0,
+    },
     offset: Object,
     xAxis: Object,
     yAxis: Object,
