@@ -212,7 +212,7 @@ function selectCartesianAxisSettings(state: RechartsRootState, axisType: 'xAxis'
  * @param axisId xAxisId | yAxisId
  * @returns axis settings object
  */
-export function selectAxisSettings(state: RechartsRootState, axisType: XorYType, axisId: AxisId): AxisWithTicksSettings {
+export function selectAxisSettings(state: RechartsRootState, axisType: XorYType, axisId: AxisId = 0): AxisWithTicksSettings {
   switch (axisType) {
     case 'xAxis': {
       return selectXAxisSettings(state, axisId)

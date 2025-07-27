@@ -16,7 +16,9 @@ import type { AxisTick } from '@/types/tick'
 
 const XAxisImpl = defineComponent({
   props: {
-    xAxisId: [String, Number],
+    xAxisId: {
+      type: [String, Number],
+    },
     ticks: Array,
   },
   inheritAttrs: false,

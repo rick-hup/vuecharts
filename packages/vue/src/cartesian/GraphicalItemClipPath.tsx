@@ -8,11 +8,9 @@ export const GraphicalItemClipPath = defineComponent({
   props: {
     xAxisId: {
       type: [String, Number] as PropType<string | number>,
-      default: undefined,
     },
     yAxisId: {
       type: [String, Number] as PropType<string | number>,
-      default: undefined,
     },
     clipPathId: {
       type: String as PropType<string>,

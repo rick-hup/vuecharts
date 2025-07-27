@@ -152,29 +152,23 @@ describe('areaChart', () => {
     ])
   })
 
-  // it('renders a path in a vertical AreaChart', async () => {
-  //   const { container } = render({
-  //     components: { AreaChart, Area, XAxis, YAxis },
-  //     template: `
-  //       <AreaChart :width="100" :height="50" :data="data" layout="vertical">
-  //         <XAxis type="number" />
-  //         <YAxis dataKey="name" type="category" />
-  //         <Area type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { data }
-  //     },
-  //   })
-  //   expect(container.querySelectorAll('.recharts-area-area')).toHaveLength(1)
-  //   expect(container.querySelectorAll('.recharts-area-curve')).toHaveLength(1)
+  it('renders a path in a vertical AreaChart', async () => {
+    const { container } = render(() => (
+      <AreaChart width={100} height={50} data={data} layout="vertical">
+        <XAxis type="number" />
+        <YAxis dataKey="name" type="category" />
+        <Area type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
+      </AreaChart>
+    ))
+    expect(container.querySelectorAll('.v-charts-area-area')).toHaveLength(1)
+    expect(container.querySelectorAll('.v-charts-area-curve')).toHaveLength(1)
 
-  //   expectAreaCurve(container, [
-  //     {
-  //       d: 'M95,5C91.25,5.667,87.5,6.333,87.5,7C87.5,7.667,87.5,8.333,87.5,9C87.5,9.667,80,10.333,80,11C80,11.667,85.85,12.333,85.85,13C85.85,13.667,82.513,14.333,79.175,15',
-  //     },
-  //   ])
-  // })
+    expectAreaCurve(container, [
+      {
+        d: 'M95,5C91.25,5.667,87.5,6.333,87.5,7C87.5,7.667,87.5,8.333,87.5,9C87.5,9.667,80,10.333,80,11C80,11.667,85.85,12.333,85.85,13C85.85,13.667,82.513,14.333,79.175,15',
+      },
+    ])
+  })
 
   // it('renders a stacked percentage chart', async () => {
   //   const toPercent = (decimal: number, fixed = 0) => `${(decimal * 100).toFixed(fixed)}%`
