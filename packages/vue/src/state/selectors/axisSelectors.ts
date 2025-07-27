@@ -1479,7 +1479,7 @@ export const selectAxisPropsNeededForCartesianGridTicksGenerator = createSelecto
   },
 )
 
-export function combineAxisTicks(layout: LayoutType, axis: AxisWithTicksSettings, realScaleType: string, scale: RechartsScale | undefined, niceTicks: ReadonlyArray<number> | undefined, axisRange: AxisRange | undefined, duplicateDomain: ReadonlyArray<unknown> | undefined, categoricalDomain: ReadonlyArray<unknown> | undefined, axisType: XorYType): ReadonlyArray<TickItem> | undefined {
+export function combineAxisTicks(layout: LayoutType, axis: AxisWithTicksSettings, realScaleType: string | undefined, scale: RechartsScale | undefined, niceTicks: ReadonlyArray<number> | undefined, axisRange: AxisRange | undefined, duplicateDomain: ReadonlyArray<unknown> | undefined, categoricalDomain: ReadonlyArray<unknown> | undefined, axisType: XorYType): ReadonlyArray<TickItem> | undefined {
   if (axis == null || scale == null) {
     return undefined
   }
@@ -1544,7 +1544,6 @@ export function combineAxisTicks(layout: LayoutType, axis: AxisWithTicksSettings
     }),
   )
 }
-// @ts-ignore
 export const selectTicksOfAxis = createSelector(
   [
     selectChartLayout,

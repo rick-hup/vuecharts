@@ -2,7 +2,7 @@ import type { Point } from '@/shape'
 import type { PropType } from 'vue'
 import { defineComponent, ref, watch } from 'vue'
 import { animate, useDomRef } from 'motion-v'
-import { isNumber } from '@/utils'
+import { isNumber, isWellBehavedNumber } from '@/utils'
 import { AreaVueProps } from '@/cartesian/area/type'
 import { useAreaContext } from '@/cartesian/area/hooks/useArea'
 
@@ -80,6 +80,9 @@ const VerticalRect = defineComponent({
       const { alpha, baseLine, strokeWidth } = props
       const startY = points[0].y
       const endY = points[points.length - 1].y
+      if (!isWellBehavedNumber(startY) || !isWellBehavedNumber(endY)) {
+        return null
+      }
       const height = alpha * Math.abs(startY - endY)
       let maxX = Math.max(...points.map(entry => entry.x || 0))
       if (isNumber(baseLine)) {
@@ -105,7 +108,7 @@ export const ClipRect = defineComponent({
     onAnimationEnd: AreaVueProps.onAnimationEnd,
   },
   setup(_props) {
-    const { points, props, areaData } = useAreaContext()
+    const { points, props, areaData, layout } = useAreaContext()
     let isAnimate = false
     const alpha = ref(0)
     const domRef = useDomRef()
@@ -132,7 +135,7 @@ export const ClipRect = defineComponent({
     })
     return () => {
       const baseLine = areaData.value?.baseLine
-      if (props.layout === 'horizontal') {
+      if (layout.value === 'horizontal') {
         return <HorizontalRect ref={domRef} alpha={alpha.value} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />
       }
       return <VerticalRect ref={domRef} alpha={alpha.value} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />

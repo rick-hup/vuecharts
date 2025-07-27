@@ -1,7 +1,6 @@
 import type { ChartData } from '@/state/chartDataSlice'
 import type {
   DataKey,
-  LayoutType,
   TooltipType,
   VuePropsToType,
   WithSVGProps,
@@ -15,7 +14,6 @@ import { CurveVueProps } from '@/shape/Curve'
 
 export const AreaVueProps = {
   ...CurveVueProps,
-  layout: { type: String as PropType<LayoutType>, default: 'horizontal' },
   activeDot: { type: Boolean, default: true },
   baseValue: {
     type: [Number, String] as PropType<BaseValue>,

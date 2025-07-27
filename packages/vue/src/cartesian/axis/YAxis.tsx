@@ -9,6 +9,7 @@ import { CartesianAxis } from '@/cartesian'
 import type { DataKey } from '@/types'
 import { selectAxisViewBox } from '@/state/selectors/selectChartOffset'
 import type { AxisDomain } from '@/types/axis'
+import { dataKey } from '@/storybook/api/props/chart-props'
 
 // Implementation of the YAxis rendering logic
 const YAxisImpl = defineComponent({
@@ -76,6 +77,10 @@ const YAxisSettingsDispatcher = defineComponent({
     tick: { type: [Boolean, Object], default: true },
     tickFormatter: Function,
     domain: Array as PropType<AxisDomain>,
+    dataKey: {
+      type: [String, Number, Function] as PropType<DataKey<any>>,
+      default: '',
+    },
   },
   setup(props) {
     const dispatch = useAppDispatch()
@@ -101,7 +106,6 @@ const YAxisSettingsDispatcher = defineComponent({
   },
 })
 
-// Main YAxis component with all props and defaults
 export const YAxis = defineComponent({
   name: 'YAxis',
   props: {

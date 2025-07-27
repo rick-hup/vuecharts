@@ -104,7 +104,6 @@ function renderActivePoint({
   }
 
   let dot
-  console.log('slots.activeDot', slots.activeDot)
   if (slots.activeDot) {
     dot = slots.activeDot(dotProps)
   }
