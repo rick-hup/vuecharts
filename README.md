@@ -7,6 +7,7 @@
 <p align="center">
   An unofficial Vue.js port of <a href="https://recharts.org">Recharts</a>, bringing the power of React's most popular charting library to the Vue ecosystem.
 </p>
+
 ---
 
 > ⚠️ **Work in Progress**: This library is currently under active development. APIs may change and some features might not be fully stable yet.
@@ -62,9 +63,6 @@ This project is inspired by and built upon the excellent work of the open-source
 - **[Motion for Vue](https://motion.dev/vue)** - Production-ready motion library powering all animations and transitions
 - **[Redux Toolkit](https://redux-toolkit.js.org/)** - State management for complex chart interactions
 - **[VueUse](https://vueuse.org/)** - Essential Vue composition utilities
-
-### Special Thanks
-- The **Recharts team** for creating the original library and establishing excellent patterns for composable charts
 
 ---
 
