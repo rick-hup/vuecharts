@@ -6,7 +6,7 @@ import { XAxis, YAxis } from '@/cartesian/axis'
 import { Area, ResponsiveContainer } from '@/index'
 import { Tooltip } from '@/components/Tooltip'
 import { curveCardinal } from 'victory-vendor/d3-shape'
-import { Fragment, markRaw, ref } from 'vue'
+import { Fragment, defineComponent, markRaw, ref } from 'vue'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { Legend } from '@/components/legend'
 import type { LegendContentProps } from '@/components/legend/type'
@@ -14,6 +14,10 @@ import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import type { ActivePointSlotProps } from '@/cartesian/area/ActivePoints'
 import { ActivePointsProps } from '@/cartesian/area/ActivePoints'
+import { useAppSelector } from '@/state/hooks'
+import type { AreaSettings } from '@/state/selectors/areaSelectors'
+import { selectArea } from '@/state/selectors/areaSelectors'
+import { selectTicksOfAxis } from '@/state/selectors/axisSelectors'
 
 const meta = {
   title: 'examples/AreaChart',
@@ -805,14 +809,30 @@ export const CustomizedActiveDot = {
   },
 }
 
+const Comp = defineComponent({
+  setup() {
+    const areaSettings: AreaSettings = {
+      baseValue: undefined,
+      stackId: '1',
+      dataKey: 'uv',
+      connectNulls: false,
+      data: undefined,
+    }
+    useAppSelector(state => selectArea(state, 0, 0, false, areaSettings))
+    useAppSelector(state => selectTicksOfAxis(state, 'xAxis', 0, false))
+    return () => null
+  },
+})
 export const Test = {
   render: (args: Record<string, any>) => {
+    const toPercent = (decimal: number, fixed = 0) => `${(decimal * 100).toFixed(fixed)}%`
+
     return (
-      <AreaChart {...args} layout="vertical">
-        {/* <XAxis type="number" /> */}
-        <YAxis dataKey="name" type="category" />
-        <Area type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
-      </AreaChart>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={args.data}>
+          <Area isAnimationActive={false} type="monotone" dot label dataKey="uv" stroke="#ff7300" fill="#ff7300" />
+        </AreaChart>
+      </ResponsiveContainer>
     )
   },
   args: {

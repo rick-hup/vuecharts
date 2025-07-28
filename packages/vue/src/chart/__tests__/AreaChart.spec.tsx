@@ -4,6 +4,11 @@ import { Area, AreaChart, CartesianAxis, Tooltip, XAxis, YAxis } from '@/index'
 import { assertNotNull, expectAreaCurve } from '@/test/helper'
 import type { ActivePointSlotProps } from '@/cartesian/area/ActivePoints'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
+import { useAppSelector } from '@/state/hooks'
+import type { AreaSettings } from '@/state/selectors/areaSelectors'
+import { selectArea } from '@/state/selectors/areaSelectors'
+import { selectTicksOfAxis } from '@/state/selectors/axisSelectors'
+import { defineComponent } from 'vue'
 
 describe('areaChart', () => {
   beforeEach(() => {
@@ -170,160 +175,108 @@ describe('areaChart', () => {
     ])
   })
 
-  // it('renders a stacked percentage chart', async () => {
-  //   const toPercent = (decimal: number, fixed = 0) => `${(decimal * 100).toFixed(fixed)}%`
+  it('renders a stacked percentage chart', async () => {
+    const toPercent = (decimal: number, fixed = 0) => `${(decimal * 100).toFixed(fixed)}%`
 
-  //   const areaSpy = vi.fn()
-  //   const xAxisTicksSpy = vi.fn()
-  //   const Comp = {
-  //     setup() {
-  //       const areaSettings: AreaSettings = {
-  //         baseValue: undefined,
-  //         stackId: '1',
-  //         dataKey: 'uv',
-  //         connectNulls: false,
-  //         data: undefined,
-  //       }
-  //       areaSpy(useAppSelector(state => selectArea(state, 0, 0, false, areaSettings)))
-  //       xAxisTicksSpy(useAppSelector(state => selectTicksOfAxis(state, 'xAxis', 0, false)))
-  //       return () => null
-  //     },
-  //   }
+    const areaSpy = vi.fn()
+    const xAxisTicksSpy = vi.fn()
+    const Comp = defineComponent({
+      setup() {
+        const areaSettings: AreaSettings = {
+          baseValue: undefined,
+          stackId: '1',
+          dataKey: 'uv',
+          connectNulls: false,
+          data: undefined,
+        }
+        areaSpy(useAppSelector(state => selectArea(state, 0, 0, false, areaSettings)).value)
+        xAxisTicksSpy(useAppSelector(state => selectTicksOfAxis(state, 'xAxis', 0, false)).value)
+        return () => null
+      },
+    })
 
-  //   const { container } = render({
-  //     components: { AreaChart, Area, XAxis, YAxis, Customized, Comp },
-  //     template: `
-  //       <AreaChart
-  //         :width="500"
-  //         :height="400"
-  //         :data="pageData"
-  //         stackOffset="expand"
-  //         :margin="{ top: 10, right: 30, left: 20, bottom: 20 }"
-  //       >
-  //         <XAxis dataKey="name" />
-  //         <YAxis :tickFormatter="toPercent" />
-  //         <Area dataKey="uv" stackId="1" />
-  //         <Area dataKey="pv" stackId="1" />
-  //         <Area dataKey="amt" stackId="1" />
-  //         <Customized :component="Comp" />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { pageData, toPercent, Comp }
-  //     },
-  //   })
+    const { container } = render(() => (
+      <AreaChart
+        width={500}
+        height={400}
+        data={data}
+        stackOffset="expand"
+        margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
+      >
+        <XAxis dataKey="name" />
+        <YAxis tickFormatter={toPercent} />
+        <Area dataKey="uv" stackId="1" />
+        <Area dataKey="pv" stackId="1" />
+        <Area dataKey="amt" stackId="1" />
+        <Comp />
+        {/* <Customized component={Comp} /> */}
+      </AreaChart>
+    ))
 
-  //   expect(xAxisTicksSpy).toHaveBeenLastCalledWith([
-  //     {
-  //       coordinate: 80,
-  //       index: 0,
-  //       offset: 0,
-  //       value: 'Page A',
-  //     },
-  //     {
-  //       coordinate: 145,
-  //       index: 1,
-  //       offset: 0,
-  //       value: 'Page B',
-  //     },
-  //     {
-  //       coordinate: 210,
-  //       index: 2,
-  //       offset: 0,
-  //       value: 'Page C',
-  //     },
-  //     {
-  //       coordinate: 275,
-  //       index: 3,
-  //       offset: 0,
-  //       value: 'Page D',
-  //     },
-  //     {
-  //       coordinate: 340,
-  //       index: 4,
-  //       offset: 0,
-  //       value: 'Page E',
-  //     },
-  //     {
-  //       coordinate: 405,
-  //       index: 5,
-  //       offset: 0,
-  //       value: 'Page F',
-  //     },
-  //     {
-  //       coordinate: 470,
-  //       index: 6,
-  //       offset: 0,
-  //       value: 'Page G',
-  //     },
-  //   ])
-  //   expect(xAxisTicksSpy).toHaveBeenCalledTimes(2)
+    expect(xAxisTicksSpy).toHaveBeenLastCalledWith([
+      {
+        coordinate: 80,
+        index: 0,
+        offset: 0,
+        value: 'Page A',
+      },
+      {
+        coordinate: 158,
+        index: 1,
+        offset: 0,
+        value: 'Page B',
+      },
+      {
+        coordinate: 236,
+        index: 2,
+        offset: 0,
+        value: 'Page C',
+      },
+      {
+        coordinate: 314,
+        index: 3,
+        offset: 0,
+        value: 'Page D',
+      },
+      {
+        coordinate: 392,
+        index: 4,
+        offset: 0,
+        value: 'Page E',
+      },
+      {
+        coordinate: 470,
+        index: 5,
+        offset: 0,
+        value: 'Page F',
+      },
+    ])
+    expect(xAxisTicksSpy).toHaveBeenCalledTimes(1)
 
-  //   expectAreaCurve(container, [
-  //     {
-  //       d: 'M80,278.1L145,278.1L210,261.667L275,213.668L340,221.238L405,211.373L470,224.074',
-  //     },
-  //     {
-  //       d: 'M80,180.609L145,180.609L210,163.26L275,106.515L340,116.837L405,110.322L470,162.91',
-  //     },
-  //     {
-  //       d: 'M80,10L145,10L210,10L275,10L340,10L405,10L470,10',
-  //     },
-  //   ])
-  // })
+    expectAreaCurve(container, [
+      {
+        d: 'M80,10L158,95L236,95L314,180L392,113.7L470,189.35',
+      },
+      {
+        d: 'M80,254.8L158,184.522L236,292.268L314,10L392,207.676L470,180.374',
+      },
+      {
+        d: 'M80,223.714L158,173.516L236,250.477L314,48.857L392,190.054L470,170.553',
+      },
+    ])
+  })
 
-  // it('renders a stacked chart when stackId is a number', async () => {
-  //   const areaSettings: AreaSettings = {
-  //     baseValue: undefined,
-  //     stackId: 1,
-  //     dataKey: 'uv',
-  //     connectNulls: false,
-  //     data: undefined,
-  //   }
-
-  //   const renderTestCase = createSelectorTestCase(({ children }) => ({
-  //     components: { AreaChart, Area },
-  //     template: `
-  //       <AreaChart :width="500" :height="400" :data="pageData">
-  //         <Area dataKey="uv" :stackId="areaSettings.stackId" />
-  //         <Area dataKey="pv" :stackId="areaSettings.stackId" />
-  //         <slot />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { pageData, areaSettings }
-  //     },
-  //   }))
-
-  //   const { container } = renderTestCase(state => selectArea(state, 0, 0, false, areaSettings))
-
-  //   expectAreaCurve(container, [
-  //     {
-  //       d: 'M5,312.821L86.667,312.821L168.333,274.1L250,200.418L331.667,188.857L413.333,183.286L495,200',
-  //     },
-  //     {
-  //       d: 'M5,201.393L86.667,201.393L168.333,139.411L250,47.482L331.667,21.714L413.333,28.957L495,105.286',
-  //     },
-  //   ])
-  // })
-
-  // it('renders dots and labels when dot is set to true', async () => {
-  //   const { container } = render({
-  //     components: { AreaChart, Area },
-  //     template: `
-  //       <AreaChart :width="100" :height="50" :data="data">
-  //         <Area :isAnimationActive="false" type="monotone" dot label dataKey="uv" stroke="#ff7300" fill="#ff7300" />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { data }
-  //     },
-  //   })
-  //   expect(container.querySelectorAll('.recharts-area-dots')).toHaveLength(1)
-  //   expect(container.querySelectorAll('.recharts-area-dot')).toHaveLength(6)
-  //   expect(container.querySelectorAll('.recharts-label-list')).toHaveLength(1)
-  //   expect(container.querySelectorAll('.recharts-label')).toHaveLength(6)
-  // })
+  it('renders dots and labels when dot is set to true', async () => {
+    const { container } = render(
+      <AreaChart width={100} height={50} data={data}>
+        <Area isAnimationActive={false} type="monotone" dot label dataKey="uv" stroke="#ff7300" fill="#ff7300" />
+      </AreaChart>,
+    )
+    expect(container.querySelectorAll('.v-charts-area-dots')).toHaveLength(1)
+    expect(container.querySelectorAll('.v-charts-area-dot')).toHaveLength(6)
+    expect(container.querySelectorAll('.v-charts-label-list')).toHaveLength(1)
+    expect(container.querySelectorAll('.v-charts-label')).toHaveLength(6)
+  })
 
   // it('render empty when data is empty', async () => {
   //   const { container } = render({

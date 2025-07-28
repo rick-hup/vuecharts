@@ -40,11 +40,7 @@ export const AreaVueProps = {
    * - VNode: custom Vue element
    */
   label: {
-    type: [Boolean, Object, Function] as PropType<
-      | boolean
-      | Record<string, any>
-      | ((props: any) => any)
-    >,
+    type: [Boolean, Object] as PropType<boolean | Record<string, any>>,
     default: undefined,
   },
   legendType: { type: String as PropType<LegendType>, default: 'line' },
