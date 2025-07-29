@@ -18,11 +18,18 @@ import { LabelList } from '@/components/label'
 // 简化的 Dots 组件 - 使用 context
 export const Dots = defineComponent({
   name: 'Dots',
-  setup(_) {
-    const { points, clipPathId, props, attrs } = useAreaContext()
+  props: {
+    points: {
+      type: Array as PropType<ReadonlyArray<Point>>,
+      default: () => [],
+    },
+  },
+  setup(_props) {
+    const { clipPathId, props, attrs } = useAreaContext()
 
     return () => {
-      if (!shouldRenderDots(points.value!, props.dot!)) {
+      const { points } = _props
+      if (!shouldRenderDots(points!, props.dot!)) {
         return null
       }
       const clipDot = isClipDot(props.dot)
@@ -38,7 +45,7 @@ export const Dots = defineComponent({
           clip-path={props.needClip ? `url(#clipPath-${clipDot ? '' : 'dots-'}${clipPathId.value})` : undefined}
         >
           {
-            points.value?.map((point) => {
+            points?.map((point) => {
               return <Dot {...dotsProps} {...attrs} r={3} cx={point.x} cy={point.y} class="v-charts-area-dot" clipDot={clipDot} />
             })
           }
@@ -201,7 +208,7 @@ export const StaticArea = defineComponent({
               )}
             </Layer>
           )}
-          <Dots />
+          <Dots points={currentPoints.value} />
           {
             showLabels && (
               <LabelList {...labelProps} data={areaData.value?.points ?? []} dataKey={props.dataKey} />
