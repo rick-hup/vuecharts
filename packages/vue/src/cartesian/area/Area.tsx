@@ -8,6 +8,10 @@ import { Layer } from '@/container/Layer'
 import { RenderArea } from '@/cartesian/area/RenderArea'
 import { ActivePoints } from '@/cartesian/area/ActivePoints'
 import type { ActivePointsSlots } from './ActivePoints'
+import { LabelList } from '@/components/label/LabelList'
+import { selectChartDataWithIndexesIfNotInPanorama } from '@/state/selectors/dataSelectors'
+import { useAppSelector } from '@/state/hooks'
+import { useIsPanorama } from '@/context/PanoramaContextProvider'
 
 export const Area = defineComponent<AreaPropsWithSVG>({
   name: 'Area',
@@ -28,7 +32,7 @@ export const Area = defineComponent<AreaPropsWithSVG>({
           activeDot: slots.activeDot,
         }
       }
-
+      console.log('areaData.value?.points', areaData.value?.points, props.dataKey)
       return (
         <Fragment>
           <Layer class={['v-charts-area', attrs.class]}>
@@ -42,6 +46,7 @@ export const Area = defineComponent<AreaPropsWithSVG>({
           >
             {activeDot}
           </ActivePoints>
+          <LabelList data={areaData.value?.points ?? []} dataKey={props.dataKey} />
         </Fragment>
       )
     }

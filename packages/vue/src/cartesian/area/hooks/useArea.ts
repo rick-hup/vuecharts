@@ -1,6 +1,6 @@
 import { useChartLayout } from '@/context/chartLayoutContext'
 import { useChartName } from '@/state/selectors/selectors'
-import type { AreaPropsWithOutSVG } from '@/cartesian/area/type'
+import type { AreaProps } from '@/cartesian/area/type'
 import { computed, inject, provide, ref } from 'vue'
 import type { InjectionKey, Ref, SVGAttributes, ShallowRef } from 'vue'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
@@ -19,7 +19,7 @@ export interface AreaContext {
   points: Ref<ReadonlyArray<AreaPointItem> | undefined>
 
   // 响应式 props 和 attrs
-  props: AreaPropsWithOutSVG
+  props: AreaProps
   attrs: SVGAttributes
 
   // 计算属性
@@ -50,11 +50,13 @@ export function useAreaContext() {
   return context
 }
 
-export function useArea(props: AreaPropsWithOutSVG, attrs: SVGAttributes = {}) {
+export function useArea(props: AreaProps, attrs: SVGAttributes = {}) {
   const layout = useChartLayout()
   const chartName = useChartName()
   const localId = uniqueId('v-charts-area-')
   const clipPathId = computed(() => props.id || localId)
+  const isPanorama = useIsPanorama()
+
   /**
    * is Area animating
    */
@@ -67,8 +69,6 @@ export function useArea(props: AreaPropsWithOutSVG, attrs: SVGAttributes = {}) {
     && (chartName.value === 'AreaChart' || chartName.value === 'ComposedChart')
     && !props.hide,
   )
-
-  const isPanorama = useIsPanorama()
 
   const areaSettings = computed(
     () => ({
