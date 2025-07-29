@@ -8,7 +8,7 @@ import { defineComponent } from 'vue'
 
 export const LabelList = defineComponent({
   props: LabelListVueProps,
-  setup(props) {
+  setup(props, { attrs }) {
     return () => {
       const { data, dataKey, valueAccessor, clockWise, id, ...others } = props
       if (!data || !data.length)
@@ -24,6 +24,7 @@ export const LabelList = defineComponent({
             return (
               <Label
                 {...others}
+                {...attrs}
                 id={idProps!}
                 parentViewBox={entry.parentViewBox}
                 value={value}

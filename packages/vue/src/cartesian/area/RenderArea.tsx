@@ -13,6 +13,7 @@ import { ClipRect } from './ClipRect'
 import { useAreaContext } from './hooks/useArea'
 import { useOffset } from '@/context/chartLayoutContext'
 import { interpolate, isNan, isNullish, isNumber } from '@/utils'
+import { LabelList } from '@/components/label'
 
 // 简化的 Dots 组件 - 使用 context
 export const Dots = defineComponent({
@@ -158,7 +159,8 @@ export const StaticArea = defineComponent({
         'stroke-width': props.strokeWidth,
       }
       const isRange = areaData.value?.isRange
-      const showLabels = !isAnimating.value
+      const showLabels = !isAnimating.value && props.label
+      const labelProps = typeof props.label === 'object' ? props.label : {}
       return (
         <Fragment>
           {currentPoints.value && currentPoints.value.length > 1 && (
@@ -200,7 +202,11 @@ export const StaticArea = defineComponent({
             </Layer>
           )}
           <Dots />
-          {showLabels}
+          {
+            showLabels && (
+              <LabelList {...labelProps} data={areaData.value?.points ?? []} dataKey={props.dataKey} />
+            )
+          }
         </Fragment>
       )
     }
