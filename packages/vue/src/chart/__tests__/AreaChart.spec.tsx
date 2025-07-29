@@ -278,20 +278,17 @@ describe('areaChart', () => {
     expect(container.querySelectorAll('.v-charts-label')).toHaveLength(6)
   })
 
-  // it('render empty when data is empty', async () => {
-  //   const { container } = render({
-  //     components: { AreaChart, Area },
-  //     template: `
-  //       <AreaChart :width="100" :height="50" :data="[]">
-  //         <Area type="monotone" dot label dataKey="uv" stroke="#ff7300" fill="#ff7300" />
-  //       </AreaChart>
-  //     `,
-  //   })
-  //   expect(container.querySelectorAll('.recharts-area-area')).toHaveLength(0)
-  //   expect(container.querySelectorAll('.recharts-area-curve')).toHaveLength(0)
-  //   expect(container.querySelectorAll('.recharts-area-dots')).toHaveLength(0)
-  //   expect(container.querySelectorAll('.recharts-label-list')).toHaveLength(0)
-  // })
+  it('render empty when data is empty', async () => {
+    const { container } = render(
+      <AreaChart width={100} height={50} data={[]}>
+        <Area type="monotone" dot label dataKey="uv" stroke="#ff7300" fill="#ff7300" />
+      </AreaChart>,
+    )
+    expect(container.querySelectorAll('.v-charts-area-area')).toHaveLength(0)
+    expect(container.querySelectorAll('.v-charts-area-curve')).toHaveLength(0)
+    expect(container.querySelectorAll('.v-charts-area-dots')).toHaveLength(0)
+    expect(container.querySelectorAll('.v-charts-label-list')).toHaveLength(0)
+  })
 
   // describe('<AreaChart /> - Pure Rendering', () => {
   //   const pureElements = [Area]
@@ -336,48 +333,48 @@ describe('areaChart', () => {
   //     expect(axisSpy).toHaveBeenCalledTimes(3)
   //   })
 
-  //   it('should only render Area once when the brush moves but doesn\'t change start/end indices', async () => {
-  //     const { container } = render(chart)
+  //   // it('should only render Area once when the brush moves but doesn\'t change start/end indices', async () => {
+  //   //   const { container } = render(chart)
 
-  //     spies.forEach(el => expect(el).toHaveBeenCalledTimes(1))
-  //     expect(axisSpy).toHaveBeenCalledTimes(3)
+  //   //   spies.forEach(el => expect(el).toHaveBeenCalledTimes(1))
+  //   //   expect(axisSpy).toHaveBeenCalledTimes(3)
 
-  //     const brushSlide = container.querySelector('.recharts-brush-slide')
-  //     assertNotNull(brushSlide)
-  //     await fireEvent.mouseDown(brushSlide)
-  //     await fireEvent.mouseMove(brushSlide, { clientX: 200, clientY: 200 })
-  //     await fireEvent.mouseUp(window)
+  //   //   const brushSlide = container.querySelector('.recharts-brush-slide')
+  //   //   assertNotNull(brushSlide)
+  //   //   await fireEvent.mouseDown(brushSlide)
+  //   //   await fireEvent.mouseMove(brushSlide, { clientX: 200, clientY: 200 })
+  //   //   await fireEvent.mouseUp(window)
 
-  //     spies.forEach(el => expect(el).toHaveBeenCalledTimes(1))
-  //     expect(axisSpy).toHaveBeenCalledTimes(3)
-  //   })
+  //   //   spies.forEach(el => expect(el).toHaveBeenCalledTimes(1))
+  //   //   expect(axisSpy).toHaveBeenCalledTimes(3)
+  //   // })
 
-  //   it('should only show the last data when the brush travelers all moved to the right', async () => {
-  //     const { container } = render(chart)
+  //   // it('should only show the last data when the brush travelers all moved to the right', async () => {
+  //   //   const { container } = render(chart)
 
-  //     const leftBrushTraveler = container.querySelector('.recharts-brush-traveller')
-  //     assertNotNull(leftBrushTraveler)
-  //     assertNotNull(window)
-  //     await fireEvent.mouseDown(leftBrushTraveler)
-  //     await fireEvent.mouseMove(window, { clientX: 400, clientY: 0 })
-  //     await fireEvent.mouseUp(window)
+  //   //   const leftBrushTraveler = container.querySelector('.recharts-brush-traveller')
+  //   //   assertNotNull(leftBrushTraveler)
+  //   //   assertNotNull(window)
+  //   //   await fireEvent.mouseDown(leftBrushTraveler)
+  //   //   await fireEvent.mouseMove(window, { clientX: 400, clientY: 0 })
+  //   //   await fireEvent.mouseUp(window)
 
-  //     expect(leftBrushTraveler?.firstChild).toHaveAttribute('x', '390')
-  //     expect(container.querySelectorAll('.recharts-area-dot')).toHaveLength(1)
-  //   })
+  //   //   expect(leftBrushTraveler?.firstChild).toHaveAttribute('x', '390')
+  //   //   expect(container.querySelectorAll('.recharts-area-dot')).toHaveLength(1)
+  //   // })
 
-  //   it('should only show the first data when the brush travelers all moved to the left', async () => {
-  //     const { container } = render(chart)
+  //   // it('should only show the first data when the brush travelers all moved to the left', async () => {
+  //   //   const { container } = render(chart)
 
-  //     const rightBrushTraveler = container.querySelectorAll('.recharts-brush-traveller')[1]
-  //     assertNotNull(rightBrushTraveler)
-  //     await fireEvent.mouseDown(rightBrushTraveler, { clientX: 400, clientY: 0 })
-  //     await fireEvent.mouseMove(window, { clientX: 0, clientY: 0 })
-  //     await fireEvent.mouseUp(window)
+  //   //   const rightBrushTraveler = container.querySelectorAll('.recharts-brush-traveller')[1]
+  //   //   assertNotNull(rightBrushTraveler)
+  //   //   await fireEvent.mouseDown(rightBrushTraveler, { clientX: 400, clientY: 0 })
+  //   //   await fireEvent.mouseMove(window, { clientX: 0, clientY: 0 })
+  //   //   await fireEvent.mouseUp(window)
 
-  //     expect(rightBrushTraveler?.firstChild).toHaveAttribute('x', '65')
-  //     expect(container.querySelectorAll('.recharts-area-dot')).toHaveLength(1)
-  //   })
+  //   //   expect(rightBrushTraveler?.firstChild).toHaveAttribute('x', '65')
+  //   //   expect(container.querySelectorAll('.recharts-area-dot')).toHaveLength(1)
+  //   // })
   // })
 
   // describe('areaChart layout context', () => {

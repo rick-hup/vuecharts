@@ -34,7 +34,7 @@ export const Label = defineComponent({
 
       return (
         <Text
-          class={['recharts-label', props.class]}
+          class={['v-charts-label', props.class]}
           {...attrs}
           {...positionAttrs}
           breakAll={textBreakAll}

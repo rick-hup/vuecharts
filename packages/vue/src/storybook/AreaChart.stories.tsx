@@ -809,27 +809,13 @@ export const CustomizedActiveDot = {
   },
 }
 
-const Comp = defineComponent({
-  setup() {
-    const areaSettings: AreaSettings = {
-      baseValue: undefined,
-      stackId: '1',
-      dataKey: 'uv',
-      connectNulls: false,
-      data: undefined,
-    }
-    useAppSelector(state => selectArea(state, 0, 0, false, areaSettings))
-    useAppSelector(state => selectTicksOfAxis(state, 'xAxis', 0, false))
-    return () => null
-  },
-})
 export const Test = {
   render: (args: Record<string, any>) => {
     const toPercent = (decimal: number, fixed = 0) => `${(decimal * 100).toFixed(fixed)}%`
 
     return (
       <ResponsiveContainer width="100%" height={200}>
-        <AreaChart data={args.data}>
+        <AreaChart width={100} height={50} data={args.data}>
           <Area isAnimationActive={false} type="monotone" dot label dataKey="uv" stroke="#ff7300" fill="#ff7300" />
         </AreaChart>
       </ResponsiveContainer>

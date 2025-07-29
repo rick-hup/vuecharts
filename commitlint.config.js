@@ -18,5 +18,6 @@ export default {
         'revert',
       ],
     ],
+    'header-max-length': [2, 'always', 150],
   },
 } 

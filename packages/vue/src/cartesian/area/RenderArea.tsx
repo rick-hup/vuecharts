@@ -265,7 +265,7 @@ export const RenderArea = defineComponent({
 })
 
 function shouldRenderDots(points: ReadonlyArray<AreaPointItem>, dot: any): boolean {
-  if (points == null) {
+  if (points == null || !points.length) {
     return false
   }
   if (dot) {

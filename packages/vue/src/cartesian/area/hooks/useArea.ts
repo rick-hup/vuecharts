@@ -60,7 +60,7 @@ export function useArea(props: AreaProps, attrs: SVGAttributes = {}) {
   /**
    * is Area animating
    */
-  const isAnimating = ref(true)
+  const isAnimating = ref(props.isAnimationActive)
   /**
    * render only when layout is horizontal or vertical and chartName is AreaChart or ComposedChart
    */
