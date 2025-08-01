@@ -1,7 +1,6 @@
 import { useAppDispatch } from '@/state/hooks'
 import {
   type CartesianGraphicalItemSettings,
-  type PolarGraphicalItemSettings,
   addCartesianGraphicalItem,
   removeCartesianGraphicalItem,
   replaceCartesianGraphicalItem,
@@ -39,15 +38,4 @@ export function SetCartesianGraphicalItem(_props: MaybeRef<SetCartesianGraphical
       preSetting = null
     }
   })
-}
-
-export function SetPolarGraphicalItem(props: PolarGraphicalItemSettings): null {
-  // const dispatch = useAppDispatch()
-  // useEffect(() => {
-  //   dispatch(addPolarGraphicalItem(props))
-  //   return () => {
-  //     dispatch(removePolarGraphicalItem(props))
-  //   }
-  // }, [dispatch, props])
-  return null
 }

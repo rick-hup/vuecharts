@@ -40,8 +40,8 @@ const VerticalStripes = defineComponent({
             width={lineWidth}
             height={height}
             stroke="none"
-            fill={verticalFill[colorIndex]}
-            fillOpacity={fillOpacity}
+            fill={verticalFill[colorIndex] as string}
+            fill-opacity={fillOpacity}
             class="v-charts-cartesian-grid-bg"
           />
         )

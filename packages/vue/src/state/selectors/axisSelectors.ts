@@ -505,7 +505,7 @@ export function combineStackGroups(displayedData: ChartData, items: ReadonlyArra
       return [
         stackId,
         {
-          stackedData: getStackedData(displayedData, dataKeys, stackOffsetType),
+          stackedData: getStackedData(displayedData as any, dataKeys, stackOffsetType),
           graphicalItems,
         },
       ]
@@ -876,12 +876,10 @@ function getD3ScaleFromType(realScaleType: string | undefined) {
     return undefined
   }
   if (realScaleType in d3Scales) {
-    // @ts-expect-error we should do better type verification here
     return d3Scales[realScaleType]()
   }
   const name = `scale${upperFirst(realScaleType)}`
   if (name in d3Scales) {
-    // @ts-expect-error we should do better type verification here
     return d3Scales[name]()
   }
   return undefined

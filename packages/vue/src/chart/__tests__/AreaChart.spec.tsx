@@ -485,8 +485,6 @@ describe('areaChart', () => {
       },
     })
 
-    const [uv, pv] = container.querySelectorAll('.v-charts-area-curve')
-
     expectAreaCurve(container, [
       {
         d: 'M5,5C20,10,35,15,50,15C65,15,80,15,95,15',

@@ -39,14 +39,14 @@ import {
   selectReferenceLines,
 } from './axisSelectors'
 import type { AxisId } from '../cartesianAxisSlice'
-import type { AppliedChartData, ChartData } from '../chartDataSlice'
+import type { AppliedChartData, ChartData, ChartDataState } from '../chartDataSlice'
 import { selectChartDataWithIndexes } from './dataSelectors'
 import type { GraphicalItemSettings } from '../graphicalItemsSlice'
 import type { ReferenceAreaSettings, ReferenceDotSettings, ReferenceLineSettings } from '../referenceElementsSlice'
 import { selectChartName, selectStackOffsetType } from './rootPropsSelectors'
 // import { mathSign } from '../../util/DataUtils'
 import { combineAxisRangeWithReverse } from './combiners/combineAxisRangeWithReverse'
-import type { TooltipEntrySettings, TooltipIndex, TooltipInteractionState, TooltipPayload, TooltipPayloadConfiguration, TooltipPayloadEntry, TooltipSettingsState } from '../tooltipSlice'
+import type { TooltipEntrySettings, TooltipIndex, TooltipInteractionState, TooltipPayload, TooltipPayloadConfiguration, TooltipPayloadEntry, TooltipPayloadSearcher, TooltipSettingsState } from '../tooltipSlice'
 
 import {
   combineTooltipEventType,
@@ -74,6 +74,7 @@ import { isCategoricalAxis } from '@/utils'
 import { findEntryInArray, mathSign } from '@/utils/data'
 import { selectChartLayout } from '@/state/selectors/common'
 import { getTooltipEntry, getValueByDataKey } from '@/utils/chart'
+import type { BaseAxisProps } from '@/cartesian/axis/type'
 
 function getSliced<T>(
   arr: unknown | ReadonlyArray<T>,
@@ -167,9 +168,7 @@ export function combineTooltipPayload(tooltipPayloadConfigurations: ReadonlyArra
           tooltipEntrySettings: settings,
           dataKey: finalDataKey!,
           payload: tooltipPayload,
-          // @ts-expect-error getValueByDataKey does not validate the output type
           value: getValueByDataKey(tooltipPayload, finalDataKey),
-          // @ts-expect-error getValueByDataKey does not validate the output type
           name: getValueByDataKey(tooltipPayload, finalNameKey) ?? settings?.name,
         }),
       )
@@ -223,7 +222,6 @@ const selectTooltipAxisPredicate = createSelector(
   itemAxisPredicate,
 )
 
-// @ts-expect-error
 export const selectAllGraphicalItemsSettings = createSelector(
   [selectAllUnfilteredGraphicalItems, selectTooltipAxis, selectTooltipAxisPredicate],
   combineGraphicalItemsSettings,
@@ -250,7 +248,6 @@ const selectAllTooltipAppliedValues: (state: RechartsRootState) => AppliedChartD
   combineAppliedValues,
 )
 
-// @ts-expect-error
 const selectTooltipAxisDomainDefinition: (state: RechartsRootState) => AxisDomain | undefined = createSelector(
   [selectTooltipAxis],
   getDomainDefinition,
@@ -266,13 +263,11 @@ const selectTooltipDomainOfStackGroups: (state: RechartsRootState) => NumberDoma
   combineDomainOfStackGroups,
 )
 
-// @ts-expect-error
 const selectTooltipItemsSettingsExceptStacked: (state: RechartsRootState) => ReadonlyArray<GraphicalItemSettings>
   = createSelector([selectAllGraphicalItemsSettings], filterGraphicalNotStackedItems)
 
 const selectTooltipAllAppliedNumericalValuesIncludingErrorValues: (
   state: RechartsRootState,
-  // @ts-expect-error
 ) => ReadonlyArray<AppliedChartDataWithErrorDomain> = createSelector(
   [selectTooltipDisplayedData, selectTooltipAxis, selectTooltipItemsSettingsExceptStacked, selectTooltipAxisType],
   combineAppliedNumericalValuesIncludingErrorValues,
@@ -281,7 +276,6 @@ const selectTooltipAllAppliedNumericalValuesIncludingErrorValues: (
 const selectReferenceDotsByTooltipAxis: (state: RechartsRootState) => ReadonlyArray<ReferenceDotSettings> | undefined
   = createSelector([selectReferenceDots, selectTooltipAxisType, selectTooltipAxisId], filterReferenceElements)
 
-// @ts-expect-error
 const selectTooltipReferenceDotsDomain: (state: RechartsRootState) => NumberDomain | undefined = createSelector(
   [selectReferenceDotsByTooltipAxis, selectTooltipAxisType],
   combineDotsDomain,
@@ -294,7 +288,6 @@ const selectReferenceAreasByTooltipAxis: (
   filterReferenceElements,
 )
 
-// @ts-expect-error
 const selectTooltipReferenceAreasDomain: (state: RechartsRootState) => NumberDomain | undefined = createSelector(
   [selectReferenceAreasByTooltipAxis, selectTooltipAxisType],
   combineAreasDomain,
@@ -307,7 +300,6 @@ const selectReferenceLinesByTooltipAxis: (
   filterReferenceElements,
 )
 
-// @ts-expect-error
 const selectTooltipReferenceLinesDomain: (state: RechartsRootState) => NumberDomain | undefined = createSelector(
   [selectReferenceLinesByTooltipAxis, selectTooltipAxisType],
   combineLinesDomain,
@@ -343,7 +335,6 @@ export const selectTooltipAxisDomain: (state: RechartsRootState) => NumberDomain
     combineAxisDomain,
   )
 
-// @ts-expect-error
 const selectTooltipNiceTicks: (state: RechartsRootState) => ReadonlyArray<number> | undefined = createSelector(
   [selectTooltipAxisDomain, selectTooltipAxis, selectTooltipAxisRealScaleType],
   combineNiceTicks,
@@ -462,7 +453,6 @@ const selectTooltipInteractionState: (state: RechartsRootState) => TooltipIntera
   combineTooltipInteractionState,
 )
 
-// @ts-expect-error
 export const selectActiveTooltipIndex: (state: RechartsRootState) => TooltipIndex | null = createSelector(
   [selectTooltipInteractionState, selectTooltipDisplayedData],
   combineActiveTooltipIndex,
@@ -473,7 +463,6 @@ export const selectActiveLabel: (state: RechartsRootState) => string | undefined
   combineActiveLabel,
 )
 
-// @ts-expect-error
 export const selectActiveTooltipDataKey: (state: RechartsRootState) => DataKey<any> | undefined = createSelector(
   [selectTooltipInteractionState],
   (tooltipInteraction: TooltipInteractionState): DataKey<any> | undefined => {
@@ -485,7 +474,6 @@ export const selectActiveTooltipDataKey: (state: RechartsRootState) => DataKey<a
   },
 )
 
-// @ts-expect-error
 const selectTooltipPayloadConfigurations = createSelector(
   [selectTooltipState, selectTooltipEventType, selectTooltipTrigger, selectDefaultIndex],
   combineTooltipPayloadConfigurations,
@@ -505,20 +493,18 @@ const selectTooltipCoordinateForDefaultIndex: (state: RechartsRootState) => Coor
   combineCoordinateForDefaultIndex,
 )
 
-// @ts-expect-error
 export const selectActiveTooltipCoordinate: (state: RechartsRootState) => Coordinate | undefined = createSelector(
   [selectTooltipInteractionState, selectTooltipCoordinateForDefaultIndex],
   (tooltipInteractionState: TooltipInteractionState, defaultIndexCoordinate: Coordinate | undefined): Coordinate | undefined => {
     return tooltipInteractionState.coordinate ?? defaultIndexCoordinate
   },
 )
-
-// @ts-expect-error
 export const selectIsTooltipActive: (state: RechartsRootState) => boolean = createSelector(
   [selectTooltipInteractionState],
   (tooltipInteractionState: TooltipInteractionState) => tooltipInteractionState.active,
 )
 
+// @ts-ignore
 export const selectActiveTooltipPayload: (state: RechartsRootState) => TooltipPayload | undefined = createSelector(
   [
     selectTooltipPayloadConfigurations,

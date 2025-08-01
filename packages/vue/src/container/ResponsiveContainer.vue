@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { type CSSProperties, cloneVNode, computed, onMounted, onUnmounted, ref, toRef, useSlots } from 'vue'
+import type { CSSProperties, VNode } from 'vue'
+import { cloneVNode, computed, defineOptions, defineSlots, onMounted, onUnmounted, ref, toRef, useSlots } from 'vue'
 import { useThrottleFn } from '@vueuse/core'
 import { isPercent } from '../utils/validate'
 import { normalizeStyle } from '@/utils/style'
@@ -36,6 +37,11 @@ const props = withDefaults(defineProps<ResponsiveContainerProps>(), {
   minWidth: 0,
   debounce: 0,
 })
+
+defineSlots<{
+  default: () => VNode
+}>()
+
 const debounce = toRef(props, 'debounce')
 const sizes = ref({
   width: props.initialDimension.width,

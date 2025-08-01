@@ -40,7 +40,6 @@ export const selectTooltipCoordinate: (
     if (positions == null) {
       return undefined
     }
-    // @ts-expect-error tooltipPayloadSearcher is not typed well
     const maybePosition: Coordinate | undefined = tooltipPayloadSearcher(positions, tooltipIndex)
     return maybePosition
   },

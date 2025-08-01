@@ -13,7 +13,6 @@ import type { CartesianViewBoxRequired } from '@/cartesian/type'
 
 export const selectBrushHeight = (state: RechartsRootState) => state.brush.height
 
-// @ts-expect-error createSelector is not typed well
 export const selectChartOffset: (state: RechartsRootState) => ChartOffsetRequired = createSelector(
   [
     selectChartWidth,
@@ -67,7 +66,7 @@ export const selectChartOffset: (state: RechartsRootState) => ChartOffsetRequire
 
     offset.bottom! += brushHeight
 
-    offset = appendOffsetOfLegend(offset, legendSettings, legendSize) as ChartOffsetRequired
+    offset = appendOffsetOfLegend(offset as any, legendSettings, legendSize) as ChartOffsetRequired
 
     const offsetWidth = chartWidth - offset.left! - offset.right!
     const offsetHeight = chartHeight - offset.top! - offset.bottom!

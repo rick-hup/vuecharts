@@ -77,7 +77,6 @@ export function computeFunnelTrapezoids({
         nextVal = 0
       }
 
-      // @ts-expect-error getValueByDataKey does not validate the output type
       const x = ((maxValue - val) * realWidth) / (2 * maxValue) + top + 25 + offsetX
       const y = rowHeight * i + left! + offsetY
       const upperWidth = (val / maxValue) * realWidth

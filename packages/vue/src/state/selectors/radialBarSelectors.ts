@@ -218,13 +218,11 @@ export const selectPolarBarSizeList: (
   radiusAxisId: AxisId,
   angleAxisId: AxisId,
   radialBarSettings: RadialBarSettings,
-  // @ts-expect-error createSelector is not typed well
 ) => SizeList | undefined = createSelector(
   [selectAllVisibleRadialBars, selectRootBarSize, selectPolarBarAxisSize],
   combineBarSizeList,
 )
 
-// @ts-expect-error createSelector is not typed well
 export const selectPolarBarBandSize: (
   state: RechartsRootState,
   radiusAxisId: AxisId,
@@ -262,7 +260,6 @@ export const selectAllPolarBarPositions: (
   radiusAxisId: AxisId,
   angleAxisId: AxisId,
   radialBarSettings: RadialBarSettings,
-  // @ts-expect-error createSelector is not typed well
 ) => ReadonlyArray<BarWithPosition> | undefined = createSelector(
   [
     selectPolarBarSizeList,
@@ -281,7 +278,6 @@ export const selectPolarBarPosition: (
   radiusAxisId: AxisId,
   angleAxisId: AxisId,
   radialBarSettings: RadialBarSettings,
-  // @ts-expect-error createSelector is not typed well
 ) => BarPositionPosition | undefined = createSelector(
   [selectAllPolarBarPositions, selectSynchronisedRadialBarSettings],
   (allBarPositions: ReadonlyArray<BarWithPosition>, barSettings: RadialBarSettings) => {
@@ -302,7 +298,6 @@ const selectStackGroups: (
   state: RechartsRootState,
   axisType: PolarAxisType,
   polarAxisId: AxisId,
-  // @ts-expect-error createSelector is not typed well
 ) => Record<StackId, StackGroup> | undefined = createSelector(
   [selectPolarDisplayedData, selectPolarItemsSettings, selectStackOffsetType],
   combineStackGroups,
@@ -326,7 +321,6 @@ const selectPolarStackedData: (
   radiusAxisId: AxisId,
   angleAxisId: AxisId,
   radialBarSettings: RadialBarSettings,
-  // @ts-expect-error createSelector is not typed well
 ) => Series<Record<number, number>, DataKey<any>> | undefined = createSelector(
   [selectRadialBarStackGroups, selectSynchronisedRadialBarSettings],
   combineStackedData,
@@ -337,6 +331,7 @@ export const selectRadialBarSectors: (
   radiusAxisId: AxisId,
   angleAxisId: AxisId,
   radialBarSettings: RadialBarSettings,
+  // @ts-ignore
 ) => ReadonlyArray<any> | undefined = createSelector(
   [
     selectAngleAxisWithScale,
@@ -408,7 +403,6 @@ export const selectRadialBarSectors: (
   },
 )
 
-// @ts-expect-error createSelector is not typed well
 export const selectRadialBarLegendPayload: (state: RechartsRootState, legendType: LegendType) => Array<LegendPayload> | undefined
   = createSelector(
     [selectChartDataAndAlwaysIgnoreIndexes, (_s: RechartsRootState, l: LegendType) => l],

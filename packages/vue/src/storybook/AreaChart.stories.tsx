@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3'
 import { AreaChart } from '@/chart/AreaChart'
 import { pageData } from '@/storybook/data'
 import { CartesianGrid } from '@/cartesian/cartesian-grid/CartesianGrid'
@@ -6,18 +6,13 @@ import { XAxis, YAxis } from '@/cartesian/axis'
 import { Area, ResponsiveContainer } from '@/index'
 import { Tooltip } from '@/components/Tooltip'
 import { curveCardinal } from 'victory-vendor/d3-shape'
-import { Fragment, defineComponent, markRaw, ref } from 'vue'
+import { Fragment, markRaw, ref } from 'vue'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { Legend } from '@/components/legend'
 import type { LegendContentProps } from '@/components/legend/type'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import type { ActivePointSlotProps } from '@/cartesian/area/ActivePoints'
-import { ActivePointsProps } from '@/cartesian/area/ActivePoints'
-import { useAppSelector } from '@/state/hooks'
-import type { AreaSettings } from '@/state/selectors/areaSelectors'
-import { selectArea } from '@/state/selectors/areaSelectors'
-import { selectTicksOfAxis } from '@/state/selectors/axisSelectors'
 
 const meta = {
   title: 'examples/AreaChart',
@@ -46,7 +41,7 @@ export const Simple: Story = {
       bottom: 0,
     },
   },
-  render: (args: Record<string, any>, context: StoryContext) => {
+  render: (args: Record<string, any>) => {
     return (
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart {...args as any}>
@@ -64,7 +59,7 @@ export const Simple: Story = {
 }
 
 export const StackedAreaChart = {
-  render: (args: Record<string, any>, context: StoryContext) => {
+  render: (args: Record<string, any>) => {
     return (
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart {...args}>
@@ -579,7 +574,7 @@ const rangeData2 = [
 ]
 
 export const RangedAreaChartWithGradient = {
-  render: (args: Record<string, any>) => {
+  render: () => {
     return (
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={rangeData2} width={1000} height={600} margin={{ top: 20, right: 200, bottom: 20, left: 20 }}>
@@ -633,21 +628,21 @@ export const WithChangingDataKeyAndAnimations = {
             }
           }}
         >
-          <label htmlFor="dataKey-uv" style={{ display: 'flex', flexDirection: 'row' }}>
-            <input type="radio" id="dataKey-uv" name="dataKey" value="uv" defaultChecked={currentValue.value === 'uv'} />
+          <label html-for="dataKey-uv" style={{ display: 'flex', flexDirection: 'row' }}>
+            <input type="radio" id="dataKey-uv" name="dataKey" value="uv" default-checked={currentValue.value === 'uv'} />
             dataKey=uv
           </label>
-          <label htmlFor="dataKey-pv" style={{ display: 'flex', flexDirection: 'row' }}>
-            <input type="radio" id="dataKey-pv" name="dataKey" value="pv" defaultChecked={currentValue.value === 'pv'} />
+          <label html-for="dataKey-pv" style={{ display: 'flex', flexDirection: 'row' }}>
+            <input type="radio" id="dataKey-pv" name="dataKey" value="pv" default-checked={currentValue.value === 'pv'} />
             dataKey=pv
           </label>
-          <label htmlFor="dataKey-empty" style={{ display: 'flex', flexDirection: 'row' }}>
+          <label html-for="dataKey-empty" style={{ display: 'flex', flexDirection: 'row' }}>
             <input
               type="radio"
               id="dataKey-empty"
               name="dataKey"
               value="hidden"
-              defaultChecked={currentValue.value === 'hidden'}
+              default-checked={currentValue.value === 'hidden'}
             />
             Hidden
           </label>
@@ -811,8 +806,6 @@ export const CustomizedActiveDot = {
 
 export const Test = {
   render: (args: Record<string, any>) => {
-    const toPercent = (decimal: number, fixed = 0) => `${(decimal * 100).toFixed(fixed)}%`
-
     return (
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart width={100} height={50} data={args.data}>

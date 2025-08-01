@@ -149,7 +149,7 @@ export const CurveVueProps = {
 
 export type CurvePropsWithOutSVG = VuePropsToType<typeof CurveVueProps>
 
-export type CurveProps = WithSVGProps<CurvePropsWithOutSVG, 'type' | 'points'>
+export type CurveProps = WithSVGProps<typeof CurveVueProps>
 export const Curve = defineComponent<CurveProps>({
   name: 'Curve',
   props: CurveVueProps,

@@ -3,9 +3,7 @@ import type { RechartsRootState } from '../store'
 import type { AxisId } from '../cartesianAxisSlice'
 import { selectChartDataWithIndexesIfNotInPanorama } from './dataSelectors'
 import type { ChartData, ChartDataState } from '../chartDataSlice'
-import type {
-  ZAxisWithScale,
-} from './axisSelectors'
+
 import {
   selectAxisWithScale,
   selectTicksOfGraphicalItem,
@@ -96,12 +94,11 @@ export const selectScatterPoints: (
   ],
   (
     { chartData, dataStartIndex, dataEndIndex }: ChartDataState,
-    // @ts-ignore
     xAxis,
     xAxisTicks,
     yAxis,
     yAxisTicks,
-    zAxis: ZAxisWithScale,
+    // zAxis: ZAxisWithScale,
     scatterSettings: ResolvedScatterSettings,
     // cells,
   ): ReadonlyArray<ScatterPointItem> | undefined => {

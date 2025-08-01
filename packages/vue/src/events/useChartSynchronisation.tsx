@@ -20,7 +20,7 @@ function useTooltipSyncEventsListener() {
   const layout = useChartLayout()
   const viewBox = useViewBox()
 
-  const className = useAppSelector(state => state.rootProps.className)
+  const className = useAppSelector(state => state.rootProps.class)
 
   watch([className, myEventEmitter, mySyncId, syncMethod, tooltipTicks, layout, viewBox], (v, o, onCleanup) => {
     if (mySyncId.value == null) {

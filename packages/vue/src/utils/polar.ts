@@ -55,7 +55,7 @@ export function polarToCartesian(cx: number, cy: number, radius: number, angle: 
   }
 }
 
-export function getMaxRadius(width: number, height: number, offset: ChartOffset = {
+export function getMaxRadius(width: number, height: number, offset: Partial<ChartOffset> = {
   top: 0,
   right: 0,
   bottom: 0,

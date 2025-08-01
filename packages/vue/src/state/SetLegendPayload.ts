@@ -20,18 +20,3 @@ export function SetLegendPayload(_legendPayload: MaybeRef<ReadonlyArray<LegendPa
   })
   return null
 }
-
-export function SetPolarLegendPayload({ legendPayload }: { legendPayload: ReadonlyArray<LegendPayload> }): null {
-  // const dispatch = useAppDispatch()
-  // const layout = useAppSelector(selectChartLayout)
-  // useEffect(() => {
-  //   if (layout !== 'centric' && layout !== 'radial') {
-  //     return noop
-  //   }
-  //   dispatch(addLegendPayload(legendPayload))
-  //   return () => {
-  //     dispatch(removeLegendPayload(legendPayload))
-  //   }
-  // }, [dispatch, layout, legendPayload])
-  return null
-}

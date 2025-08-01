@@ -30,9 +30,8 @@ export default defineConfig({
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
       },
-      
     },
-    minify:true,
+    // minify:true,
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library (Vue)

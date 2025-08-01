@@ -117,7 +117,6 @@ export const selectActiveCoordinate: (
   trigger: TooltipTrigger,
   defaultIndex: TooltipIndex | undefined,
   // TODO the state is marked as containing Coordinate but actually in polar charts it contains PolarCoordinate, we should keep the polar state separate
-  // @ts-expect-error
 ) => Coordinate | undefined = createSelector(
   [selectTooltipInteractionState, selectCoordinateForDefaultIndex],
   (tooltipInteractionState: TooltipInteractionState, defaultIndexCoordinate: Coordinate): Coordinate | undefined => {
@@ -137,6 +136,7 @@ export const selectTooltipPayload: (
   tooltipEventType: TooltipEventType,
   trigger: TooltipTrigger,
   defaultIndex: TooltipIndex | undefined,
+  // @ts-expect-error
 ) => TooltipPayload | undefined = createSelector(
   [
     selectTooltipPayloadConfigurations,
@@ -150,7 +150,6 @@ export const selectTooltipPayload: (
   combineTooltipPayload,
 )
 
-// @ts-expect-error
 export const selectIsTooltipActive: (
   state: RechartsRootState,
   tooltipEventType: TooltipEventType,
