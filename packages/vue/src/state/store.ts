@@ -38,6 +38,7 @@ export function createRechartsStore(preloadedState?: Partial<RechartsRootState>,
     reducer: rootReducer,
     // redux-toolkit v1 types are unhappy with the preloadedState type. Remove the `as any` when bumping to v2
     preloadedState: preloadedState as any,
+    // @ts-ignore
     middleware: getDefaultMiddleware =>
       // @ts-ignore
       getDefaultMiddleware({

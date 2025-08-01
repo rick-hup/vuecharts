@@ -1,14 +1,14 @@
-import { defineComponent, computed } from 'vue';
-import { Layer } from '../../../container/Layer';
-import { Traveller } from './Traveller';
-import type { BrushProps } from '../type';
+import { computed, defineComponent } from 'vue'
+import { Layer } from '../../../container/Layer'
+import { Traveller } from './Traveller'
+import type { BrushProps } from '../type'
 
 export const TravellerLayer = defineComponent({
   name: 'TravellerLayer',
   props: {
     id: String,
     travellerX: Number,
-    otherProps: Object as () => BrushProps & { y: number }
+    otherProps: Object as () => BrushProps & { y: number },
   },
   emits: [
     'mouseenter',
@@ -17,32 +17,32 @@ export const TravellerLayer = defineComponent({
     'touchstart',
     'traveller-move-keyboard',
     'focus',
-    'blur'
+    'blur',
   ],
 
   setup(props, { emit }) {
-    const x = computed(() => Math.max(props.travellerX!, props.otherProps.x!));
+    const x = computed(() => Math.max(props.travellerX!, props.otherProps.x!))
     const travellerProps = computed(() => ({
       x: x.value,
       y: props.otherProps.y,
       width: props.otherProps.travellerWidth,
       height: props.otherProps.height,
-      stroke: props.otherProps.stroke
-    }));
+      stroke: props.otherProps.stroke,
+    }))
 
     const ariaLabelBrush = computed(() => {
-      const { ariaLabel, data, startIndex, endIndex } = props.otherProps;
-      return ariaLabel || `Min value: ${data![startIndex!]?.name}, Max value: ${data![endIndex!]?.name}`;
-    });
+      const { ariaLabel, data, startIndex, endIndex } = props.otherProps
+      return ariaLabel || `Min value: ${data![startIndex!]?.name}, Max value: ${data![endIndex!]?.name}`
+    })
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        return;
+        return
       }
-      e.preventDefault();
-      e.stopPropagation();
-      emit('traveller-move-keyboard', e.key === 'ArrowRight' ? 1 : -1, props.id);
-    };
+      e.preventDefault()
+      e.stopPropagation()
+      emit('traveller-move-keyboard', e.key === 'ArrowRight' ? 1 : -1, props.id)
+    }
 
     return () => (
       <Layer
@@ -62,6 +62,6 @@ export const TravellerLayer = defineComponent({
       >
         <Traveller {...travellerProps.value} />
       </Layer>
-    );
-  }
-});
+    )
+  },
+})

@@ -40,8 +40,8 @@ const HorizontalStripes = defineComponent({
             height={lineHeight}
             width={width}
             stroke="none"
-            fill={horizontalFill[colorIndex]}
-            fillOpacity={fillOpacity}
+            fill={horizontalFill[colorIndex] as string}
+            fill-opacity={fillOpacity}
             class="v-charts-cartesian-grid-bg"
           />
         )

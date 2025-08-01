@@ -144,7 +144,7 @@ export const CurveVueProps = {
   points: { type: Array as PropType<ReadonlyArray<Point>> },
   connectNulls: { type: Boolean },
   path: { type: String },
-  class: { type: String },
+  class: { type: [String, Array] },
 }
 
 export type CurvePropsWithOutSVG = VuePropsToType<typeof CurveVueProps>

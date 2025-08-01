@@ -40,7 +40,7 @@ export const selectTooltipCoordinate: (
     if (positions == null) {
       return undefined
     }
-    const maybePosition: Coordinate | undefined = tooltipPayloadSearcher(positions, tooltipIndex)
+    const maybePosition: Coordinate | undefined = tooltipPayloadSearcher?.(positions, tooltipIndex)
     return maybePosition
   },
 )

@@ -10,10 +10,10 @@ const projectRootDir = resolve(__dirname)
 export default defineConfig({
   plugins: [
     vue(),
-    vueJsx(),
+    vueJsx() as any,
     dts({
       cleanVueFileName: true,
-      exclude: ['src/test/**', 'src/**/story/**', 'src/**/*.story.vue'],
+      exclude: ['src/**/__tests__/**', './src/test/*.ts', 'src/storybook/*.ts', 'src/storybook/**/*.ts', 'src/storybook/**/*.tsx', 'src/**/*.story.vue'],
     }),
   ],
   resolve: {

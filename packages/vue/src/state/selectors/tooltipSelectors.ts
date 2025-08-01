@@ -499,6 +499,7 @@ export const selectActiveTooltipCoordinate: (state: RechartsRootState) => Coordi
     return tooltipInteractionState.coordinate ?? defaultIndexCoordinate
   },
 )
+// @ts-ignore
 export const selectIsTooltipActive: (state: RechartsRootState) => boolean = createSelector(
   [selectTooltipInteractionState],
   (tooltipInteractionState: TooltipInteractionState) => tooltipInteractionState.active,

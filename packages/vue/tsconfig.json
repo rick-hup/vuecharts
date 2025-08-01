@@ -1,31 +1,34 @@
 {
   "compilerOptions": {
+    "incremental": true,
     "composite": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "lib": [
-      // Target ES2020 to align with Vite.
-      // <https://vitejs.dev/config/build-options.html#build-target>
-      // Support for newer versions of language built-ins are
-      // left for the users to include, because that would require:
-      //   - either the project doesn't need to support older versions of browsers;
-      //   - or the project has properly included the necessary polyfills.
       "ES2023",
       "DOM",
       "DOM.Iterable"
-      // No `ScriptHost` because Vue 3 dropped support for IE
     ],
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "rootDir": "./src",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./*"]
     },
-    // Set to empty to avoid accidental inclusion of unwanted types
+    "resolveJsonModule": true,
     "types": ["node"],
     "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true,
-    "outDir": "./dist/es"
+    "allowJs": true,
+    "strict": false,
+    "noEmit": true,
+    "outDir": "./dist/es",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
-  "include": ["./src/**/*.vue", "./src/**/*.ts", "./src/**/*.tsx", "./src/**/*.stories.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["./src/**/*.vue", "./src/**/*.ts", "./src/**/*.tsx"],
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -41,6 +41,7 @@ export interface CartesianAxisProps {
   interval?: AxisInterval
   angle?: number
   scale: RechartsScale
+  axisLine?: string
 }
 
 export const CartesianAxis = defineComponent({

@@ -2,11 +2,25 @@ import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 import Vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import dts from 'vite-plugin-dts'
 
 const r = (p: string) => resolve(__dirname, p)
 
 export default defineConfig({
-  plugins: [Vue(), vueJsx()],
+  plugins: [
+    Vue(),
+    vueJsx() as any,
+    dts({
+      cleanVueFileName: true,
+      outDir: 'dist/es',
+      exclude: ['src/test/*.ts', 'src/**/story/**', 'src/**/*.story.tsx'],
+      // afterBuild: async () => {
+      //   // pnpm build:plugins
+      //   execSync('pnpm build:plugins', { stdio: 'inherit', cwd: path.resolve(__dirname, '../plugins') })
+      // },
+    }),
+
+  ],
   resolve: {
     alias: {
       '@': r('./src'),

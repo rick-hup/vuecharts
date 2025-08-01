@@ -26,7 +26,7 @@ const Background = defineComponent({
           height={props.height}
           stroke="none"
           fill={props.fill}
-          fillOpacity={props.fillOpacity}
+          fill-opacity={props.fillOpacity}
           class="v-charts-cartesian-grid-bg"
         />
       )
