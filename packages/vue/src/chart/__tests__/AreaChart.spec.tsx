@@ -9,6 +9,8 @@ import type { AreaSettings } from '@/state/selectors/areaSelectors'
 import { selectArea } from '@/state/selectors/areaSelectors'
 import { selectTicksOfAxis } from '@/state/selectors/axisSelectors'
 import { defineComponent } from 'vue'
+import { useChartHeight, useChartWidth, useViewBox } from '@/context/chartLayoutContext'
+import { useClipPathId } from '@/chart/provideClipPathId'
 
 describe('areaChart', () => {
   beforeEach(() => {
@@ -303,35 +305,35 @@ describe('areaChart', () => {
   //     axisSpy = vi.spyOn(CartesianAxis.prototype, 'render')
   //   })
 
-  //   const chart = {
-  //     components: { AreaChart, Area, Tooltip, XAxis, YAxis, Brush },
-  //     template: `
-  //       <AreaChart :width="400" :height="400" :data="data">
-  //         <Area :isAnimationActive="false" type="monotone" dot label dataKey="uv" />
-  //         <Tooltip />
-  //         <XAxis />
-  //         <YAxis />
-  //         <Brush />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { data }
-  //     },
-  //   }
+  //   // const chart = {
+  //   //   components: { AreaChart, Area, Tooltip, XAxis, YAxis, Brush },
+  //   //   template: `
+  //   //     <AreaChart :width="400" :height="400" :data="data">
+  //   //       <Area :isAnimationActive="false" type="monotone" dot label dataKey="uv" />
+  //   //       <Tooltip />
+  //   //       <XAxis />
+  //   //       <YAxis />
+  //   //       <Brush />
+  //   //     </AreaChart>
+  //   //   `,
+  //   //   setup() {
+  //   //     return { data }
+  //   //   },
+  //   // }
 
-  //   it('should only render Area once when the mouse enters and moves', async () => {
-  //     const { container } = render(chart)
+  //   // it('should only render Area once when the mouse enters and moves', async () => {
+  //   //   const { container } = render(chart)
 
-  //     spies.forEach(el => expect(el.mock.calls.length).toBe(1))
-  //     expect(axisSpy).toHaveBeenCalledTimes(3)
+  //   //   spies.forEach(el => expect(el.mock.calls.length).toBe(1))
+  //   //   expect(axisSpy).toHaveBeenCalledTimes(3)
 
-  //     await fireEvent.mouseEnter(container, { clientX: 30, clientY: 200 })
-  //     await fireEvent.mouseMove(container, { clientX: 200, clientY: 200 })
-  //     await fireEvent.mouseLeave(container)
+  //   //   await fireEvent.mouseEnter(container, { clientX: 30, clientY: 200 })
+  //   //   await fireEvent.mouseMove(container, { clientX: 200, clientY: 200 })
+  //   //   await fireEvent.mouseLeave(container)
 
-  //     spies.forEach(el => expect(el.mock.calls.length).toBe(1))
-  //     expect(axisSpy).toHaveBeenCalledTimes(3)
-  //   })
+  //   //   spies.forEach(el => expect(el.mock.calls.length).toBe(1))
+  //   //   expect(axisSpy).toHaveBeenCalledTimes(3)
+  //   // })
 
   //   // it('should only render Area once when the brush moves but doesn\'t change start/end indices', async () => {
   //   //   const { container } = render(chart)
@@ -377,133 +379,124 @@ describe('areaChart', () => {
   //   // })
   // })
 
-  // describe('areaChart layout context', () => {
-  //   it('should provide viewBox', async () => {
-  //     const spy = vi.fn()
-  //     const Comp = {
-  //       setup() {
-  //         spy(useViewBox())
-  //         return () => null
-  //       },
-  //     }
-  //     render({
-  //       components: { AreaChart, Comp },
-  //       template: `
-  //         <AreaChart :width="100" :height="50" :barSize="20">
-  //           <Comp />
-  //         </AreaChart>
-  //       `,
-  //     })
+  describe('areaChart layout context', () => {
+    it('should provide viewBox', async () => {
+      const spy = vi.fn()
+      const Comp = {
+        setup() {
+          spy(useViewBox().value)
+          return () => null
+        },
+      }
+      render({
+        components: { AreaChart, Comp },
+        template: `
+          <AreaChart :width="100" :height="50" :barSize="20">
+            <Comp />
+          </AreaChart>
+        `,
+      })
 
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenLastCalledWith({ x: 5, y: 5, width: 90, height: 40 })
-  //   })
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenLastCalledWith({ x: 5, y: 5, width: 90, height: 40 })
+    })
 
-  //   it('should provide clipPathId', async () => {
-  //     const spy = vi.fn()
-  //     const Comp = {
-  //       setup() {
-  //         spy(useClipPathId())
-  //         return () => null
-  //       },
-  //     }
-  //     render({
-  //       components: { AreaChart, Comp },
-  //       template: `
-  //         <AreaChart :width="100" :height="50" :barSize="20">
-  //           <Comp />
-  //         </AreaChart>
-  //       `,
-  //     })
+    it('should provide clipPathId', async () => {
+      const spy = vi.fn()
+      const Comp = {
+        setup() {
+          spy(useClipPathId())
+          return () => null
+        },
+      }
+      render({
+        components: { AreaChart, Comp },
+        template: `
+          <AreaChart :width="100" :height="50" :barSize="20">
+            <Comp />
+          </AreaChart>
+        `,
+      })
 
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/recharts\d+-clip/))
-  //   })
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(expect.stringMatching(/v-charts\d+-clip/))
+    })
 
-  //   it('should provide width', async () => {
-  //     const spy = vi.fn()
-  //     const Comp = {
-  //       setup() {
-  //         spy(useChartWidth())
-  //         return () => null
-  //       },
-  //     }
-  //     render({
-  //       components: { AreaChart, Comp },
-  //       template: `
-  //         <AreaChart :width="100" :height="50" :barSize="20">
-  //           <Comp />
-  //         </AreaChart>
-  //       `,
-  //     })
+    it('should provide width', async () => {
+      const spy = vi.fn()
+      const Comp = {
+        setup() {
+          spy(useChartWidth().value)
+          return () => null
+        },
+      }
+      render({
+        components: { AreaChart, Comp },
+        template: `
+          <AreaChart :width="100" :height="50" :barSize="20">
+            <Comp />
+          </AreaChart>
+        `,
+      })
 
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(100)
-  //   })
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(100)
+    })
 
-  //   it('should provide height', async () => {
-  //     const spy = vi.fn()
-  //     const Comp = {
-  //       setup() {
-  //         spy(useChartHeight())
-  //         return () => null
-  //       },
-  //     }
-  //     render({
-  //       components: { AreaChart, Comp },
-  //       template: `
-  //         <AreaChart :width="100" :height="50" :barSize="20">
-  //           <Comp />
-  //         </AreaChart>
-  //       `,
-  //     })
+    it('should provide height', async () => {
+      const spy = vi.fn()
+      const Comp = {
+        setup() {
+          spy(useChartHeight().value)
+          return () => null
+        },
+      }
+      render({
+        components: { AreaChart, Comp },
+        template: `
+          <AreaChart :width="100" :height="50" :barSize="20">
+            <Comp />
+          </AreaChart>
+        `,
+      })
 
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(50)
-  //   })
-  // })
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(50)
+    })
+  })
 
-  // it('renders null points as 0 if stacked and connectNulls is true', async () => {
-  //   const dataWithNullPV = [
-  //     { name: 'Page A', uv: 400, pv: 2400, amt: 2400 },
-  //     { name: 'Page B', uv: 300, amt: 2400 },
-  //     { name: 'Page C', uv: 300, pv: 1398, amt: 2400 },
-  //   ]
-  //   const { container } = render({
-  //     components: { AreaChart, Area },
-  //     template: `
-  //       <AreaChart :width="100" :height="50" :data="dataWithNullPV">
-  //         <Area stackId="1" connectNulls type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
-  //         <Area stackId="1" connectNulls type="monotone" dataKey="pv" stroke="#ff7300" fill="#ff7300" />
-  //         <Area stackId="1" connectNulls type="monotone" dataKey="amt" stroke="#ff7300" fill="#ff7300" />
-  //       </AreaChart>
-  //     `,
-  //     setup() {
-  //       return { dataWithNullPV }
-  //     },
-  //   })
+  it('renders null points as 0 if stacked and connectNulls is true', async () => {
+    const dataWithNullPV = [
+      { name: 'Page A', uv: 400, pv: 2400, amt: 2400 },
+      { name: 'Page B', uv: 300, amt: 2400 },
+      { name: 'Page C', uv: 300, pv: 1398, amt: 2400 },
+    ]
+    const { container } = render({
+      components: { AreaChart, Area },
+      template: `
+        <AreaChart :width="100" :height="50" :data="dataWithNullPV">
+          <Area stackId="1" connectNulls type="monotone" dataKey="uv" stroke="#ff7300" fill="#ff7300" />
+          <Area stackId="1" connectNulls type="monotone" dataKey="pv" stroke="#ff7300" fill="#ff7300" />
+          <Area stackId="1" connectNulls type="monotone" dataKey="amt" stroke="#ff7300" fill="#ff7300" />
+        </AreaChart>
+      `,
+      setup() {
+        return { dataWithNullPV }
+      },
+    })
 
-  //   const [uv, pv] = container.querySelectorAll('.recharts-area-curve')
+    const [uv, pv] = container.querySelectorAll('.v-charts-area-curve')
 
-  //   expectAreaCurve(container, [
-  //     {
-  //       d: 'M5,42.333C20,42.667,35,43,50,43C65,43,80,43,95,43',
-  //     },
-  //     {
-  //       d: 'M5,26.333C20,34.667,35,43,50,43C65,43,80,38.34,95,33.68',
-  //     },
-  //     {
-  //       d: 'M5,10.333C20,18.667,35,27,50,27C65,27,80,22.34,95,17.68',
-  //     },
-  //   ]);
-
-  //   [uv, pv].forEach((path) => {
-  //     const commands = [...path.getAttribute('d').matchAll(/[a-z][\d ,.]+/gi)]
-  //     expect(commands).toHaveLength(3)
-  //     const [pageB] = commands[1]
-  //     expect(pageB[0]).toBe('C')
-  //     const [x, y] = pageB.slice(1).split(',').slice(4)
-  //     expect([x, y]).toEqual(['50', '43'])
-  //   })
-  // })
+    expectAreaCurve(container, [
+      {
+        d: 'M5,5C20,10,35,15,50,15C65,15,80,15,95,15',
+      },
+      {
+        d: 'M5,5C20,22.857,35,40.714,50,40.714C65,40.714,80,30.729,95,20.743',
+      },
+      {
+        d: 'M5,10.333C20,18.667,35,27,50,27C65,27,80,22.34,95,17.68',
+      },
+    ])
+  })
 })

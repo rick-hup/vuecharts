@@ -1,7 +1,7 @@
 import { uniqueId } from '@/utils'
 import type { ExtractPropTypes } from 'vue'
-import type { CategoricalChartProps } from './generateCategoricalChart'
 import { createContext } from '@/utils/createContext'
+import type { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 
 // Create context for clipPathId
 const [useClipPathId, provideClipPathIdRaw] = createContext<string>(
@@ -13,7 +13,7 @@ const [useClipPathId, provideClipPathIdRaw] = createContext<string>(
  * @param props - The props object from the chart component
  */
 export function provideClipPathId(props: ExtractPropTypes<typeof CategoricalChartProps>) {
-  const clipPathId = `${props.id ?? uniqueId('vcharts')}-clip`
+  const clipPathId = `${props.id ?? uniqueId('v-charts')}-clip`
   provideClipPathIdRaw(clipPathId)
   return clipPathId
 }
