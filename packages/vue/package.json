@@ -44,7 +44,6 @@
     "eventemitter3": "^5.0.1",
     "immer": "^10.1.1",
     "lodash-es": "^4.17.21",
-    "pinia": "^3.0.2",
     "victory-vendor": "^37.3.6"
   },
   "devDependencies": {
