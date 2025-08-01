@@ -3,6 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@9.15.0+sha1.8bfdb6d72b4d5fdf87d21d27f2bfbe2b21dd2629",
   "description": "",
   "author": "",
   "license": "MIT",
@@ -12,6 +13,7 @@
     "test": "pnpm --filter vccs test",
     "test:coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6006",
+    "play": "pnpm --filter play dev",
     "build-storybook": "storybook build",
     "prepare": "simple-git-hooks",
     "pub:release": "pnpm --filter vccs pub:release"
