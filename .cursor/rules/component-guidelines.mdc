@@ -1,291 +1,247 @@
-# Component Development Guidelines
+# Vue Component Guidelines
 
-## 1. Component Structure
+## Core Principles
 
-### 1.1 Basic Structure
+1. **Component Architecture**
+   - Use Vue 3 Composition API
+   - Follow TypeScript best practices
+   - Maintain single responsibility principle
+   - Keep components focused and modular
+
+2. **File Structure**
+   ```
+   component/
+   ├── Component.tsx         # Main component (minimal setup)
+   ├── RenderComponent.tsx   # Render logic
+   ├── type.ts              # Types and props definitions
+   ├── utils.ts             # Component-specific utilities
+   ├── components/          # Subcomponents
+   │   └── ...
+   ├── hooks/              # Custom hooks
+   │   └── ...
+   └── __tests__/         # Tests
+       └── Component.spec.ts
+   ```
+
+3. **Component Definition**
+   ```typescript
+   // Component.tsx
+   import type { SVGAttributes, SlotsType } from 'vue'
+   import { defineComponent } from 'vue'
+   import type { ComponentProps, ComponentPropsWithSVG } from './type'
+   import { ComponentVueProps } from './type'
+   import { RenderComponent } from './RenderComponent'
+   import { useComponentProps } from './hooks/useComponentProps'
+
+   export const Component = defineComponent<ComponentPropsWithSVG>({
+     name: 'Component',
+     props: ComponentVueProps,
+     inheritAttrs: false,
+     setup(props: ComponentProps, { attrs, slots }) {
+       const componentProps = useComponentProps(props)
+       return () => (
+         <RenderComponent {...componentProps.value}>
+           {slots.default?.()}
+         </RenderComponent>
+       )
+     }
+   })
+   ```
+
+4. **Props Definition**
+   ```typescript
+   // type.ts
+   import type { PropType } from 'vue'
+   import type { DataKey } from '../../types/common'
+
+   // Base props interface
+   export interface ComponentProps {
+     required: number
+     optional?: string
+     complex?: ComplexType
+   }
+
+   // Vue props definition with validation
+   export const ComponentVueProps = {
+     // Required props
+     required: {
+       type: Number,
+       required: true
+     },
+     // Optional with default
+     optional: {
+       type: String,
+       default: 'default'
+     },
+     // Complex types
+     complex: {
+       type: Object as PropType<ComplexType>,
+       default: () => ({})
+     },
+     // Function props
+     handler: Function as PropType<(data: any) => void>,
+     // Union types
+     dataKey: [String, Function] as PropType<DataKey<any>>
+   }
+
+   // Combined type for SVG elements
+   export type ComponentPropsWithSVG = ComponentProps & SVGAttributes
+   ```
+
+5. **Render Component**
+   ```typescript
+   // RenderComponent.tsx
+   import { defineComponent, computed } from 'vue'
+   import { useComponentState } from './hooks/useComponentState'
+   import { useComponentHandlers } from './hooks/useComponentHandlers'
+
+   export const RenderComponent = defineComponent({
+     name: 'RenderComponent',
+     props: ComponentVueProps,
+     setup(props, { slots }) {
+       const { state } = useComponentState(props)
+       const { handlers } = useComponentHandlers(props)
+
+       // Computed properties
+       const computedValue = computed(() => {
+         // Derived values
+       })
+
+       return () => (
+         // Render logic
+       )
+     }
+   })
+   ```
+
+## Best Practices
+
+1. **Props Management**
+   - Define clear prop interfaces
+   - Use PropType for complex types
+   - Provide sensible defaults
+   - Validate required props
+   - Document prop types and purpose
+
+2. **Component Organization**
+   - Main component should be minimal
+   - Move render logic to RenderComponent
+   - Extract complex logic to hooks
+   - Keep components focused and single-purpose
+
+3. **State Management**
+   - Use composables for state logic
+   - Prefer refs for reactive data
+   - Use computed for derived values
+   - Handle side effects in hooks
+
+4. **Event Handling**
+   - Type event handlers properly
+   - Use emits declaration
+   - Follow Vue event naming conventions
+   - Handle cleanup in onUnmounted
+
+5. **Performance**
+   - Use computed properties
+   - Implement proper memoization
+   - Avoid unnecessary watchers
+   - Consider lazy loading
+
+## Example Implementation
+
 ```typescript
-// ✅ Standard component structure
-export const AreaChart = defineComponent({
-  name: 'AreaChart',
-  props: {...},
-  emits: [...],
-  setup(props, { emit }) {
-    // composables
-    // state
-    // computed
-    // methods
-    // lifecycle
-    // render
-  }
-})
-```
-
-### 1.2 Props Definition
-```typescript
-// ✅ Complete props definition
-props: {
-  data: {
-    type: Array as PropType<DataItem[]>,
-    required: true,
-    validator: (value: DataItem[]) => value.length > 0
-  },
-  width: {
-    type: Number,
-    default: 400
-  },
-  syncId: {
-    type: [String, Number] as PropType<string | number>,
-    default: undefined
-  }
+// hooks/useComponentProps.ts
+export function useComponentProps(props: ComponentProps) {
+  return computed(() => ({
+    ...props,
+    // Derived or transformed props
+  }))
 }
-```
 
-### 1.3 Chart Component Props Pattern
-```typescript
-// ✅ Define props in separate file/section
-export const AreaChartProps = {
-  data: {
-    type: Array as PropType<DataPoint[]>,
-    required: true
-  },
-  stroke: {
-    type: String,
-    default: '#000'
-    }
-} as const
-
-// ✅ Generate interface from props
-export type AreaChartProps = ExtractPropTypes<typeof AreaChartProps>
-
-// ✅ Use in chart generation
-export const AreaChart = generateCategoricalChart({
-  chartName: 'AreaChart',
-  chartProps: AreaChartProps,
-  // other options...
-})
-```
-
-### 1.4 Emits Definition
-```typescript
-// ✅ Type-safe emits
-emits: {
-  'update:active': (value: boolean) => true,
-  'mouseEnter': (e: MouseEvent, data: ChartData) => true
-}
-```
-
-## 2. Composition API Usage
-
-### 2.1 Composables
-```typescript
-// ✅ Recommended composable structure
-function useChartInteraction(props: ChartProps) {
-  // State
-  const isActive = ref(false)
-  
-  // Computed
-  const computedData = computed(() => {...})
-  
-  // Methods
-  function handleMouseMove(e: MouseEvent) {...}
-  
-  // Lifecycle
-  onMounted(() => {...})
-  
-  // Return
-  return {
-    isActive,
-    computedData,
-    handleMouseMove
-  }
-}
-```
-
-### 2.2 Reactivity
-```typescript
-// ✅ Reactivity best practices
-const data = reactive({
-  items: [],
-  loading: false
-})
-
-// ✅ Use ref for simple values
-const count = ref(0)
-
-// ✅ Use computed for derived values
-const total = computed(() => {
-  return data.items.reduce((sum, item) => sum + item.value, 0)
-})
-```
-
-## 3. Rendering Optimization
-
-### 3.1 v-memo Usage
-```typescript
-// ✅ Using v-memo for re-render optimization
-<template>
-  <g v-memo="[data.length, scale]">
-    <path :d="pathD" />
-  </g>
-</template>
-```
-
-### 3.2 Computed Property Caching
-```typescript
-// ✅ Cache complex computations
-const processedData = computed(() => {
-  return heavyDataProcessing(props.data)
-})
-```
-
-## 4. Type Safety
-
-### 4.1 Component Types
-```typescript
-// ✅ Component type definitions
-interface AreaChartProps {
-  data: DataItem[]
-  width?: number
-  height?: number
-  margin?: Partial<Margin>
-}
-
-// ✅ Using types
-const AreaChart = defineComponent<AreaChartProps>({...})
-```
-
-### 4.2 Event Types
-```typescript
-// ✅ Event handler types
-interface ChartEventHandlers {
-  onMouseMove?: (e: MouseEvent, data: ChartData) => void
-  onMouseLeave?: (e: MouseEvent) => void
-}
-```
-
-## 5. Lifecycle Management
-
-### 5.1 Resource Cleanup
-```typescript
-// ✅ Proper resource cleanup
-onMounted(() => {
-  window.addEventListener('resize', handleResize)
-  
-  onUnmounted(() => {
-    window.removeEventListener('resize', handleResize)
+// hooks/useComponentState.ts
+export function useComponentState(props: ComponentProps) {
+  const state = ref({
+    // Component state
   })
-})
-```
 
-### 5.2 Async Handling
-```typescript
-// ✅ Async operation handling
-const loading = ref(false)
+  onMounted(() => {
+    // Setup
+  })
 
-async function loadData() {
-  loading.value = true
-  try {
-    const data = await fetchData()
-    // Process data
-  } catch (error) {
-    // Handle error
-  } finally {
-    loading.value = false
-  }
+  onUnmounted(() => {
+    // Cleanup
+  })
+
+  return { state }
 }
-```
 
-## 6. Component Communication
-
-### 6.1 Props/Emits
-```typescript
-// ✅ Two-way binding
-const props = defineProps<{
-  modelValue: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
-```
-
-### 6.2 Provide/Inject
-```typescript
-// ✅ Type-safe provide/inject
-const ChartKey = Symbol() as InjectionKey<ChartContext>
-
-// Provider component
-provide(ChartKey, {
-  width,
-  height,
-  scale
-})
-
-// Consumer component
-const chart = inject(ChartKey)
-```
-
-## 7. Error Handling
-
-### 7.1 Props Validation
-```typescript
-// ✅ Complete validation
-props: {
-  data: {
-    type: Array as PropType<DataItem[]>,
-    required: true,
-    validator: (value: DataItem[]) => {
-      if (!Array.isArray(value)) return false
-      if (value.length === 0) {
-        console.warn('Data array should not be empty')
-        return false
-      }
-      return value.every(item => 'value' in item)
+// hooks/useComponentHandlers.ts
+export function useComponentHandlers(props: ComponentProps) {
+  const handlers = {
+    handleEvent: (e: Event) => {
+      // Event handling
     }
   }
+
+  return { handlers }
 }
 ```
 
-### 7.2 Error Boundaries
-```typescript
-// ✅ Error handling
-setup(props) {
-  const error = ref<Error | null>(null)
-  
-  try {
-    // Component logic
-  } catch (e) {
-    error.value = e as Error
-    // Error UI rendering
-  }
-}
-```
+## Testing Guidelines
 
-## 8. Performance Optimization
+1. **Unit Tests**
+   ```typescript
+   describe('Component', () => {
+     it('renders correctly', () => {
+       const wrapper = mount(Component, {
+         props: {
+           required: 1
+         }
+       })
+       expect(wrapper.html()).toMatchSnapshot()
+     })
 
-### 8.1 Large List Rendering
-```typescript
-// ✅ Virtual scrolling
-import { useVirtualList } from '@vueuse/core'
+     it('validates props', () => {
+       const warn = vi.spyOn(console, 'warn')
+       mount(Component, {
+         props: {
+           required: 'invalid'
+         }
+       })
+       expect(warn).toHaveBeenCalled()
+     })
+   })
+   ```
 
-const { list, containerProps, wrapperProps } = useVirtualList(
-  data,
-  {
-    itemHeight: 40,
-    overscan: 10
-  }
-)
-```
+2. **Integration Tests**
+   - Test component interactions
+   - Test with parent components
+   - Test store integration
+   - Test event handling
 
-### 8.2 Re-render Optimization
-```typescript
-// ✅ Avoid unnecessary re-renders
-const chartData = shallowRef(data)
+## Documentation
 
-// ✅ Use toRef to maintain reactivity
-const { width } = toRefs(props)
-```
+1. **Component Documentation**
+   ```typescript
+   /**
+    * Component description
+    * @component
+    *
+    * @example
+    * <Component
+    *   required={1}
+    *   optional="value"
+    * />
+    */
+   ```
 
-// ✅ Use toRef to maintain reactivity
-const { width } = toRefs(props)
-```
+2. **Props Documentation**
+   ```typescript
+   export interface ComponentProps {
+     /** Description of required prop */
+     required: number
+     /** Description of optional prop */
+     optional?: string
+   }
+   ```
+
