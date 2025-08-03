@@ -102,7 +102,7 @@ export const RechartsWrapper = defineComponent({
     return () => (
       <div
         class={['v-charts-wrapper', props.class]}
-        style={{ position: 'relative', cursor: 'default', width: props.width, height: props.height, ...props.style }}
+        style={{ position: 'relative', cursor: 'default', width: `${props.width}px`, height: `${props.height}px`, ...props.style }}
         role="application"
         onClick={myOnClick}
         onContextmenu={myOnContextMenu}

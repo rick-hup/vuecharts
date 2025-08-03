@@ -2,12 +2,12 @@ import type { SVGAttributes, SlotsType } from 'vue'
 import { Fragment, defineComponent } from 'vue'
 import type { AreaProps, AreaPropsWithSVG } from './type'
 import { AreaVueProps } from './type'
-import { useSetupData } from '@/cartesian/area/hooks/useSetupData'
 import { useArea } from '@/cartesian/area/hooks/useArea'
 import { Layer } from '@/container/Layer'
 import { RenderArea } from '@/cartesian/area/RenderArea'
 import { ActivePoints } from '@/cartesian/area/ActivePoints'
 import type { ActivePointsSlots } from './ActivePoints'
+import { useSetupGraphicalItem } from '@/hooks/useSetupGraphicalItem'
 
 export const Area = defineComponent<AreaPropsWithSVG>({
   name: 'Area',
@@ -15,7 +15,7 @@ export const Area = defineComponent<AreaPropsWithSVG>({
   inheritAttrs: false,
   slots: Object as SlotsType<ActivePointsSlots>,
   setup(props: AreaProps, { attrs, slots }: { attrs: SVGAttributes, slots: ActivePointsSlots }) {
-    useSetupData(props)
+    useSetupGraphicalItem(props, 'area')
     const { shouldRender, areaData } = useArea(props, attrs)
 
     return () => {

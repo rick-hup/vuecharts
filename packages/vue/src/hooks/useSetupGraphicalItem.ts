@@ -1,6 +1,7 @@
 import type { AreaProps, AreaPropsWithSVG } from '@/cartesian/area/type'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
+import type { CartesianGraphicalItemType } from '@/state/graphicalItemsSlice'
 import { SetCartesianGraphicalItem } from '@/state/SetGraphicalItem'
 import { SetLegendPayload } from '@/state/SetLegendPayload'
 import { SetTooltipEntrySettings } from '@/state/SetTooltipEntrySettings'
@@ -12,7 +13,7 @@ function getLegendItemColor(stroke: string | undefined, fill: string): string {
   return stroke && stroke !== 'none' ? stroke : fill
 }
 
-export function useSetupData(props: AreaProps) {
+export function useSetupGraphicalItem(props: AreaProps, type: CartesianGraphicalItemType) {
   const attrs = useAttrs() as SVGAttributes
   const isPanorama = useIsPanorama()
   const legendPayload = computed(() => {
@@ -33,12 +34,12 @@ export function useSetupData(props: AreaProps) {
     return {
       ...props,
       isPanorama,
-      type: 'area',
+      type,
     }
   }))
 
   SetLegendPayload(legendPayload)
-  SetTooltipEntrySettings({ fn: getTooltipEntrySettings, args: computed(() => ({
+  SetTooltipEntrySettings({ fn: getTooltipEntrySettings as any, args: computed(() => ({
     ...props,
     ...attrs,
   } as AreaPropsWithSVG)) })

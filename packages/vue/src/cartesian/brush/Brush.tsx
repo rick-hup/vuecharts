@@ -20,7 +20,7 @@ export const Brush = defineComponent<BrushPropsWithSVG>({
 
     const state = reactive({
       isTravellerMoving: false,
-      isSlideMoving: false,
+    isSlideMoving: false,
     })
     let leaveTimer: number | null = null
     const handleDragEnd = async () => {
@@ -52,21 +52,21 @@ export const Brush = defineComponent<BrushPropsWithSVG>({
     }
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.changedTouches != null && e.changedTouches.length > 0) {
+    if (e.changedTouches != null && e.changedTouches.length > 0) {
         handleDrag(e.changedTouches[0])
       }
     }
 
     return () => {
-      return (
-        <Layer
+    return (
+      <Layer
           class={['v-charts-brush', props.class]}
           style={{ userSelect: 'none', ...attrs.style as CSSProperties }}
           onMouseleave={handleLeaveWrapper}
           onTouchmove={handleTouchMove}
         >
           1
-        </Layer>
+      </Layer>
       )
     }
   },

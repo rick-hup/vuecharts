@@ -1,11 +1,26 @@
 <script setup lang="ts">
 import type { CSSProperties, VNode } from 'vue'
-import { cloneVNode, computed, defineOptions, defineSlots, onMounted, onUnmounted, ref, toRef, useSlots } from 'vue'
+import { cloneVNode, computed, defineOptions, defineSlots, onMounted, onUnmounted, ref, toRef } from 'vue'
 import { useThrottleFn } from '@vueuse/core'
 import { isPercent } from '../utils/validate'
 import { normalizeStyle } from '@/utils/style'
 import { warn } from '@/utils/log'
 import { provideSizeContext } from '@/container/useSizeContext'
+
+defineOptions({
+  name: 'ResponsiveContainer',
+  inheritAttrs: false,
+})
+const props = withDefaults(defineProps<ResponsiveContainerProps>(), {
+  initialDimension: () => ({ width: -1, height: -1 }),
+  width: '100%',
+  height: '100%',
+  minWidth: 0,
+  debounce: 0,
+})
+const slots = defineSlots<{
+  default: () => VNode[]
+}>()
 
 export interface ResponsiveContainerProps {
   aspect?: number
@@ -24,24 +39,6 @@ export interface ResponsiveContainerProps {
   style?: Omit<CSSProperties, keyof ResponsiveContainerProps>
   onResize?: (width: number, height: number) => void
 }
-
-defineOptions({
-  name: 'ResponsiveContainer',
-  inheritAttrs: false,
-})
-
-const props = withDefaults(defineProps<ResponsiveContainerProps>(), {
-  initialDimension: () => ({ width: -1, height: -1 }),
-  width: '100%',
-  height: '100%',
-  minWidth: 0,
-  debounce: 0,
-})
-
-defineSlots<{
-  default: () => VNode
-}>()
-
 const debounce = toRef(props, 'debounce')
 const sizes = ref({
   width: props.initialDimension.width,
@@ -126,7 +123,6 @@ onUnmounted(() => {
   observer?.disconnect()
 })
 
-const slots = useSlots()
 const clonedChildren = computed(() => {
   const { width: containerWidth, height: containerHeight } = sizes.value
 
