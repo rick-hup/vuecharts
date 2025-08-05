@@ -9,3 +9,5 @@ node_modules
 project_config.md
 
 dist
+
+.env

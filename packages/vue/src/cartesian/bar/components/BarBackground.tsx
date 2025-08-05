@@ -4,31 +4,32 @@ import type { BarProps, BarRectangleItem } from '../type'
 import { useAppSelector } from '@/state/hooks'
 import { selectActiveTooltipIndex } from '@/state/selectors/tooltipSelectors'
 import { Layer } from '@/container/Layer'
+import { BarRectangle } from '@/shape/BarRectangle'
+import { useBarContext } from '../hooks/useBar'
+import { useAppDispatch } from '@/state/hooks'
+import { selectBar } from '@/state/selectors/barSelectors'
 
 export const BarBackground = defineComponent({
   name: 'BarBackground',
   inheritAttrs: false,
-  props: {
-    data: {
-      type: Array as PropType<ReadonlyArray<BarRectangleItem>>,
-      required: true,
-    },
-    dataKey: {
-      type: [String, Number, Function],
-      required: true,
-    },
-    background: {
-      type: [Function, Object],
-      default: undefined,
-    },
-  },
 
-  setup(props, { attrs }) {
+  setup(_, { attrs }) {
     const activeIndex = useAppSelector(selectActiveTooltipIndex)
+    const { props } = useBarContext()
+
+    // Get bar data from Redux
+    const barData = useAppSelector(state => selectBar(state, props.xAxisId!, props.yAxisId!, false, {
+      barSize: props.barSize,
+      data: props.data,
+      dataKey: props.dataKey,
+      maxBarSize: props.maxBarSize,
+      minPointSize: props.minPointSize,
+      stackId: props.stackId,
+    }))
 
     return () => {
-      const { data, background: backgroundFromProps } = props
-      const allOtherProps = attrs as unknown as BarProps
+      const data = barData.value?.rectangles
+      const backgroundFromProps = props.background
 
       if (!backgroundFromProps || !data) {
         return null
@@ -43,29 +44,16 @@ export const BarBackground = defineComponent({
               return null
             }
 
-            // const onMouseEnter = onMouseEnterFromContext(entry, i)
-            // const onMouseLeave = onMouseLeaveFromContext(entry, i)
-            // const onClick = onClickFromContext(entry, i)
-
             const barRectangleProps = {
               option: backgroundFromProps,
-              // isActive: String(i) === activeIndex,
               ...rest,
               fill: '#eee',
               ...backgroundFromDataEntry,
-              // ...backgroundProps,
-              // ...adaptEventsOfChild(allOtherProps, entry, i),
-              // onMouseEnter,
-              // onMouseLeave,
-              // onClick,
-              // dataKey: props.dataKey,
-              // index: i,
-              // class: 'recharts-bar-background-rectangle',
             }
 
             return (
               <Layer key={`background-bar-${i}`}>
-                {/* <BarRectangle {...barRectangleProps} /> */}
+                <BarRectangle {...barRectangleProps} />
               </Layer>
             )
           })}

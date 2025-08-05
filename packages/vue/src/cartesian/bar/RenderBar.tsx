@@ -16,7 +16,8 @@ export const RenderBar = defineComponent({
       const layerClass = ['recharts-bar', attrs.class]
       return (
         <Layer class={layerClass}>
-          1
+          {props.background && <BarBackground />}
+          <BarRectangles />
         </Layer>
       )
     }

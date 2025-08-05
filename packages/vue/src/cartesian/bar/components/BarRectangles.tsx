@@ -1,42 +1,48 @@
-import { defineComponent, ref, watch } from 'vue'
 import type { PropType } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import type { BarProps, BarRectangleItem } from '../type'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
-  selectActiveTooltipIndex,
   selectActiveTooltipDataKey,
+  selectActiveTooltipIndex,
 } from '@/state/selectors/tooltipSelectors'
-import { filterProps } from '@/utils/ReactUtils'
+import { filterProps } from '@/utils/VueUtils'
 import { Layer } from '@/container/Layer'
-import { BarRectangle } from '@/util/BarUtils'
-import { LabelList } from '@/component/LabelList'
+import { BarRectangle } from '@/shape/BarRectangle'
+import { LabelList } from '@/components/LabelList'
 import {
+  useMouseClickItemDispatch,
   useMouseEnterItemDispatch,
   useMouseLeaveItemDispatch,
-  useMouseClickItemDispatch,
 } from '@/context/tooltipContext'
 import { adaptEventsOfChild } from '@/utils/types'
 import { Animate } from '@/animation/Animate'
 import { interpolateNumber } from '@/utils/DataUtils'
+import { useBarContext } from '../hooks/useBar'
+import { selectBar } from '@/state/selectors/barSelectors'
 
 export const BarRectangles = defineComponent({
   name: 'BarRectangles',
   inheritAttrs: false,
 
-  props: {
-    data: {
-      type: Array as PropType<ReadonlyArray<BarRectangleItem>>,
-      required: true,
-    },
-  },
-
-  setup(props, { attrs }) {
+  setup(_, { attrs }) {
     const activeIndex = useAppSelector(selectActiveTooltipIndex)
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)
     const previousRectangles = ref<ReadonlyArray<BarRectangleItem> | null>(null)
     const isAnimating = ref(false)
 
-    const allProps = attrs as unknown as BarProps
+    const { props } = useBarContext()
+
+    // Get bar data from Redux
+    const barData = useAppSelector(state => selectBar(state, props.xAxisId!, props.yAxisId!, false, {
+      barSize: props.barSize,
+      data: props.data,
+      dataKey: props.dataKey,
+      maxBarSize: props.maxBarSize,
+      minPointSize: props.minPointSize,
+      stackId: props.stackId,
+    }))
+
     const {
       shape,
       dataKey,
@@ -47,16 +53,16 @@ export const BarRectangles = defineComponent({
       animationEasing,
       onAnimationStart,
       onAnimationEnd,
-    } = allProps
+    } = props
 
     const onMouseEnterFromContext = useMouseEnterItemDispatch(attrs.onMouseEnter as any, dataKey)
     const onMouseLeaveFromContext = useMouseLeaveItemDispatch(attrs.onMouseLeave as any)
     const onClickFromContext = useMouseClickItemDispatch(attrs.onClick as any, dataKey)
 
-    const baseProps = filterProps(allProps, false)
+    const baseProps = filterProps(props, false)
 
     watch(
-      () => props.data,
+      () => barData.value?.rectangles,
       (newData) => {
         if (newData && newData !== previousRectangles.value) {
           previousRectangles.value = newData
@@ -64,12 +70,14 @@ export const BarRectangles = defineComponent({
       },
     )
 
-    const renderRectangles = (data: ReadonlyArray<BarRectangleItem>, showLabels: boolean) => {
+    const renderRectangles = (data: ReadonlyArray<BarRectangleItem> | undefined, showLabels: boolean) => {
+      if (!data)
+        return null
       return (
         <>
           {data.map((entry: BarRectangleItem, i: number) => {
-            const isActive =
-              activeBar && String(i) === activeIndex && (activeDataKey == null || dataKey === activeDataKey)
+            const isActive
+              = activeBar && String(i) === activeIndex && (activeDataKey == null || dataKey === activeDataKey)
             const option = isActive ? activeBar : shape
 
             const barRectangleProps = {
@@ -85,7 +93,7 @@ export const BarRectangles = defineComponent({
               <Layer
                 key={`rectangle-${entry?.x}-${entry?.y}-${entry?.value}-${i}`}
                 class="recharts-bar-rectangle"
-                {...adaptEventsOfChild(allProps, entry, i)}
+                {...adaptEventsOfChild(props, entry, i)}
                 onMouseEnter={onMouseEnterFromContext(entry, i)}
                 onMouseLeave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
@@ -94,21 +102,22 @@ export const BarRectangles = defineComponent({
               </Layer>
             )
           })}
-          {showLabels && LabelList.renderCallByParent(allProps, data)}
+          {showLabels && <LabelList data={data} dataKey={dataKey} />}
         </>
       )
     }
 
     return () => {
-      if (!props.data) {
+      const data = barData.value?.rectangles
+      if (!data) {
         return null
       }
 
       if (
-        isAnimationActive &&
-        props.data &&
-        props.data.length &&
-        (previousRectangles.value == null || previousRectangles.value !== props.data)
+        isAnimationActive
+        && data
+        && data.length
+        && (previousRectangles.value == null || previousRectangles.value !== data)
       ) {
         return (
           <Animate
@@ -134,41 +143,41 @@ export const BarRectangles = defineComponent({
             {{
               default: ({ t }: { t: number }) => {
                 const stepData = t === 1
-                  ? props.data
-                  : props.data.map((entry, index) => {
-                    const prev = previousRectangles.value?.[index]
+                  ? data
+                  : data.map((entry, index) => {
+                      const prev = previousRectangles.value?.[index]
 
-                    if (prev) {
-                      const interpolatorX = interpolateNumber(prev.x, entry.x)
-                      const interpolatorY = interpolateNumber(prev.y, entry.y)
-                      const interpolatorWidth = interpolateNumber(prev.width, entry.width)
-                      const interpolatorHeight = interpolateNumber(prev.height, entry.height)
+                      if (prev) {
+                        const interpolatorX = interpolateNumber(prev.x!, entry.x!)
+                        const interpolatorY = interpolateNumber(prev.y!, entry.y!)
+                        const interpolatorWidth = interpolateNumber(prev.width, entry.width)
+                        const interpolatorHeight = interpolateNumber(prev.height, entry.height)
 
-                      return {
-                        ...entry,
-                        x: interpolatorX(t),
-                        y: interpolatorY(t),
-                        width: interpolatorWidth(t),
-                        height: interpolatorHeight(t),
+                        return {
+                          ...entry,
+                          x: interpolatorX(t),
+                          y: interpolatorY(t),
+                          width: interpolatorWidth(t),
+                          height: interpolatorHeight(t),
+                        }
                       }
-                    }
 
-                    if (allProps.layout === 'horizontal') {
-                      const interpolatorHeight = interpolateNumber(0, entry.height)
-                      const h = interpolatorHeight(t)
+                      if (props.layout === 'horizontal') {
+                        const interpolatorHeight = interpolateNumber(0, entry.height)
+                        const h = interpolatorHeight(t)
 
-                      return {
-                        ...entry,
-                        y: entry.y + entry.height - h,
-                        height: h,
+                        return {
+                          ...entry,
+                          y: entry.y! + entry.height - h,
+                          height: h,
+                        }
                       }
-                    }
 
-                    const interpolator = interpolateNumber(0, entry.width)
-                    const w = interpolator(t)
+                      const interpolator = interpolateNumber(0, entry.width)
+                      const w = interpolator(t)
 
-                    return { ...entry, width: w }
-                  })
+                      return { ...entry, width: w }
+                    })
 
                 return (
                   <Layer>
@@ -181,7 +190,7 @@ export const BarRectangles = defineComponent({
         )
       }
 
-      return renderRectangles(props.data, true)
+      return renderRectangles(data, true)
     }
   },
 })
