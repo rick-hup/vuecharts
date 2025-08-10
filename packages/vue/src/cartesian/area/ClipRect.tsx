@@ -1,10 +1,10 @@
 import type { Point } from '@/shape'
 import type { PropType } from 'vue'
 import { defineComponent, ref, watch } from 'vue'
-import { animate, useDomRef } from 'motion-v'
 import { isNumber, isWellBehavedNumber } from '@/utils'
 import { AreaVueProps } from '@/cartesian/area/type'
 import { useAreaContext } from '@/cartesian/area/hooks/useArea'
+import { Animate } from '@/animation/Animate'
 
 const HorizontalRect = defineComponent({
   name: 'HorizontalRect',
@@ -109,36 +109,46 @@ export const ClipRect = defineComponent({
   },
   setup(_props) {
     const { points, props, areaData, layout } = useAreaContext()
-    let isAnimate = false
-    const alpha = ref(0)
-    const domRef = useDomRef()
-    watch([points, domRef], (newPoints) => {
-      if (!domRef.value)
-        return
-      if (newPoints.length && !isAnimate) {
-        isAnimate = true
-        animate({ x: 0 }, { x: 1 }, {
-          ...props.transition,
-          onUpdate(latest) {
-            alpha.value = latest
-          },
-          onComplete() {
-            _props.onAnimationEnd?.()
-          },
-          onPlay() {
-            props.onAnimationStart?.()
-          },
-        })
+    const isAnimationActive = ref(false)
+
+    watch(points, (newPoints) => {
+      if (newPoints && newPoints.length > 0 && !isAnimationActive.value) {
+        isAnimationActive.value = true
       }
     }, {
       immediate: true,
     })
+
+    const handleAnimationComplete = () => {
+      _props.onAnimationEnd?.()
+    }
+
+    const handleAnimationStart = () => {
+      props.onAnimationStart?.()
+    }
+
     return () => {
       const baseLine = areaData.value?.baseLine
-      if (layout.value === 'horizontal') {
-        return <HorizontalRect ref={domRef} alpha={alpha.value} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />
+
+      if (!points.value || points.value.length === 0) {
+        return null
       }
-      return <VerticalRect ref={domRef} alpha={alpha.value} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />
+
+      return (
+        <Animate
+          isActive={isAnimationActive.value}
+          transition={props.transition}
+          onAnimationStart={handleAnimationStart}
+          onAnimationEnd={handleAnimationComplete}
+        >
+          {(t) => {
+            if (layout.value === 'horizontal') {
+              return <HorizontalRect alpha={t} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />
+            }
+            return <VerticalRect alpha={t} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />
+          }}
+        </Animate>
+      )
     }
   },
 })

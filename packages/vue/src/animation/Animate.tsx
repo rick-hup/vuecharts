@@ -1,5 +1,5 @@
 import type { PropType } from 'vue'
-import { defineComponent } from 'vue'
+import { defineComponent, onUnmounted, ref, watch } from 'vue'
 import { animate } from 'motion-v'
 import type { AnimationOptions } from 'motion-v'
 
@@ -29,20 +29,25 @@ const Animate = defineComponent({
       type: Function as PropType<() => void>,
       default: undefined,
     },
+    // 动画更新回调
+    onUpdate: {
+      type: Function as PropType<(latest: any) => void>,
+      default: undefined,
+    },
     // 动画开始值
     from: {
-      type: Object as PropType<Record<string, any>>,
-      default: () => ({ t: 0 }),
+      type: Number,
+      default: 0,
     },
     // 动画结束值
     to: {
-      type: Object as PropType<Record<string, any>>,
-      default: () => ({ t: 1 }),
+      type: Number,
+      default: 1,
     },
   },
-  emits: ['update', 'complete', 'start'],
-  setup(props, { emit, slots }) {
+  setup(props, { slots }) {
     let animationControls: any = null
+    const currentValue = ref(0)
 
     // 开始动画
     const startAnimation = () => {
@@ -50,7 +55,6 @@ const Animate = defineComponent({
         animationControls.stop()
       }
 
-      emit('start')
       if (props.onAnimationStart) {
         props.onAnimationStart()
       }
@@ -58,13 +62,13 @@ const Animate = defineComponent({
       animationControls = animate(props.from, props.to, {
         ...props.transition,
         onUpdate: (latest) => {
-          emit('update', latest)
-          if (slots.default) {
-            slots.default(latest)
+          currentValue.value = latest
+          if (props.onUpdate) {
+            props.onUpdate(latest)
           }
         },
         onComplete: () => {
-          emit('complete')
+          currentValue.value = 1
           if (props.onAnimationEnd) {
             props.onAnimationEnd()
           }
@@ -81,22 +85,27 @@ const Animate = defineComponent({
     }
 
     // 监听isActive变化
-    if (props.isActive) {
-      startAnimation()
-    }
+    watch(() => props.isActive, (isActive) => {
+      if (isActive) {
+        startAnimation()
+      }
+      else {
+        stopAnimation()
+        currentValue.value = props.to
+      }
+    }, { immediate: true })
+
+    onUnmounted(() => {
+      stopAnimation()
+    })
 
     return () => {
       if (!slots.default) {
         return null
       }
 
-      // 初始渲染时直接使用结束值
-      if (!props.isActive) {
-        return slots.default(props.to)
-      }
-
-      // 动画过程中返回null，让animate函数处理渲染
-      return null
+      // 始终传递当前动画值
+      return slots.default(currentValue.value)
     }
   },
 })
