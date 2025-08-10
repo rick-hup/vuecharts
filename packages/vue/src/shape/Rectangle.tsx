@@ -26,7 +26,7 @@ export const Rectangle = defineComponent<RectanglePropsWithSVG>({
     return () => {
       const { x, y, width, height, radius } = props
       const filteredProps = filterProps(props, false)
-      
+
       // Simple rectangle without rounded corners
       if (!radius) {
         return (
@@ -40,22 +40,23 @@ export const Rectangle = defineComponent<RectanglePropsWithSVG>({
           />
         )
       }
-      
+
       // Rectangle with rounded corners
       // For simplicity, we'll implement basic rounded corners
       // In a full implementation, you'd handle all 4 corners separately
       let rx = 0
       let ry = 0
-      
+
       if (typeof radius === 'number') {
         rx = radius
         ry = radius
-      } else if (Array.isArray(radius)) {
+      }
+      else if (Array.isArray(radius)) {
         // Use the first value for simplicity
         rx = radius[0] || 0
         ry = radius[0] || 0
       }
-      
+
       return (
         <rect
           {...filteredProps}
