@@ -2,7 +2,6 @@ import type { Point } from '@/shape'
 import type { PropType } from 'vue'
 import { defineComponent, ref, watch } from 'vue'
 import { isNumber, isWellBehavedNumber } from '@/utils'
-import { AreaVueProps } from '@/cartesian/area/type'
 import { useAreaContext } from '@/cartesian/area/hooks/useArea'
 import { Animate } from '@/animation/Animate'
 
@@ -104,10 +103,7 @@ const VerticalRect = defineComponent({
 })
 export const ClipRect = defineComponent({
   name: 'ClipRect',
-  props: {
-    onAnimationEnd: AreaVueProps.onAnimationEnd,
-  },
-  setup(_props) {
+  setup() {
     const { points, props, areaData, layout } = useAreaContext()
     const isAnimationActive = ref(false)
 
@@ -118,14 +114,6 @@ export const ClipRect = defineComponent({
     }, {
       immediate: true,
     })
-
-    const handleAnimationComplete = () => {
-      _props.onAnimationEnd?.()
-    }
-
-    const handleAnimationStart = () => {
-      props.onAnimationStart?.()
-    }
 
     return () => {
       const baseLine = areaData.value?.baseLine
@@ -138,8 +126,8 @@ export const ClipRect = defineComponent({
         <Animate
           isActive={isAnimationActive.value}
           transition={props.transition}
-          onAnimationStart={handleAnimationStart}
-          onAnimationEnd={handleAnimationComplete}
+          onAnimationStart={props.onAnimationStart}
+          onAnimationEnd={props.onAnimationEnd}
         >
           {(t) => {
             if (layout.value === 'horizontal') {
