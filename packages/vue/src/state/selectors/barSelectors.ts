@@ -417,7 +417,6 @@ export const selectBarRectangles = createSelector(
     selectAxisBandSize,
     selectStackedDataOfItem,
     selectSynchronisedBarSettings,
-    pickCells,
   ],
   (
     offset,
@@ -431,7 +430,6 @@ export const selectBarRectangles = createSelector(
     bandSize,
     stackedData,
     barSettings: BarSettings | undefined,
-    // cells,
   ): ReadonlyArray<BarRectangleItem> | undefined => {
     if (
       barSettings == null
@@ -468,10 +466,8 @@ export const selectBarRectangles = createSelector(
       xAxisTicks,
       yAxisTicks,
       stackedData,
-      dataStartIndex,
       displayedData,
       offset,
-      // cells,
     })
   },
 )

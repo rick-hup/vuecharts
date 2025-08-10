@@ -68,6 +68,7 @@ export const BarVueProps = {
     default: undefined,
   },
   isAnimationActive: { type: Boolean, default: true },
+  activeDot: { type: [Object, Boolean, Function] as PropType<any>, default: true },
   id: { type: String, default: undefined },
   stackId: {
     type: [String, Number] as PropType<string | number>,

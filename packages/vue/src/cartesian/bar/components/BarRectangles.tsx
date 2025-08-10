@@ -8,18 +8,9 @@ import {
 } from '@/state/selectors/tooltipSelectors'
 import { filterProps } from '@/utils/VueUtils'
 import { Layer } from '@/container/Layer'
-import { BarRectangle } from '@/shape/BarRectangle'
-import { LabelList } from '@/components/LabelList'
-import {
-  useMouseClickItemDispatch,
-  useMouseEnterItemDispatch,
-  useMouseLeaveItemDispatch,
-} from '@/context/tooltipContext'
-import { adaptEventsOfChild } from '@/utils/types'
-import { Animate } from '@/animation/Animate'
-import { interpolateNumber } from '@/utils/DataUtils'
+import { Rectangle } from '@/shape/Rectangle'
 import { useBarContext } from '../hooks/useBar'
-import { selectBar } from '@/state/selectors/barSelectors'
+import { LabelList } from '@/components/label'
 
 export const BarRectangles = defineComponent({
   name: 'BarRectangles',
@@ -31,17 +22,7 @@ export const BarRectangles = defineComponent({
     const previousRectangles = ref<ReadonlyArray<BarRectangleItem> | null>(null)
     const isAnimating = ref(false)
 
-    const { props } = useBarContext()
-
-    // Get bar data from Redux
-    const barData = useAppSelector(state => selectBar(state, props.xAxisId!, props.yAxisId!, false, {
-      barSize: props.barSize,
-      data: props.data,
-      dataKey: props.dataKey,
-      maxBarSize: props.maxBarSize,
-      minPointSize: props.minPointSize,
-      stackId: props.stackId,
-    }))
+    const { props, data: barData } = useBarContext()
 
     const {
       shape,
@@ -98,7 +79,7 @@ export const BarRectangles = defineComponent({
                 onMouseLeave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
               >
-                <BarRectangle {...barRectangleProps} />
+                <Rectangle {...barRectangleProps} />
               </Layer>
             )
           })}

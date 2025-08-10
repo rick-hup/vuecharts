@@ -631,3 +631,48 @@ export function getStackedData(data: ReadonlyArray<Record<string, unknown>>, dat
 
   return stack(data)
 }
+
+export function getBaseValueOfBar({ numericAxis }: { numericAxis: BaseAxisWithScale }): number | unknown {
+  const domain = numericAxis.scale.domain()
+
+  if (numericAxis.type === 'number') {
+    // @ts-expect-error type number means the domain has numbers in it but this relationship is not known to typescript
+    const minValue = Math.min(domain[0], domain[1])
+    // @ts-expect-error type number means the domain has numbers in it but this relationship is not known to typescript
+    const maxValue = Math.max(domain[0], domain[1])
+
+    if (minValue <= 0 && maxValue >= 0) {
+      return 0
+    }
+    if (maxValue < 0) {
+      return maxValue
+    }
+
+    return minValue
+  }
+
+  return domain[0]
+}
+
+export function getCateCoordinateOfBar({
+  axis,
+  ticks,
+  offset,
+  bandSize,
+  entry,
+  index,
+}: {
+  axis: BaseAxisWithScale
+  ticks: ReadonlyArray<TickItem>
+  offset: number
+  bandSize: number
+  entry: any
+  index: number
+}): number | null {
+  if (axis.type === 'category') {
+    return ticks[index] ? ticks[index].coordinate + offset : null
+  }
+  const value = getValueByDataKey(entry, axis.dataKey, axis.scale.domain()[index])
+
+  return !isNullish(value) ? axis.scale(value) - bandSize / 2 + offset : null
+}
