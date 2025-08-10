@@ -1,7 +1,7 @@
 import type { PropType } from 'vue'
 import { defineComponent, ref, watch } from 'vue'
 import type { BarProps, BarRectangleItem } from '../type'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { useAppSelector } from '@/state/hooks'
 import {
   selectActiveTooltipDataKey,
   selectActiveTooltipIndex,
@@ -10,7 +10,7 @@ import { filterProps } from '@/utils/VueUtils'
 import { Layer } from '@/container/Layer'
 import { Rectangle } from '@/shape/Rectangle'
 import { useBarContext } from '../hooks/useBar'
-import { LabelList } from '@/components/label'
+import { animate, useDomRef } from 'motion-v'
 
 export const BarRectangles = defineComponent({
   name: 'BarRectangles',
@@ -21,51 +21,87 @@ export const BarRectangles = defineComponent({
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)
     const previousRectangles = ref<ReadonlyArray<BarRectangleItem> | null>(null)
     const isAnimating = ref(false)
+    const animationProgress = ref(0)
+    const domRef = useDomRef()
 
-    const { props, data: barData } = useBarContext()
+    const { props, data: barData, layout } = useBarContext()
 
     const {
-      shape,
       dataKey,
-      activeBar,
       isAnimationActive,
-      animationBegin,
-      animationDuration,
-      animationEasing,
       onAnimationStart,
       onAnimationEnd,
+      transition,
     } = props
 
-    const onMouseEnterFromContext = useMouseEnterItemDispatch(attrs.onMouseEnter as any, dataKey)
-    const onMouseLeaveFromContext = useMouseLeaveItemDispatch(attrs.onMouseLeave as any)
-    const onClickFromContext = useMouseClickItemDispatch(attrs.onClick as any, dataKey)
+    // 模拟事件处理函数 - 这些需要根据实际的tooltip context实现
+    const onMouseEnterFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
+      // TODO: 实现鼠标进入事件处理
+    }
+    const onMouseLeaveFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
+      // TODO: 实现鼠标离开事件处理
+    }
+    const onClickFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
+      // TODO: 实现点击事件处理
+    }
 
     const baseProps = filterProps(props, false)
 
-    watch(
-      () => barData.value?.rectangles,
-      (newData) => {
-        if (newData && newData !== previousRectangles.value) {
-          previousRectangles.value = newData
+    // 监听数据变化并触发动画
+    watch([barData, domRef], ([newData]) => {
+      if (!domRef.value || !newData)
+        return
+
+      if (newData && newData !== previousRectangles.value) {
+        if (isAnimationActive && previousRectangles.value != null) {
+          // 开始动画
+          isAnimating.value = true
+          animate(
+            { progress: 0 },
+            { progress: 1 },
+            {
+              ...transition,
+              onUpdate(latest) {
+                animationProgress.value = latest.progress
+              },
+              onComplete() {
+                isAnimating.value = false
+                animationProgress.value = 1
+                previousRectangles.value = newData as any
+                onAnimationEnd?.()
+              },
+              onPlay() {
+                onAnimationStart?.()
+              },
+            },
+          )
         }
-      },
-    )
+        else {
+          // 无动画直接更新
+          previousRectangles.value = newData as any
+          animationProgress.value = 1
+        }
+      }
+    }, {
+      immediate: true,
+    })
+
+    // 插值函数
+    const interpolateNumber = (from: number, to: number) => (t: number) => from + (to - from) * t
 
     const renderRectangles = (data: ReadonlyArray<BarRectangleItem> | undefined, showLabels: boolean) => {
       if (!data)
         return null
+
       return (
         <>
           {data.map((entry: BarRectangleItem, i: number) => {
-            const isActive
-              = activeBar && String(i) === activeIndex && (activeDataKey == null || dataKey === activeDataKey)
-            const option = isActive ? activeBar : shape
+            const isActive = String(i) === activeIndex.value && (activeDataKey.value == null || dataKey === activeDataKey.value)
 
             const barRectangleProps = {
               ...baseProps,
               ...entry,
               isActive,
-              option,
               index: i,
               dataKey,
             }
@@ -73,105 +109,78 @@ export const BarRectangles = defineComponent({
             return (
               <Layer
                 key={`rectangle-${entry?.x}-${entry?.y}-${entry?.value}-${i}`}
-                class="recharts-bar-rectangle"
-                {...adaptEventsOfChild(props, entry, i)}
-                onMouseEnter={onMouseEnterFromContext(entry, i)}
-                onMouseLeave={onMouseLeaveFromContext(entry, i)}
+                class="v-charts-bar-rectangle"
+                onMouseenter={onMouseEnterFromContext(entry, i)}
+                onMouseleave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
               >
                 <Rectangle {...barRectangleProps} />
               </Layer>
             )
           })}
-          {showLabels && <LabelList data={data} dataKey={dataKey} />}
         </>
       )
     }
 
     return () => {
-      const data = barData.value?.rectangles
+      const data = barData.value
       if (!data) {
         return null
       }
 
-      if (
-        isAnimationActive
-        && data
-        && data.length
-        && (previousRectangles.value == null || previousRectangles.value !== data)
-      ) {
+      // 如果正在动画中，计算插值数据
+      if (isAnimating.value && previousRectangles.value) {
+        const t = animationProgress.value
+        const stepData = data.map((entry, index) => {
+          const prev = previousRectangles.value?.[index]
+
+          if (prev) {
+            // 从前一个状态插值到当前状态
+            const interpolatorX = interpolateNumber(prev.x || 0, entry.x || 0)
+            const interpolatorY = interpolateNumber(prev.y || 0, entry.y || 0)
+            const interpolatorWidth = interpolateNumber(prev.width, entry.width)
+            const interpolatorHeight = interpolateNumber(prev.height, entry.height)
+
+            return {
+              ...entry,
+              x: interpolatorX(t),
+              y: interpolatorY(t),
+              width: interpolatorWidth(t),
+              height: interpolatorHeight(t),
+            }
+          }
+
+          // 新出现的柱子，从0开始动画
+          if (layout.value === 'horizontal') {
+            const interpolatorHeight = interpolateNumber(0, entry.height)
+            const h = interpolatorHeight(t)
+
+            return {
+              ...entry,
+              y: (entry.y || 0) + entry.height - h,
+              height: h,
+            }
+          }
+
+          // 垂直布局
+          const interpolator = interpolateNumber(0, entry.width)
+          const w = interpolator(t)
+
+          return { ...entry, width: w }
+        })
+
         return (
-          <Animate
-            begin={animationBegin}
-            duration={animationDuration}
-            isActive={isAnimationActive}
-            easing={animationEasing}
-            from={{ t: 0 }}
-            to={{ t: 1 }}
-            onAnimationEnd={() => {
-              if (typeof onAnimationEnd === 'function') {
-                onAnimationEnd()
-              }
-              isAnimating.value = false
-            }}
-            onAnimationStart={() => {
-              if (typeof onAnimationStart === 'function') {
-                onAnimationStart()
-              }
-              isAnimating.value = true
-            }}
-          >
-            {{
-              default: ({ t }: { t: number }) => {
-                const stepData = t === 1
-                  ? data
-                  : data.map((entry, index) => {
-                      const prev = previousRectangles.value?.[index]
-
-                      if (prev) {
-                        const interpolatorX = interpolateNumber(prev.x!, entry.x!)
-                        const interpolatorY = interpolateNumber(prev.y!, entry.y!)
-                        const interpolatorWidth = interpolateNumber(prev.width, entry.width)
-                        const interpolatorHeight = interpolateNumber(prev.height, entry.height)
-
-                        return {
-                          ...entry,
-                          x: interpolatorX(t),
-                          y: interpolatorY(t),
-                          width: interpolatorWidth(t),
-                          height: interpolatorHeight(t),
-                        }
-                      }
-
-                      if (props.layout === 'horizontal') {
-                        const interpolatorHeight = interpolateNumber(0, entry.height)
-                        const h = interpolatorHeight(t)
-
-                        return {
-                          ...entry,
-                          y: entry.y! + entry.height - h,
-                          height: h,
-                        }
-                      }
-
-                      const interpolator = interpolateNumber(0, entry.width)
-                      const w = interpolator(t)
-
-                      return { ...entry, width: w }
-                    })
-
-                return (
-                  <Layer>
-                    {renderRectangles(stepData, !isAnimating.value)}
-                  </Layer>
-                )
-              },
-            }}
-          </Animate>
+          <g ref={domRef}>
+            {renderRectangles(stepData as any, !isAnimating.value)}
+          </g>
         )
       }
 
-      return renderRectangles(data, true)
+      return (
+        <g ref={domRef}>
+          {renderRectangles(data as any, true)}
+        </g>
+      )
     }
   },
 })
