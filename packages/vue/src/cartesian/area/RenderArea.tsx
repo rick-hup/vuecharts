@@ -1,5 +1,5 @@
 import type { PropType } from 'vue'
-import { Fragment, computed, defineComponent, ref, toRaw, watch } from 'vue'
+import { Fragment, defineComponent, ref, watch } from 'vue'
 import { Layer } from '@/container/Layer'
 import type { Point } from '@/shape/Curve'
 import { Curve } from '@/shape/Curve'
@@ -7,7 +7,6 @@ import type { AreaPointItem } from '@/state/selectors/areaSelectors'
 import { isClipDot } from '@/utils/chart'
 import { Dot } from '@/shape/Dot'
 import { animate } from 'motion-v'
-import { ClipRect } from './ClipRect'
 import { useAreaContext } from './hooks/useArea'
 import { useOffset } from '@/context/chartLayoutContext'
 import { interpolate, isNan, isNullish, isNumber } from '@/utils'
@@ -56,13 +55,7 @@ export const Dots = defineComponent({
 // 简化的 StaticArea 组件 - 使用 context
 export const StaticArea = defineComponent({
   name: 'StaticArea',
-  props: {
-    isAnimationComplete: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup(_props) {
+  setup() {
     const { points, clipPathId, layout, attrs, areaData, props, isAnimating } = useAreaContext()
     const offset = useOffset()
     const currentPoints = ref<ReadonlyArray<Point>>(points.value || [])
@@ -75,7 +68,7 @@ export const StaticArea = defineComponent({
      */
     let animationStopped = false
     watch(points, (newPoints, _, onCleanup) => {
-      if (newPoints && newPoints.length > 0 && _props.isAnimationComplete) {
+      if (newPoints && newPoints.length > 0) {
         animationStopped = false
         // update isAnimating state
         isAnimating.value = true
@@ -214,50 +207,6 @@ export const StaticArea = defineComponent({
           }
         </Fragment>
       )
-    }
-  },
-})
-
-export const RenderArea = defineComponent({
-  name: 'RenderArea',
-  setup(_) {
-    const { points, clipPathId, props, isAnimating } = useAreaContext()
-
-    const isAnimationComplete = ref(false)
-
-    const shouldShowAnimation = computed(() => {
-      return props.isAnimationActive && points.value?.length
-    })
-
-    const handleAnimationComplete = () => {
-      isAnimationComplete.value = true
-      isAnimating.value = false
-      props.onAnimationEnd?.()
-    }
-
-    return () => {
-      if (shouldShowAnimation.value) {
-        return (
-          <Layer key="area-with-animation">
-            {
-              !isAnimationComplete.value && (
-                <defs>
-                  <clipPath id={`animationClipPath-${clipPathId.value}`}>
-                    <ClipRect
-                      onAnimationEnd={handleAnimationComplete}
-                    />
-                  </clipPath>
-                </defs>
-              )
-            }
-            <Layer clip-path={`url(#animationClipPath-${clipPathId.value})`}>
-              <StaticArea isAnimationComplete={isAnimationComplete.value} />
-            </Layer>
-          </Layer>
-        )
-      }
-
-      return <StaticArea key="static-area" />
     }
   },
 })

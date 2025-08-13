@@ -106,5 +106,7 @@ export function useArea(props: AreaProps, attrs: SVGAttributes = {}) {
   return {
     shouldRender,
     areaData,
+    points: areaContext.points,
+    clipPathId,
   }
 }
