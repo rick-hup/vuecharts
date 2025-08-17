@@ -1,26 +1,33 @@
 import type { PropType } from 'vue'
 import { defineComponent, ref, watch } from 'vue'
-import type { BarProps, BarRectangleItem } from '../type'
-import { useAppSelector } from '@/state/hooks'
+import type { BarProps } from '../type'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectActiveTooltipDataKey,
   selectActiveTooltipIndex,
 } from '@/state/selectors/tooltipSelectors'
+import {
+  mouseLeaveItem,
+  setActiveClickItemIndex,
+  setActiveMouseOverItemIndex,
+} from '@/state/tooltipSlice'
 import { filterProps } from '@/utils/VueUtils'
 import { Layer } from '@/container/Layer'
 import { Rectangle } from '@/shape/Rectangle'
 import { useBarContext } from '../hooks/useBar'
 import { useDomRef } from 'motion-v'
 import { Animate } from '@/animation/Animate'
+import type { BarRectangleItem } from '@/types/bar'
 
 export const BarRectangles = defineComponent({
   name: 'BarRectangles',
   inheritAttrs: false,
 
   setup(_, { attrs }) {
+    const dispatch = useAppDispatch()
     const activeIndex = useAppSelector(selectActiveTooltipIndex)
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)
-    const previousRectangles = ref<ReadonlyArray<BarRectangleItem> | null>(null)
+    let previousRectangles: ReadonlyArray<BarRectangleItem> | null = null
     const domRef = useDomRef()
 
     const { props, data: barData, layout } = useBarContext()
@@ -30,40 +37,47 @@ export const BarRectangles = defineComponent({
       isAnimationActive,
       onAnimationStart,
       onAnimationEnd,
-      animationBegin,
-      animationDuration,
-      animationEasing,
     } = props
 
     // 事件处理函数
     const onMouseEnterFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
-      // TODO: 实现鼠标进入事件处理
+      dispatch(setActiveMouseOverItemIndex({
+        activeDataKey: dataKey,
+        activeIndex: String(index),
+        activeCoordinate: {
+          x: entry.tooltipPosition.x,
+          y: entry.tooltipPosition.y,
+        },
+        activePayload: entry.payload ? [entry.payload] : [],
+        activeLabel: entry.payload?.name || String(index),
+        chartX: e.clientX,
+        chartY: e.clientY,
+      }))
     }
     const onMouseLeaveFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
-      // TODO: 实现鼠标离开事件处理
+      dispatch(mouseLeaveItem())
     }
     const onClickFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
-      // TODO: 实现点击事件处理
+      dispatch(setActiveClickItemIndex({
+        activeDataKey: dataKey,
+        activeIndex: String(index),
+        activeCoordinate: {
+          x: entry.tooltipPosition.x,
+          y: entry.tooltipPosition.y,
+        },
+        activePayload: entry.payload ? [entry.payload] : [],
+        activeLabel: entry.payload?.name || String(index),
+        chartX: e.clientX,
+        chartY: e.clientY,
+      }))
     }
 
     const baseProps = filterProps(props, false)
 
-    // 监听数据变化
-    watch([barData, domRef], ([newData]) => {
-      if (!domRef.value || !newData)
-        return
-
-      if (newData && newData !== previousRectangles.value) {
-        previousRectangles.value = newData as any
-      }
-    }, {
-      immediate: true,
-    })
-
     // 插值函数
     const interpolateNumber = (from: number, to: number) => (t: number) => from + (to - from) * t
 
-    const renderRectangles = (data: ReadonlyArray<BarRectangleItem> | undefined) => {
+    const renderRectangles = (data: ReadonlyArray<BarRectangleItem>) => {
       if (!data)
         return null
 
@@ -102,33 +116,27 @@ export const BarRectangles = defineComponent({
         return null
       }
 
-      // 如果启用动画且有之前的数据，则使用Animate组件
-      if (isAnimationActive && previousRectangles.value && previousRectangles.value !== data) {
+      // // 如果启用动画且有之前的数据，则使用Animate组件
+      if (isAnimationActive && previousRectangles == null && previousRectangles !== data) {
         return (
           <Animate
-            begin={animationBegin}
-            duration={animationDuration}
-            easing={animationEasing}
+            transition={props.transition}
             isActive={isAnimationActive}
-            from={{ t: 0 }}
-            to={{ t: 1 }}
             onAnimationStart={onAnimationStart}
             onAnimationEnd={onAnimationEnd}
           >
-            {{
-              default: ({ t }: { t: number }) => {
+            {
+              (t) => {
                 const stepData = t === 1
-                  ? data
+                  ? (previousRectangles = data)
                   : data.map((entry, index) => {
-                      const prev = previousRectangles.value?.[index]
-
+                      const prev = previousRectangles?.[index]
                       if (prev) {
                         // 从前一个状态插值到当前状态
                         const interpolatorX = interpolateNumber(prev.x || 0, entry.x || 0)
                         const interpolatorY = interpolateNumber(prev.y || 0, entry.y || 0)
                         const interpolatorWidth = interpolateNumber(prev.width, entry.width)
                         const interpolatorHeight = interpolateNumber(prev.height, entry.height)
-
                         return {
                           ...entry,
                           x: interpolatorX(t),
@@ -162,8 +170,8 @@ export const BarRectangles = defineComponent({
                     {renderRectangles(stepData)}
                   </g>
                 )
-              },
-            }}
+              }
+            }
           </Animate>
         )
       }

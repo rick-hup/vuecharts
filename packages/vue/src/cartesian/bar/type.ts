@@ -76,6 +76,9 @@ export const BarVueProps = {
   },
   xAxisId: { type: [String, Number] as PropType<AxisId>, default: 0 },
   yAxisId: { type: [String, Number] as PropType<AxisId>, default: 0 },
+  animationBegin: { type: Number, default: 0 },
+  animationDuration: { type: Number, default: 1500 },
+  animationEasing: { type: String, default: 'ease' },
 
   transition: {
     type: Object as PropType<AnimationOptions>,

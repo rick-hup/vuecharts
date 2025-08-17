@@ -1,4 +1,5 @@
 export * from './area'
 export * from './axis'
+export * from './bar'
 export * from './cartesian-axis'
 export * from './cartesian-grid'
