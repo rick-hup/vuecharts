@@ -56,21 +56,24 @@ export const Dots = defineComponent({
 export const StaticArea = defineComponent({
   name: 'StaticArea',
   setup() {
-    const { points, clipPathId, layout, attrs, areaData, props, isAnimating } = useAreaContext()
+    const { points, clipPathId, layout, attrs, areaData, props, isAnimating, isClipRectAnimating } = useAreaContext()
     const offset = useOffset()
     const currentPoints = ref<ReadonlyArray<Point>>(points.value || [])
     const currentBaseLine = ref<number | ReadonlyArray<AreaPointItem>>(areaData.value?.baseLine || [])
 
     let prevPoints: ReadonlyArray<Point> = currentPoints.value || []
     let prevBaseLine: number | ReadonlyArray<AreaPointItem> = areaData.value?.baseLine || []
-    /**
-     * after animate stop,onUpdate still be called,so we need to check if the animation is stopped
-     */
     let animationStopped = false
+
     watch(points, (newPoints, _, onCleanup) => {
+      if (isClipRectAnimating.value) {
+        currentPoints.value = newPoints
+        currentBaseLine.value = areaData.value?.baseLine || []
+        return
+      }
       if (newPoints && newPoints.length > 0) {
+        // 后续变更时执行动画
         animationStopped = false
-        // update isAnimating state
         isAnimating.value = true
         const animation = animate(0 as number, 1, {
           ...props.transition,
@@ -80,13 +83,6 @@ export const StaticArea = defineComponent({
             if (prevPoints.length) {
               const prevPointsDiffFactor = prevPoints.length / newPoints.length
               const stepPoints: ReadonlyArray<AreaPointItem>
-                /*
-                 * Here it is important that at the very end of the animation, on the last frame,
-                 * we render the original points without any interpolation.
-                 * This is needed because the code above is checking for reference equality to decide if the animation should run
-                 * and if we create a new array instance (even if the numbers were the same)
-                 * then we would break animations.
-                 */
                 = t === 1
                   ? newPoints
                   : newPoints.map((entry, index): AreaPointItem => {
@@ -95,7 +91,6 @@ export const StaticArea = defineComponent({
                         const prev: AreaPointItem = prevPoints[prevPointIndex]
                         return { ...entry, x: interpolate(prev.x, entry.x, t), y: interpolate(prev.y, entry.y, t) }
                       }
-
                       return entry
                     })
               let stepBaseLine: number | ReadonlyArray<AreaPointItem>
@@ -111,10 +106,8 @@ export const StaticArea = defineComponent({
                   const prevPointIndex = Math.floor(index * prevPointsDiffFactor)
                   if (Array.isArray(prevBaseLine) && prevBaseLine[prevPointIndex]) {
                     const prev = prevBaseLine[prevPointIndex]
-
                     return { ...entry, x: interpolate(prev.x, entry.x, t), y: interpolate(prev.y, entry.y, t) }
                   }
-
                   return entry
                 })
               }
@@ -145,7 +138,7 @@ export const StaticArea = defineComponent({
         prevPoints = currentPoints.value
         prevBaseLine = currentBaseLine.value
       }
-    })
+    }, { immediate: true })
 
     return () => {
       const curveAttrs = {

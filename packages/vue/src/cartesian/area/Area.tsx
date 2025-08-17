@@ -17,17 +17,7 @@ export const Area = defineComponent<AreaPropsWithSVG>({
   slots: Object as SlotsType<ActivePointsSlots>,
   setup(props: AreaProps, { attrs, slots }: { attrs: SVGAttributes, slots: ActivePointsSlots }) {
     useSetupGraphicalItem(props, 'area')
-    const { shouldRender, areaData, points, clipPathId } = useArea(props, attrs)
-    const animationCompleted = ref(false)
-
-    const shouldShowAnimation = computed(() => {
-      return props.isAnimationActive && points.value?.length && !animationCompleted.value
-    })
-
-    // Provide animation completion handler to ClipRect
-    provide('onAnimationComplete', () => {
-      animationCompleted.value = true
-    })
+    const { shouldRender, areaData, points, clipPathId, shouldShowAnimation } = useArea(props, attrs)
 
     return () => {
       if (!shouldRender.value) {

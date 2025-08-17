@@ -104,25 +104,20 @@ const VerticalRect = defineComponent({
 export const ClipRect = defineComponent({
   name: 'ClipRect',
   setup() {
-    const { points, props, areaData, layout } = useAreaContext()
+    const { points, props, areaData, layout, isClipRectAnimating } = useAreaContext()
     const isAnimationActive = ref(false)
-    const animationCompleted = ref(false)
 
     watch(points, (newPoints) => {
       if (newPoints && newPoints.length > 0 && !isAnimationActive.value) {
         isAnimationActive.value = true
-        animationCompleted.value = false
       }
     }, {
       immediate: true,
     })
 
-    const onAnimationComplete = inject<() => void>('onAnimationComplete', () => {})
-
     const handleAnimationEnd = () => {
       isAnimationActive.value = false
-      animationCompleted.value = true
-      onAnimationComplete()
+      isClipRectAnimating.value = false
       props.onAnimationEnd?.()
     }
 
