@@ -1,5 +1,5 @@
 import type { SVGAttributes, SlotsType } from 'vue'
-import { Fragment, computed, defineComponent, ref } from 'vue'
+import { Fragment, computed, defineComponent, provide, ref } from 'vue'
 import type { AreaProps, AreaPropsWithSVG } from './type'
 import { AreaVueProps } from './type'
 import { useArea } from '@/cartesian/area/hooks/useArea'
@@ -18,9 +18,15 @@ export const Area = defineComponent<AreaPropsWithSVG>({
   setup(props: AreaProps, { attrs, slots }: { attrs: SVGAttributes, slots: ActivePointsSlots }) {
     useSetupGraphicalItem(props, 'area')
     const { shouldRender, areaData, points, clipPathId } = useArea(props, attrs)
+    const animationCompleted = ref(false)
 
     const shouldShowAnimation = computed(() => {
-      return props.isAnimationActive && points.value?.length
+      return props.isAnimationActive && points.value?.length && !animationCompleted.value
+    })
+
+    // Provide animation completion handler to ClipRect
+    provide('onAnimationComplete', () => {
+      animationCompleted.value = true
     })
 
     return () => {

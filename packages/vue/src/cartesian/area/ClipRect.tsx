@@ -1,6 +1,6 @@
 import type { Point } from '@/shape'
 import type { PropType } from 'vue'
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, inject, ref, watch } from 'vue'
 import { isNumber, isWellBehavedNumber } from '@/utils'
 import { useAreaContext } from '@/cartesian/area/hooks/useArea'
 import { Animate } from '@/animation/Animate'
@@ -106,14 +106,25 @@ export const ClipRect = defineComponent({
   setup() {
     const { points, props, areaData, layout } = useAreaContext()
     const isAnimationActive = ref(false)
+    const animationCompleted = ref(false)
 
     watch(points, (newPoints) => {
       if (newPoints && newPoints.length > 0 && !isAnimationActive.value) {
         isAnimationActive.value = true
+        animationCompleted.value = false
       }
     }, {
       immediate: true,
     })
+
+    const onAnimationComplete = inject<() => void>('onAnimationComplete', () => {})
+
+    const handleAnimationEnd = () => {
+      isAnimationActive.value = false
+      animationCompleted.value = true
+      onAnimationComplete()
+      props.onAnimationEnd?.()
+    }
 
     return () => {
       const baseLine = areaData.value?.baseLine
@@ -127,9 +138,9 @@ export const ClipRect = defineComponent({
           isActive={isAnimationActive.value}
           transition={props.transition}
           onAnimationStart={props.onAnimationStart}
-          onAnimationEnd={props.onAnimationEnd}
+          onAnimationEnd={handleAnimationEnd}
         >
-          {(t) => {
+          {(t: number) => {
             if (layout.value === 'horizontal') {
               return <HorizontalRect alpha={t} points={points.value!} baseLine={baseLine!} strokeWidth={props.strokeWidth || 2} />
             }
