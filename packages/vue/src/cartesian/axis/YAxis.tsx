@@ -1,7 +1,6 @@
 import type { PropType } from 'vue'
 import { defineComponent, watchEffect } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import type { YAxisSettings } from '@/state/cartesianAxisSlice'
 import { addYAxis, removeYAxis } from '@/state/cartesianAxisSlice'
 import { implicitYAxis, selectAxisScale, selectTicksOfAxis, selectYAxisPosition, selectYAxisSize } from '@/state/selectors/axisSelectors'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
@@ -9,7 +8,6 @@ import { CartesianAxis } from '@/cartesian'
 import type { DataKey } from '@/types'
 import { selectAxisViewBox } from '@/state/selectors/selectChartOffset'
 import type { AxisDomain } from '@/types/axis'
-import { dataKey } from '@/storybook/api/props/chart-props'
 
 // Implementation of the YAxis rendering logic
 const YAxisImpl = defineComponent({
@@ -98,7 +96,7 @@ const YAxisSettingsDispatcher = defineComponent({
         angle: props.angle ?? 0,
         minTickGap: props.minTickGap ?? 5,
         tick: props.tick ?? true,
-      } as YAxisSettings
+      } as any
       dispatch(addYAxis(settings))
       onCleanup(() => {
         dispatch(removeYAxis(settings))

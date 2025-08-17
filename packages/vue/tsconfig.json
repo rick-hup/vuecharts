@@ -27,7 +27,11 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*.vue", "./src/**/*.ts", "./src/**/*.tsx"],
+  "include": [
+    "./src/**/*.vue",
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
+  ],
   "exclude": [
     "node_modules"
   ]
