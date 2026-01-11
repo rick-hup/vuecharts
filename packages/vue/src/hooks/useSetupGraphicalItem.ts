@@ -13,7 +13,7 @@ function getLegendItemColor(stroke: string | undefined, fill: string): string {
   return stroke && stroke !== 'none' ? stroke : fill
 }
 
-export function useSetupGraphicalItem(props: AreaProps, type: CartesianGraphicalItemType) {
+export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGraphicalItemType) {
   const attrs = useAttrs() as SVGAttributes
   const isPanorama = useIsPanorama()
   const legendPayload = computed(() => {
@@ -42,10 +42,10 @@ export function useSetupGraphicalItem(props: AreaProps, type: CartesianGraphical
   SetTooltipEntrySettings({ fn: getTooltipEntrySettings as any, args: computed(() => ({
     ...props,
     ...attrs,
-  } as AreaPropsWithSVG)) })
+  } as AreaPropsWithSVG | any)) })
 }
 
-function getTooltipEntrySettings(props: AreaPropsWithSVG) {
+function getTooltipEntrySettings(props: AreaPropsWithSVG | any) {
   const { dataKey, data, stroke, fill, name, hide, unit } = props
   return {
     dataDefinedOnItem: data,

@@ -4,7 +4,6 @@
 import type { PropType } from 'vue'
 import { defineComponent } from 'vue'
 import type { VuePropsToType, WithSVGProps } from '@/types'
-import { filterProps } from '@/utils/VueUtils'
 import type { RectRadius } from '@/types/bar'
 
 const RectangleVueProps = {
@@ -25,13 +24,11 @@ export const Rectangle = defineComponent<RectanglePropsWithSVG>({
   setup(props, { attrs }) {
     return () => {
       const { x, y, width, height, radius } = props
-      const filteredProps = filterProps(props, false)
 
       // Simple rectangle without rounded corners
       if (!radius) {
         return (
           <rect
-            {...filteredProps}
             {...attrs}
             x={x}
             y={y}

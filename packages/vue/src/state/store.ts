@@ -54,7 +54,7 @@ export function createRechartsStore(preloadedState?: Partial<RechartsRootState>,
       serialize: {
         replacer: reduxDevtoolsJsonStringifyReplacer,
       },
-      name: `recharts-${chartName}`,
+      name: `v-charts-${chartName}`,
     },
   })
 }

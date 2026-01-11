@@ -23,7 +23,7 @@ export const BarRectangles = defineComponent({
   name: 'BarRectangles',
   inheritAttrs: false,
 
-  setup(_, { attrs }) {
+  setup(_) {
     const dispatch = useAppDispatch()
     const activeIndex = useAppSelector(selectActiveTooltipIndex)
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)

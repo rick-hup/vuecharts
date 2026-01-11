@@ -1,67 +1,96 @@
-import type { Point } from '@/shape'
-import type { AnimationDuration, DataKey, LayoutType, TooltipType } from '@/types'
+import type { AnimationDuration, DataKey, LayoutType, TooltipType, VuePropsToType, WithSVGProps } from '@/types'
 import type { AxisId } from '@/types/axis'
 import type { AnimationEasing } from '@/types/bar'
+import type { AnimationOptions } from 'motion-v'
 import type { LegendType } from '@/types/legend'
 import type { CurveFactory } from 'victory-vendor/d3-shape'
+import type { CurveType, Point } from '@/shape/Curve'
+import type { PropType } from 'vue'
+import { CurveVueProps } from '@/shape/Curve'
 
 export interface LinePointItem extends Point {
   readonly value?: number
   readonly payload?: any
 }
 
-export type CurveType =
-  | 'basis'
-  | 'basisClosed'
-  | 'basisOpen'
-  | 'bumpX'
-  | 'bumpY'
-  | 'bump'
-  | 'linear'
-  | 'linearClosed'
-  | 'natural'
-  | 'monotoneX'
-  | 'monotoneY'
-  | 'monotone'
-  | 'step'
-  | 'stepBefore'
-  | 'stepAfter'
-  | CurveFactory
-
-interface CurveProps {
-  className?: string
-  type?: CurveType
-  layout?: LayoutType
-  baseLine?: number | ReadonlyArray<Point>
-  points?: ReadonlyArray<Point>
-  connectNulls?: boolean
-  path?: string
-}
-export interface LineProps extends CurveProps {
-  // activeDot?: ActiveDotType
+// Complete LineProps interface
+export interface LineProps {
+  activeDot?: any
   animateNewValues?: boolean
   animationBegin?: number
   animationDuration?: AnimationDuration
   animationEasing?: AnimationEasing
+  animationId?: string
   className?: string
   connectNulls?: boolean
-  data?: any
-  dataKey?: DataKey<any>
-  // dot?: ActiveDotType
+  data?: any[]
+  dataKey: DataKey<any>
+  dot?: any
   hide?: boolean
-
   id?: string
   isAnimationActive?: boolean
-
-  // label?: ImplicitLabelType
+  label?: any
   legendType?: LegendType
-
+  layout?: LayoutType
   name?: string | number
   onAnimationEnd?: () => void
   onAnimationStart?: () => void
+  stroke?: string
+  strokeWidth?: number
   tooltipType?: TooltipType
+  transition?: AnimationOptions
   type?: CurveType
   unit?: string | number
   xAxisId?: AxisId
   yAxisId?: AxisId
+  needClip?: boolean
 }
+
+export const LineVueProps = {
+  ...CurveVueProps,
+  activeDot: { type: [Boolean, Object, Function], default: true },
+  animationDuration: { type: Number },
+  animationEasing: { type: String },
+  animationBegin: { type: Number, default: 0 },
+  animationId: { type: String },
+  isAnimationActive: { type: Boolean, default: true },
+  connectNulls: { type: Boolean, default: false },
+  data: { type: Array, default: undefined },
+  dataKey: {
+    type: [String, Number, Function] as PropType<DataKey<any>>,
+    required: true,
+  },
+  dot: { type: [Boolean, Object, Function], default: true },
+  hide: { type: Boolean, default: false },
+  label: { type: [Boolean, Object] },
+  legendType: { type: String as PropType<LegendType>, default: 'line' },
+  onAnimationEnd: { type: Function },
+  onAnimationStart: { type: Function },
+  stroke: { type: String, default: '#3182bd' },
+  strokeWidth: { type: Number, default: 1 },
+  tooltipType: { type: String as PropType<TooltipType> },
+  transition: {
+    type: Object as PropType<AnimationOptions>,
+    default: () => ({
+      duration: 800,
+      ease: 'easeOut',
+    }),
+  },
+  type: { type: [String, Function] as PropType<CurveType | CurveFactory> },
+  unit: { type: [String, Number] },
+  xAxisId: { type: [String, Number] as PropType<AxisId>, default: 0 },
+  yAxisId: { type: [String, Number] as PropType<AxisId>, default: 0 },
+  needClip: { type: Boolean, default: false },
+  id: { type: String },
+  activeIndex: { type: Number },
+  activePoint: { type: Object },
+  left: { type: Number, default: 0 },
+  top: { type: Number, default: 0 },
+  width: { type: Number, default: 0 },
+  height: { type: Number, default: 0 },
+  name: { type: [String, Number] },
+  class: { type: String },
+}
+
+export type LinePropsInternal = VuePropsToType<typeof LineVueProps>
+export type LinePropsWithSVG = WithSVGProps<typeof LineVueProps>
