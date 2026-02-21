@@ -169,7 +169,8 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 ### Tooltip Rendering Pattern
 - `Tooltip` renders into a portal via Vue `Teleport` (target from `usePortal()` context or `portal` prop); returns `null` until portal is available
 - `TooltipBoundingBox` uses `motion.div` directly (not the `Animate` wrapper) for animated CSS `transform` transitions on position changes
-- Cursor renders only when `tooltipEventType === 'axis'`; uses `Curve` shape with pointer-events disabled
+- Cursor only renders when `tooltipEventType === 'axis'`; shape is chart-type-specific: BarChart renders a `Rectangle` band (full chart height/width, centered on coordinate, sized via `useTooltipAxisBandSize()`); other chart types render a `Curve` line
+- `shared` prop is three-state (`true`/`false`/`undefined`); `undefined` lets Recharts decide based on chart type
 - `useTooltipChartSynchronisation` wires tooltip state to cross-chart sync
 
 ### Storybook Interactive Story Pattern
@@ -200,7 +201,7 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - **Line chart**: Recently added LineChart, ActivePoints, StaticLine
 - **Bar component**: Composes BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath; `activeBar` prop on BarRectangles gates highlight (`false` disables, object merges extra SVG props onto active rect); animation re-triggers on every data change via keyed Animate + linear interpolation of x/y/width/height
 - **Rectangle shape**: Rounded corner support via `radius` prop (number or `[tl, tr, br, bl]` array)
-- **Tooltip component**: Cursor now restricted to `tooltipEventType === 'axis'` only; portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
+- **Tooltip component**: Cursor restricted to `tooltipEventType === 'axis'` only; BarChart cursor is a `Rectangle` band sized via `useTooltipAxisBandSize()`, other charts use a `Curve`; `shared` prop now three-state (`true`/`false`/`undefined`); portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
 - **ErrorBar component**: New `cartesian/error-bar/` module; `ErrorBar` rendered as default slot child of `Bar`; context-based data flow via `provideErrorBarContext`/`useErrorBarContext`; supports symmetric and asymmetric `[low, high]` error bounds; auto-detects direction from chart layout
 - **Bar component**: Now provides `ErrorBarContext` to child slots; `tooltipPosition` added to `BarRectangleItem` (center of bar)
 - **Storybook BarChart**: Stories cover `StackedAndDynamic` (interactive legend-driven series toggling), `StackedWithErrorBar` (vertical layout, `direction="x"` error bars), and `XAxisTickMarginWithBrushDy` (XAxis `tickMargin` + Brush `dy` prop for bottom-margin offset)

@@ -13,6 +13,7 @@ import {
   selectActiveLabel,
   selectIsTooltipActive,
   selectTooltipPayload,
+  useChartName,
 } from '@/state/selectors/selectors'
 import { useElementBounding, useMagicKeys } from '@vueuse/core'
 import type { AxisId } from '@/state/cartesianAxisSlice'
@@ -26,8 +27,10 @@ import type {
 import type { Formatter, TooltipTrigger } from '@/types/tooltip'
 import { getTooltipTranslate } from '@/utils/tooltip/translate'
 import { Curve } from '@/shape/Curve'
+import { Rectangle } from '@/shape/Rectangle'
 import { getCursorPoints } from '@/components/utils'
 import type { Point } from '@/shape'
+import { useTooltipAxisBandSize } from '@/context/useTooltipAxis'
 import { sortBy, uniqBy } from 'es-toolkit/compat'
 import { isNumOrStr } from '@/utils'
 import { useTooltipChartSynchronisation } from '@/synchronisation/useChartSynchronisation'
@@ -266,10 +269,39 @@ const Cursor = defineComponent({
   setup(props) {
     const offset = useOffsetInternal()
     const layout = useChartLayout()
+    const chartName = useChartName()
+    const tooltipAxisBandSize = useTooltipAxisBandSize()
     const points = computed(() => getCursorPoints(layout.value, props.coordinate!, offset.value))
     return () => {
-      if (!props.cursor || !props.coordinate || props.tooltipEventType !== 'axis')
+      if (!props.cursor || !props.coordinate)
         return null
+
+      if (props.tooltipEventType !== 'axis')
+        return null
+
+      const isBarChart = chartName.value === 'BarChart'
+      if (isBarChart) {
+        const bandSize = tooltipAxisBandSize.value ?? 0
+        const halfSize = bandSize / 2
+        const coord = props.coordinate!
+        const off = offset.value
+        const rectProps = {
+          stroke: 'none',
+          fill: '#ccc',
+          x: layout.value === 'horizontal' ? coord.x - halfSize : off.left + 0.5,
+          y: layout.value === 'horizontal' ? off.top + 0.5 : coord.y - halfSize,
+          width: layout.value === 'horizontal' ? bandSize : off.width - 1,
+          height: layout.value === 'horizontal' ? off.height - 1 : bandSize,
+          class: 'recharts-tooltip-cursor',
+        }
+        return (
+          <Rectangle
+            style={{ pointerEvents: 'none' }}
+            {...rectProps}
+          />
+        )
+      }
+
       const cursorProps = {
         stroke: '#ccc',
         class: ['recharts-tooltip-cursor'],
@@ -340,7 +372,10 @@ const TooltipVueProps = {
    * If true, tooltip will appear on top of all bars on an axis tick.
    * If false, tooltip will appear on individual bars.
    */
-  shared: Boolean,
+  shared: {
+    type: [Boolean, undefined] as PropType<boolean | undefined>,
+    default: undefined,
+  },
   /**
    * If `hover` then the Tooltip shows on mouse enter and hides on mouse leave.
    * If `click` then the Tooltip shows after clicking and stays active.
@@ -414,7 +449,6 @@ export const Tooltip = defineComponent({
     const tooltipState = useAppSelector(state =>
       selectIsTooltipActive(state, tooltipEventType.value, props.trigger, defaultIndexAsString.value),
     )
-
     const payloadFromRedux = useAppSelector(state =>
       selectTooltipPayload(state, tooltipEventType.value, props.trigger, defaultIndexAsString.value),
     )
@@ -514,7 +548,6 @@ export const Tooltip = defineComponent({
             </Teleport>
           </foreignObject>
 
-          {/* Cursor component */}
           {finalIsActive.value && (
             <Cursor
               cursor={props.cursor}
