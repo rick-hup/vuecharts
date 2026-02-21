@@ -162,6 +162,11 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - Use `isAnimationActive={false}` on graphical items in tests for deterministic, synchronous rendering
 - Use `mockGetBoundingClientRect({ width, height })` in `beforeEach` to simulate container dimensions
 - Test helpers in `@/test/helper`: `getBarRectangles` (`.v-charts-bar-rectangle` nodes), `getBarRects` (inner `<rect>` elements), `expectAreaCurve` (`.v-charts-area-curve` `d` attribute)
+
+### Storybook Interactive Story Pattern
+- Wrap interactive stories in a `defineComponent` + `ref` wrapper when story needs reactive state (e.g., `StackedAndDynamic` uses `ref` for `focusedDataKey` and `locked` driven by Legend `onMouseEnter`/`onMouseLeave`/`onClick` events)
+- Use `Bar` `hide` prop for dynamic series toggling; `activeBar` prop (e.g., `{ fill: 'gold' }`) for hover highlight
+- `Tooltip` `shared={false}` shows tooltip for individual bar only (not all series at that x position)
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: git-insights -->
@@ -172,7 +177,8 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - **Line chart**: Recently added LineChart, ActivePoints, StaticLine
 - **Bar component**: Refactored to compose BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath
 - **Rectangle shape**: Rounded corner support via `radius` prop (number or `[tl, tr, br, bl]` array)
-- **Testing**: Expanded BarChart test suite covering rendering, props (fill, background, hide, radius), and stacked bars
+- **Storybook BarChart**: Expanded stories covering Tiny, Simple, Stacked, Mix, PositiveAndNegative, StackedBySign, HasBackground, VerticalBarChart, Biaxial, WithMinPointSize, StackedAndDynamic
+- **Testing**: BarChart test suite covers rendering, props (fill, background, hide, radius), stacked bars, vertical layout, context providers (viewBox, clipPathId, width, height), and tooltip interaction
 
 ### Commit Convention
 - Conventional commits: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`

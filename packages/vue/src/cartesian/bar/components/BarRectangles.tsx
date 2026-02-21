@@ -37,6 +37,7 @@ export const BarRectangles = defineComponent({
       isAnimationActive,
       onAnimationStart,
       onAnimationEnd,
+      activeBar,
     } = props
 
     // 事件处理函数
@@ -84,11 +85,14 @@ export const BarRectangles = defineComponent({
       return (
         <>
           {data.map((entry: BarRectangleItem, i: number) => {
-            const isActive = String(i) === activeIndex.value && (activeDataKey.value == null || dataKey === activeDataKey.value)
+            const isActive = activeBar !== false && String(i) === activeIndex.value && (activeDataKey.value == null || dataKey === activeDataKey.value)
+
+            const activeBarProps = isActive && typeof activeBar === 'object' ? activeBar : {}
 
             const barRectangleProps = {
               ...baseProps,
               ...entry,
+              ...(isActive ? activeBarProps : {}),
               isActive,
               index: i,
               dataKey,
