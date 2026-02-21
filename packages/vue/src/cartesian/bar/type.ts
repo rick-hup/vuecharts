@@ -39,7 +39,7 @@ export const BarVueProps = {
     required: true,
   },
   fill: { type: String, default: '#3182bd' },
-  stroke: { type: String, default: '#3182bd' },
+  stroke: { type: String, default: undefined },
   strokeWidth: { type: Number, default: 0 },
   unit: {
     type: [String, Number] as PropType<string | number>,

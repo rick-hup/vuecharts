@@ -120,10 +120,11 @@ export const BarRectangles = defineComponent({
         return null
       }
 
-      // // 如果启用动画且有之前的数据，则使用Animate组件
-      if (isAnimationActive && previousRectangles == null && previousRectangles !== data) {
+      if (isAnimationActive && previousRectangles !== data) {
+        const prevData = previousRectangles
         return (
           <Animate
+            key={`animate-${data.length}-${data[0]?.x}-${data[0]?.y}-${data[0]?.height}`}
             transition={props.transition}
             isActive={isAnimationActive}
             onAnimationStart={onAnimationStart}
@@ -134,9 +135,8 @@ export const BarRectangles = defineComponent({
                 const stepData = t === 1
                   ? (previousRectangles = data)
                   : data.map((entry, index) => {
-                      const prev = previousRectangles?.[index]
+                      const prev = prevData?.[index]
                       if (prev) {
-                        // 从前一个状态插值到当前状态
                         const interpolatorX = interpolateNumber(prev.x || 0, entry.x || 0)
                         const interpolatorY = interpolateNumber(prev.y || 0, entry.y || 0)
                         const interpolatorWidth = interpolateNumber(prev.width, entry.width)
@@ -181,6 +181,7 @@ export const BarRectangles = defineComponent({
       }
 
       // 无动画或数据未变化时直接渲染
+      previousRectangles = data
       return (
         <g ref={domRef}>
           {renderRectangles(data)}

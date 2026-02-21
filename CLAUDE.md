@@ -163,6 +163,12 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - Use `mockGetBoundingClientRect({ width, height })` in `beforeEach` to simulate container dimensions
 - Test helpers in `@/test/helper`: `getBarRectangles` (`.v-charts-bar-rectangle` nodes), `getBarRects` (inner `<rect>` elements), `expectAreaCurve` (`.v-charts-area-curve` `d` attribute)
 
+### Tooltip Rendering Pattern
+- `Tooltip` renders into a portal via Vue `Teleport` (target from `usePortal()` context or `portal` prop); returns `null` until portal is available
+- `TooltipBoundingBox` uses `motion.div` directly (not the `Animate` wrapper) for animated CSS `transform` transitions on position changes
+- Cursor renders only when `tooltipEventType === 'axis'`; uses `Curve` shape with pointer-events disabled
+- `useTooltipChartSynchronisation` wires tooltip state to cross-chart sync
+
 ### Storybook Interactive Story Pattern
 - Wrap interactive stories in a `defineComponent` + `ref` wrapper when story needs reactive state (e.g., `StackedAndDynamic` uses `ref` for `focusedDataKey` and `locked` driven by Legend `onMouseEnter`/`onMouseLeave`/`onClick` events)
 - Use `Bar` `hide` prop for dynamic series toggling; `activeBar` prop (e.g., `{ fill: 'gold' }`) for hover highlight
@@ -175,8 +181,9 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 ### Active Development Areas
 - **Animation system**: Animate component, motion-v integration, ClipRect animations
 - **Line chart**: Recently added LineChart, ActivePoints, StaticLine
-- **Bar component**: Refactored to compose BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath
+- **Bar component**: Composes BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath; `activeBar` prop on BarRectangles gates highlight (`false` disables, object merges extra SVG props onto active rect); animation re-triggers on every data change via keyed Animate + linear interpolation of x/y/width/height
 - **Rectangle shape**: Rounded corner support via `radius` prop (number or `[tl, tr, br, bl]` array)
+- **Tooltip component**: Cursor now restricted to `tooltipEventType === 'axis'` only; portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
 - **Storybook BarChart**: Expanded stories covering Tiny, Simple, Stacked, Mix, PositiveAndNegative, StackedBySign, HasBackground, VerticalBarChart, Biaxial, WithMinPointSize, StackedAndDynamic
 - **Testing**: BarChart test suite covers rendering, props (fill, background, hide, radius), stacked bars, vertical layout, context providers (viewBox, clipPathId, width, height), and tooltip interaction
 

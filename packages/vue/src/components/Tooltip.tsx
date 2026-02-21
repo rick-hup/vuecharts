@@ -268,7 +268,7 @@ const Cursor = defineComponent({
     const layout = useChartLayout()
     const points = computed(() => getCursorPoints(layout.value, props.coordinate!, offset.value))
     return () => {
-      if (!props.cursor || !props.coordinate)
+      if (!props.cursor || !props.coordinate || props.tooltipEventType !== 'axis')
         return null
       const cursorProps = {
         stroke: '#ccc',
