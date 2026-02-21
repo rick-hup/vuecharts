@@ -7,6 +7,7 @@ import type { Series } from 'victory-vendor/d3-shape'
 import type { ChartOffsetInternal } from '@/utils/types'
 import { getBaseValueOfBar, getCateCoordinateOfBar, getTooltipNameProp, getValueByDataKey, truncateByDomain } from '@/utils/chart'
 import { isNullish, isNumber } from '@/utils'
+import { toRaw } from 'vue'
 import type { MinPointSize } from '@/shape'
 import { invariant } from 'es-toolkit'
 import { isNaN } from 'es-toolkit/compat'
@@ -101,7 +102,8 @@ export function computeBarRectangles({
   const stackedDomain: ReadonlyArray<number> = stackedData ? numericAxis.scale.domain() : null
   const baseValue = getBaseValueOfBar({ numericAxis })
 
-  return displayedData.map((entry, index): BarRectangleItem => {
+  return displayedData.map((rawEntry, index): BarRectangleItem => {
+    const entry = toRaw(rawEntry)
     let value, x, y, width, height, background: Rectangle
 
     if (stackedData) {
@@ -163,7 +165,6 @@ export function computeBarRectangles({
     }
 
     const barRectangleItem: BarRectangleItem = {
-      ...entry,
       x,
       y,
       width,

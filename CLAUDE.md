@@ -59,6 +59,7 @@ packages/vue/src/           # Main library source (vccs)
 │   ├── area/               # Area component (hooks, context, types)
 │   ├── bar/                # Bar component
 │   ├── line/               # Line component
+│   ├── error-bar/          # ErrorBar component (child slot of Bar/Line/Area)
 │   ├── axis/               # XAxis, YAxis
 │   ├── brush/              # Brush component
 │   ├── cartesian-grid/     # CartesianGrid
@@ -148,10 +149,12 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - React JSX → Vue JSX (mostly compatible, watch for `class` vs `className`, event handlers)
 
 ### Redux Store Pattern
-- Each chart instance has its own Redux store
+- Each chart instance has its own Redux store created by `createRechartsStore(preloadedState?, chartName?)`
 - Graphical items (Area, Bar, Line) register themselves via `useSetupGraphicalItem`
-- State slices: `brushSlice`, `cartesianAxisSlice`, `chartDataSlice`, `graphicalItemsSlice`, `legendSlice`, `tooltipSlice`, `layoutSlice`, `optionsSlice`
-- Middleware handles events: `mouseEventsMiddleware`, `keyboardEventsMiddleware`, `touchEventsMiddleware`
+- State slices: `brushSlice`, `cartesianAxisSlice`, `chartDataSlice`, `graphicalItemsSlice`, `layoutSlice`, `legendSlice`, `optionsSlice`, `polarAxisSlice`, `polarOptionsSlice`, `referenceElementsSlice`, `rootPropsSlice`, `tooltipSlice`
+- Middleware stack: `mouseClickMiddleware`, `mouseMoveMiddleware`, `keyboardEventsMiddleware`, `externalEventsMiddleware`, `touchEventMiddleware`
+- Middleware config: `serializableCheck: false` and `immutableCheck: false` (both disabled to avoid Redux warnings with mutable Vue reactive objects)
+- DevTools named `v-charts-${chartName}` with `reduxDevtoolsJsonStringifyReplacer` for serialization
 
 ### Hook Composition
 - Each graphical component has a dedicated hook (e.g., `useArea`, `useBar`)
@@ -173,6 +176,18 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - Wrap interactive stories in a `defineComponent` + `ref` wrapper when story needs reactive state (e.g., `StackedAndDynamic` uses `ref` for `focusedDataKey` and `locked` driven by Legend `onMouseEnter`/`onMouseLeave`/`onClick` events)
 - Use `Bar` `hide` prop for dynamic series toggling; `activeBar` prop (e.g., `{ fill: 'gold' }`) for hover highlight
 - `Tooltip` `shared={false}` shows tooltip for individual bar only (not all series at that x position)
+
+### ErrorBar Child Slot Pattern
+- `ErrorBar` is placed as a child in the `default` slot of `Bar` (and eventually `Line`/`Area`): `<Bar><ErrorBar dataKey="err" /></Bar>`
+- Parent (`Bar`) calls `provideErrorBarContext({ data, xAxisId, yAxisId, dataPointFormatter, errorBarOffset })` so `ErrorBar` can inject data without prop drilling
+- `errorBarOffset` is `computed` from the first bar's half-width (horizontal) or half-height (vertical) to center error bars on each data point
+- `ErrorBar` auto-detects `direction` from chart layout (`horizontal` → `'y'`, `vertical` → `'x'`) when not explicitly set; returns `null` if `direction='x'` and x-axis is not numeric
+- Accepts asymmetric bounds: `dataKey` value can be a `[low, high]` tuple or a single number (symmetric)
+- CSS classes: `.v-charts-errorBars` (wrapper `Layer`), `.v-charts-errorBar` (per-point `Layer`)
+
+### Vue Reactivity + D3 Integration
+- Always call `toRaw(entry)` before passing reactive data entries to D3 scale functions (e.g., in `computeBarRectangles`); Vue Proxy objects cause incorrect behavior with D3 property access
+- Pattern: `displayedData.map((rawEntry, index) => { const entry = toRaw(rawEntry); ... })`
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: git-insights -->
@@ -184,7 +199,9 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - **Bar component**: Composes BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath; `activeBar` prop on BarRectangles gates highlight (`false` disables, object merges extra SVG props onto active rect); animation re-triggers on every data change via keyed Animate + linear interpolation of x/y/width/height
 - **Rectangle shape**: Rounded corner support via `radius` prop (number or `[tl, tr, br, bl]` array)
 - **Tooltip component**: Cursor now restricted to `tooltipEventType === 'axis'` only; portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
-- **Storybook BarChart**: Expanded stories covering Tiny, Simple, Stacked, Mix, PositiveAndNegative, StackedBySign, HasBackground, VerticalBarChart, Biaxial, WithMinPointSize, StackedAndDynamic
+- **ErrorBar component**: New `cartesian/error-bar/` module; `ErrorBar` rendered as default slot child of `Bar`; context-based data flow via `provideErrorBarContext`/`useErrorBarContext`; supports symmetric and asymmetric `[low, high]` error bounds; auto-detects direction from chart layout
+- **Bar component**: Now provides `ErrorBarContext` to child slots; `tooltipPosition` added to `BarRectangleItem` (center of bar)
+- **Storybook BarChart**: Added `StackedWithErrorBar` story (vertical layout, `direction="x"` error bars); stories now cover Tiny, Simple, Stacked, Mix, PositiveAndNegative, StackedBySign, HasBackground, VerticalBarChart, Biaxial, WithMinPointSize, StackedAndDynamic, StackedWithErrorBar
 - **Testing**: BarChart test suite covers rendering, props (fill, background, hide, radius), stacked bars, vertical layout, context providers (viewBox, clipPathId, width, height), and tooltip interaction
 
 ### Commit Convention

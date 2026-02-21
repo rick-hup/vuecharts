@@ -43,6 +43,7 @@ export function createRechartsStore(preloadedState?: Partial<RechartsRootState>,
       // @ts-ignore
       getDefaultMiddleware({
         serializableCheck: false,
+        immutableCheck: false,
       }).concat([
         mouseClickMiddleware.middleware,
         mouseMoveMiddleware.middleware,

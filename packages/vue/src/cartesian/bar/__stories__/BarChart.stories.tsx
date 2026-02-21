@@ -10,6 +10,7 @@ import { Legend } from '@/components/legend'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
+import { ErrorBar } from '@/cartesian/error-bar/ErrorBar'
 import { pageData } from '@/storybook/data'
 
 const meta = {
@@ -87,6 +88,44 @@ const StackedAndDynamicWrapper = defineComponent({
     )
   },
 })
+
+export const StackedWithErrorBar: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: {
+      top: 20,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+    layout: 'vertical',
+  },
+  render: (args: Record<string, any>) => {
+    // Build pvError data inside render to avoid Storybook freezing the array values in args,
+    // which causes Vue proxy invariant errors during deep watch traversal
+    const data = (args.data as typeof pageData).map(d => ({ ...d, pvError: [100, 200] }))
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args} data={data}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis type="number" />
+          <YAxis dataKey="name" type="category" />
+          <Legend />
+          <Tooltip />
+          <Bar dataKey="pv" stackId="a" fill="#8884d8" />
+          <Bar dataKey="uv" stackId="a" fill="#82ca9d">
+            {{
+              default: () => <ErrorBar dataKey="pvError" width={5} stroke="red" direction="x" />,
+            }}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
 
 export const StackedAndDynamic: Story = {
   args: {
