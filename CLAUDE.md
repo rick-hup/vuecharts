@@ -2,24 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+<!-- AUTO-MANAGED: project-description -->
+## Overview
 
-This is a Vue 3 charting library called "Vue Charts" - an unofficial Vue.js port of Recharts. It provides composable charting components built specifically for Vue 3 with Composition API.
+**Vue Charts (vccs)** - An unofficial Vue 3 port of [Recharts](https://recharts.org/). Provides composable charting components built with Vue 3 Composition API + JSX/TSX.
 
-## Repository Structure
+- **Recharts React source reference:** `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts`
+- When porting components, refer to the React source for behavior parity
+- Monorepo with pnpm workspaces: `vccs` (library) + `play` (Nuxt playground)
+<!-- END AUTO-MANAGED -->
 
-- `packages/vue/` - Main library source code
-- `playground/nuxt/` - Nuxt.js playground for testing components
-- `packages/vue/src/` - Source code organized by component types:
-  - `cartesian/` - Cartesian chart components (area, bar, line, axis, grid, etc.)
-  - `chart/` - Main chart components (AreaChart, BarChart, etc.)
-  - `components/` - Shared components (legend, tooltip, text, etc.)
-  - `container/` - Layout containers (ResponsiveContainer, Surface, etc.)
-  - `state/` - Redux state management for chart interactions
-  - `utils/` - Utility functions and helpers
-  - `animation/` - Animation components and utilities
-
-## Common Development Commands
+<!-- AUTO-MANAGED: build-commands -->
+## Build & Development Commands
 
 ```bash
 # Install dependencies
@@ -46,53 +40,143 @@ pnpm play
 # Run specific test file
 pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
 
-# Lint and typecheck (if available)
+# Lint and typecheck
 pnpm lint
 pnpm typecheck
 
 # Publish release
 pnpm pub:release
 ```
+<!-- END AUTO-MANAGED -->
 
-## Architecture Overview
+<!-- AUTO-MANAGED: architecture -->
+## Architecture
 
-1. **Component Architecture**: 
-   - Built with Vue 3 Composition API
-   - Uses a composable pattern similar to Recharts
-   - Components are organized by chart type in the `cartesian/` directory
-   - Context pattern using `provide/inject` for sharing state between parent and child components (e.g., useAreaContext)
+```
+packages/vue/src/           # Main library source (vccs)
+├── animation/              # Animate component, motion-v utilities
+├── cartesian/              # Cartesian chart components
+│   ├── area/               # Area component (hooks, context, types)
+│   ├── bar/                # Bar component
+│   ├── line/               # Line component
+│   ├── axis/               # XAxis, YAxis
+│   ├── brush/              # Brush component
+│   ├── cartesian-grid/     # CartesianGrid
+│   └── cartesian-axis/     # CartesianAxis
+├── chart/                  # Chart containers (AreaChart, BarChart, LineChart)
+├── components/             # Shared: legend, tooltip, text
+├── container/              # ResponsiveContainer, Surface, Layer
+├── context/                # Context providers
+├── events/                 # Event handling
+├── hooks/                  # Shared composition hooks
+├── shape/                  # SVG shape utilities
+├── state/                  # Redux store, slices, middleware, selectors
+├── storybook/              # Storybook stories
+├── synchronisation/        # Chart synchronization
+├── test/                   # Test utilities
+├── types/                  # Shared type definitions
+├── utils/                  # Utility functions
+└── index.ts                # Public API entry point
 
-2. **State Management**:
-   - Uses Redux Toolkit via @reduxjs/vue-redux for complex chart state
-   - Store created per chart instance with `createRechartsStore`
-   - State slices for different chart aspects (brush, axis, legend, tooltip, etc.)
-   - Selectors for computed state values
-   - Middleware for handling mouse, keyboard, touch, and external events
+playground/nuxt/            # Nuxt 3 playground for testing
+```
 
-3. **Animation System**:
-   - Uses motion-v library for smooth animations
-   - Custom `Animate` component wrapper for consistent animation patterns
-   - Animation props passed through context rather than component props
+### Key Architecture Decisions
 
-4. **Build System**:
-   - Vite for building and development
-   - TypeScript for type safety
-   - Outputs both ES modules and CommonJS formats
-   - Uses vite-plugin-dts for TypeScript declarations
+1. **Component Architecture**: Vue 3 `defineComponent` + JSX render functions (not SFC)
+2. **State Management**: Redux Toolkit via `@reduxjs/vue-redux` - one store per chart instance created with `createRechartsStore`
+3. **Context**: `provide/inject` pattern for parent-child component communication (e.g., `useAreaContext`)
+4. **Chart Factory**: `generateCategoricalChart()` factory creates chart containers (BarChart, AreaChart, LineChart)
+5. **Animation**: `motion-v` library with custom `Animate` wrapper component
+6. **Event Handling**: Redux middleware for mouse, keyboard, touch, and external events
+7. **Build Output**: Dual format - ES Modules (`.mjs`) + CommonJS (`.js`) + TypeScript declarations
+<!-- END AUTO-MANAGED -->
 
-5. **Testing**:
-   - Vitest with JSDOM environment
-   - Test files use `.spec.tsx` extension
-   - Coverage reporting with Istanbul
-   - Testing Library for component testing
+<!-- AUTO-MANAGED: conventions -->
+## Code Conventions
 
-6. **Dependencies**:
-   - victory-vendor for mathematical calculations and D3 utilities
-   - motion-v for animations
-   - lodash-es for utility functions
-   - VueUse for Vue composition utilities
-   - @reduxjs/toolkit for state management
-   - es-toolkit for modern JavaScript utilities
+### Naming
+- **Components**: PascalCase (`Area`, `BarChart`, `CartesianGrid`)
+- **Directories**: kebab-case (`cartesian-grid`, `cartesian-axis`)
+- **Hooks**: `use` prefix (`useArea`, `useBar`, `useSetupGraphicalItem`)
+- **Context hooks**: `use` + `Context` suffix (`useAreaContext`, `useBarContext`)
+- **Types**: PascalCase + `Props` suffix (`AreaProps`, `BarPropsWithSVG`)
+- **Type files**: `type.ts` in each component directory
+- **Tests**: `__tests__/*.spec.tsx`
+- **Stories**: `__stories__/*.stories.tsx`
+
+### Component Structure Pattern
+```typescript
+export const Component = defineComponent<PropsWithSVG>({
+  name: 'Component',
+  props: ComponentVueProps,
+  inheritAttrs: false,
+  slots: Object as SlotsType<Slots>,
+  setup(props, { attrs, slots }) {
+    useSetupGraphicalItem(props, 'itemType')  // Register with Redux
+    const { ...data } = useComponentHook(props, attrs)
+    return () => (/* JSX */)
+  },
+})
+```
+
+### Props Definition Pattern
+```typescript
+// type.ts - Vue props object + TypeScript type extraction
+export const ComponentVueProps = {
+  dataKey: { type: [String, Number, Function] as PropType<DataKey<any>>, required: true },
+  fill: { type: String, default: '#3182bd' },
+}
+export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof ComponentVueProps>>
+```
+
+### Imports
+- Path alias: `@/` maps to `packages/vue/src/`
+- Prefer `import type` for type-only imports
+- Re-export from `index.ts` barrel files
+<!-- END AUTO-MANAGED -->
+
+<!-- AUTO-MANAGED: patterns -->
+## Detected Patterns
+
+### Porting from Recharts
+- Compare with React source at `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts/src/`
+- React `useState`/`useEffect` → Vue `ref`/`watch`
+- React Context → Vue `provide`/`inject`
+- React Redux hooks → `@reduxjs/vue-redux` hooks (`useSelector`, `useDispatch`)
+- React `useMemo`/`useCallback` → Vue `computed` / plain functions
+- React JSX → Vue JSX (mostly compatible, watch for `class` vs `className`, event handlers)
+
+### Redux Store Pattern
+- Each chart instance has its own Redux store
+- Graphical items (Area, Bar, Line) register themselves via `useSetupGraphicalItem`
+- State slices: `brushSlice`, `cartesianAxisSlice`, `chartDataSlice`, `graphicalItemsSlice`, `legendSlice`, `tooltipSlice`, `layoutSlice`, `optionsSlice`
+- Middleware handles events: `mouseEventsMiddleware`, `keyboardEventsMiddleware`, `touchEventsMiddleware`
+
+### Hook Composition
+- Each graphical component has a dedicated hook (e.g., `useArea`, `useBar`)
+- Hooks return render-ready data: `{ shouldRender, data, points, clipPathId, shouldShowAnimation }`
+- Setup hooks register component with the Redux store
+
+### Testing Patterns
+- Use `isAnimationActive={false}` on graphical items in tests for deterministic, synchronous rendering
+- Use `mockGetBoundingClientRect({ width, height })` in `beforeEach` to simulate container dimensions
+- Test helpers in `@/test/helper`: `getBarRectangles` (`.v-charts-bar-rectangle` nodes), `getBarRects` (inner `<rect>` elements), `expectAreaCurve` (`.v-charts-area-curve` `d` attribute)
+<!-- END AUTO-MANAGED -->
+
+<!-- AUTO-MANAGED: git-insights -->
+## Git Insights
+
+### Active Development Areas
+- **Animation system**: Animate component, motion-v integration, ClipRect animations
+- **Line chart**: Recently added LineChart, ActivePoints, StaticLine
+- **Bar component**: Refactored to compose BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath
+- **Rectangle shape**: Rounded corner support via `radius` prop (number or `[tl, tr, br, bl]` array)
+- **Testing**: Expanded BarChart test suite covering rendering, props (fill, background, hide, radius), and stacked bars
+
+### Commit Convention
+- Conventional commits: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`
+<!-- END AUTO-MANAGED -->
 
 ## Development Workflow
 
@@ -102,10 +186,20 @@ pnpm pub:release
 4. Build with `pnpm --filter vccs build`
 5. View Storybook components with `pnpm storybook`
 
-## Key Patterns
+## Dependencies
 
-1. **Component Context Pattern**: Components use context providers (e.g., AreaContext) to share state and props with child components, avoiding prop drilling.
+| Library | Purpose |
+|---------|---------|
+| `@reduxjs/toolkit` + `@reduxjs/vue-redux` | Chart state management |
+| `motion-v` | SVG animations |
+| `victory-vendor` | D3 math/scale utilities |
+| `lodash-es` | Utility functions |
+| `@vueuse/core` | Vue composition utilities |
+| `es-toolkit` | Modern JS utilities |
 
-2. **Animation Integration**: Animation components should use the `Animate` wrapper component and receive animation callbacks through context rather than props.
+<!-- MANUAL -->
+## Custom Notes
 
-3. **Redux Integration**: Chart components integrate with Redux store through hooks and selectors for reactive state management.
+Add project-specific notes here. This section is never auto-modified.
+
+<!-- END MANUAL -->

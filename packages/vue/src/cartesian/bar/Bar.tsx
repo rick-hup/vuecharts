@@ -36,7 +36,7 @@ export const Bar = defineComponent<BarPropsWithSVG>({
               </defs>
             )
           }
-          <Layer class="v-charts-bar-rectangles" clip-path={needClip ? `url(#clipPath-${clipPathId})` : null}>
+          <Layer class="v-charts-bar-rectangles" clip-path={needClip.value ? `url(#clipPath-${clipPathId})` : null}>
             {props.background && <BarBackground />}
             <BarRectangles />
           </Layer>

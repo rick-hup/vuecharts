@@ -56,7 +56,6 @@ export const Rectangle = defineComponent<RectanglePropsWithSVG>({
 
       return (
         <rect
-          {...filteredProps}
           {...attrs}
           x={x}
           y={y}

@@ -1,0 +1,347 @@
+import { fireEvent, render } from '@testing-library/vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from '@/index'
+import { Tooltip } from '@/components/Tooltip'
+import { getBarRectangles, getBarRects } from '@/test/helper'
+import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
+import { useViewBox } from '@/context/chartLayoutContext'
+import { useClipPathId } from '@/chart/provideClipPathId'
+import { useChartHeight, useChartWidth } from '@/context/chartLayoutContext'
+import { defineComponent } from 'vue'
+
+describe('BarChart', () => {
+  beforeEach(() => {
+    mockGetBoundingClientRect({ width: 500, height: 500 })
+  })
+
+  const data = [
+    { name: 'Page A', uv: 400, pv: 2400, amt: 2400 },
+    { name: 'Page B', uv: 300, pv: 4567, amt: 2400 },
+    { name: 'Page C', uv: 300, pv: 1398, amt: 2400 },
+    { name: 'Page D', uv: 200, pv: 9800, amt: 2400 },
+    { name: 'Page E', uv: 278, pv: 3908, amt: 2400 },
+    { name: 'Page F', uv: 189, pv: 4800, amt: 2400 },
+  ]
+
+  describe('basic rendering', () => {
+    it('renders the correct number of bars', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(6)
+    })
+
+    it('renders multiple Bar components with correct number of rectangles each', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+          <Bar dataKey="pv" fill="#82ca9d" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(12)
+    })
+
+    it('renders empty when data is empty', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={[]}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(0)
+    })
+
+    it('renders no bars when dataKey does not match the source data', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="nonexistent" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(0)
+    })
+
+    it('renders correctly with a single data point', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data.slice(0, 1)}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(1)
+    })
+  })
+
+  describe('props', () => {
+    it('applies custom fill color', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#ff0000" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const rects = getBarRects(container)
+      expect(rects.length).toBe(6)
+      rects.forEach((rect) => {
+        expect(rect.getAttribute('fill')).toBe('#ff0000')
+      })
+    })
+
+    it('renders background bars when background prop is true', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" background isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const backgroundBars = container.querySelectorAll('rect[fill="#eee"]')
+      expect(backgroundBars.length).toBe(6)
+    })
+
+    it('hides bar when hide prop is true', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" hide isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(0)
+    })
+
+    it('renders bars with radius (rounded corners)', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" radius={5} isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const rects = getBarRects(container)
+      expect(rects.length).toBe(6)
+      rects.forEach((rect) => {
+        expect(rect.getAttribute('rx')).toBe('5')
+        expect(rect.getAttribute('ry')).toBe('5')
+      })
+    })
+
+    it('renders bars with array radius', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" radius={[10, 10, 0, 0]} isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const rects = getBarRects(container)
+      expect(rects.length).toBe(6)
+      rects.forEach((rect) => {
+        expect(rect.getAttribute('rx')).toBe('10')
+      })
+    })
+  })
+
+  describe('stacked bars', () => {
+    it('renders stacked bars with stackId', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" stackId="a" fill="#8884d8" isAnimationActive={false} />
+          <Bar dataKey="pv" stackId="a" fill="#82ca9d" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(12)
+    })
+
+    it('renders stacked and unstacked bars together', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" stackId="a" fill="#8884d8" isAnimationActive={false} />
+          <Bar dataKey="pv" stackId="a" fill="#82ca9d" isAnimationActive={false} />
+          <Bar dataKey="amt" fill="#ffc658" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(18)
+    })
+  })
+
+  describe('vertical layout', () => {
+    it('renders bars in vertical layout', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data} layout="vertical">
+          <XAxis type="number" />
+          <YAxis dataKey="name" type="category" />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(6)
+    })
+  })
+
+  describe('layout context', () => {
+    it('provides correct viewBox', () => {
+      const spy = vi.fn()
+      const Comp = defineComponent({
+        setup() {
+          spy(useViewBox().value)
+          return () => null
+        },
+      })
+
+      render({
+        components: { BarChart, Comp },
+        template: `
+          <BarChart :width="100" :height="50">
+            <Comp />
+          </BarChart>
+        `,
+      })
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenLastCalledWith({ x: 5, y: 5, width: 90, height: 40 })
+    })
+
+    it('provides correct clipPathId', () => {
+      const spy = vi.fn()
+      const Comp = defineComponent({
+        setup() {
+          spy(useClipPathId())
+          return () => null
+        },
+      })
+
+      render({
+        components: { BarChart, Comp },
+        template: `
+          <BarChart :width="100" :height="50">
+            <Comp />
+          </BarChart>
+        `,
+      })
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(expect.stringMatching(/v-charts\d+-clip/))
+    })
+
+    it('provides correct width', () => {
+      const spy = vi.fn()
+      const Comp = defineComponent({
+        setup() {
+          spy(useChartWidth().value)
+          return () => null
+        },
+      })
+
+      render({
+        components: { BarChart, Comp },
+        template: `
+          <BarChart :width="100" :height="50">
+            <Comp />
+          </BarChart>
+        `,
+      })
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(100)
+    })
+
+    it('provides correct height', () => {
+      const spy = vi.fn()
+      const Comp = defineComponent({
+        setup() {
+          spy(useChartHeight().value)
+          return () => null
+        },
+      })
+
+      render({
+        components: { BarChart, Comp },
+        template: `
+          <BarChart :width="100" :height="50">
+            <Comp />
+          </BarChart>
+        `,
+      })
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(50)
+    })
+  })
+
+  describe('tooltip interaction', () => {
+    it('shows tooltip on mouse enter on a bar', async () => {
+      const { container } = render(() => (
+        <div style="width: 500px; height: 300px;">
+          <BarChart width={500} height={300} data={data}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+            <Tooltip />
+          </BarChart>
+        </div>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(6)
+
+      // Mouse enter on the first bar
+      await fireEvent.mouseEnter(bars[0])
+
+      const tooltip = container.querySelector('.v-charts-tooltip-content')
+      expect(tooltip).toBeTruthy()
+    })
+  })
+
+  describe('with other components', () => {
+    it('renders with CartesianGrid', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const bars = getBarRectangles(container)
+      expect(bars.length).toBe(6)
+      expect(container.querySelector('.v-charts-cartesian-grid')).toBeTruthy()
+    })
+  })
+})
