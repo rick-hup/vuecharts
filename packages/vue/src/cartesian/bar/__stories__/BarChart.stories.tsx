@@ -11,7 +11,8 @@ import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { ErrorBar } from '@/cartesian/error-bar/ErrorBar'
-import { pageData } from '@/storybook/data'
+import { Brush } from '@/cartesian/brush'
+import { numberData, pageData } from '@/storybook/data'
 
 const meta = {
   title: 'examples/BarChart',
@@ -117,10 +118,39 @@ export const StackedWithErrorBar: Story = {
           <Tooltip />
           <Bar dataKey="pv" stackId="a" fill="#8884d8" />
           <Bar dataKey="uv" stackId="a" fill="#82ca9d">
-            {{
-              default: () => <ErrorBar dataKey="pvError" width={5} stroke="red" direction="x" />,
-            }}
+            <ErrorBar dataKey="pvError" width={5} stroke="red" direction="x" />
           </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const XAxisTickMarginWithBrushDy: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: numberData,
+    margin: {
+      top: 5,
+      right: 30,
+      left: 20,
+      bottom: 35,
+    },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" tickMargin={30} />
+          <YAxis />
+          <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
+          <Tooltip />
+          <Brush dataKey="name" height={30} dy={30} stroke="#8884d8" />
+          <Bar dataKey="pv" fill="#8884d8" />
+          <Bar dataKey="uv" fill="#82ca9d" />
         </BarChart>
       </ResponsiveContainer>
     )

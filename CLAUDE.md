@@ -176,6 +176,8 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - Wrap interactive stories in a `defineComponent` + `ref` wrapper when story needs reactive state (e.g., `StackedAndDynamic` uses `ref` for `focusedDataKey` and `locked` driven by Legend `onMouseEnter`/`onMouseLeave`/`onClick` events)
 - Use `Bar` `hide` prop for dynamic series toggling; `activeBar` prop (e.g., `{ fill: 'gold' }`) for hover highlight
 - `Tooltip` `shared={false}` shows tooltip for individual bar only (not all series at that x position)
+- When story args contain array values Storybook freezes (e.g., `[100, 200]` error bounds), construct derived data inside the `render` function rather than in `args` to avoid Vue proxy invariant errors: `const data = (args.data as typeof pageData).map(d => ({ ...d, pvError: [100, 200] }))` inside render
+- `Brush` `dy` prop offsets the brush vertically (e.g., `dy={30}`) to avoid overlap with `XAxis` when `tickMargin` is large; pair with adequate `margin.bottom` on the chart
 
 ### ErrorBar Child Slot Pattern
 - `ErrorBar` is placed as a child in the `default` slot of `Bar` (and eventually `Line`/`Area`): `<Bar><ErrorBar dataKey="err" /></Bar>`
@@ -201,7 +203,7 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - **Tooltip component**: Cursor now restricted to `tooltipEventType === 'axis'` only; portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
 - **ErrorBar component**: New `cartesian/error-bar/` module; `ErrorBar` rendered as default slot child of `Bar`; context-based data flow via `provideErrorBarContext`/`useErrorBarContext`; supports symmetric and asymmetric `[low, high]` error bounds; auto-detects direction from chart layout
 - **Bar component**: Now provides `ErrorBarContext` to child slots; `tooltipPosition` added to `BarRectangleItem` (center of bar)
-- **Storybook BarChart**: Added `StackedWithErrorBar` story (vertical layout, `direction="x"` error bars); stories now cover Tiny, Simple, Stacked, Mix, PositiveAndNegative, StackedBySign, HasBackground, VerticalBarChart, Biaxial, WithMinPointSize, StackedAndDynamic, StackedWithErrorBar
+- **Storybook BarChart**: Stories cover `StackedAndDynamic` (interactive legend-driven series toggling), `StackedWithErrorBar` (vertical layout, `direction="x"` error bars), and `XAxisTickMarginWithBrushDy` (XAxis `tickMargin` + Brush `dy` prop for bottom-margin offset)
 - **Testing**: BarChart test suite covers rendering, props (fill, background, hide, radius), stacked bars, vertical layout, context providers (viewBox, clipPathId, width, height), and tooltip interaction
 
 ### Commit Convention
