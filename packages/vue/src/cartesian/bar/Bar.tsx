@@ -1,5 +1,5 @@
 import type { SVGAttributes, SlotsType } from 'vue'
-import { computed, defineComponent } from 'vue'
+import { Teleport, computed, defineComponent } from 'vue'
 import type { BarProps, BarPropsWithSVG } from './type'
 import { BarVueProps } from './type'
 import { useBar } from '@/cartesian/bar/hooks/useBar'
@@ -15,6 +15,7 @@ import { LabelList } from '@/components/label'
 import type { ErrorBarDataItem, ErrorBarDataPointFormatter } from '@/cartesian/error-bar/ErrorBarContext'
 import type { BarRectangleItem } from '@/types/bar'
 import { getValueByDataKey } from '@/utils/chart'
+import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 
 const errorBarDataPointFormatter: ErrorBarDataPointFormatter<BarRectangleItem> = (
   dataPoint,
@@ -57,12 +58,14 @@ export const Bar = defineComponent<BarPropsWithSVG>({
       errorBarOffset,
     })
 
+    const graphicalLayerRef = useGraphicalLayerRef(null)
+
     return () => {
       if (!shouldRender.value) {
         return null
       }
 
-      return (
+      const barContent = (
         <Layer class={['v-charts-bar', attrs.class]}>
           {
             needClip.value && (
@@ -84,6 +87,12 @@ export const Bar = defineComponent<BarPropsWithSVG>({
           {slots.default?.()}
         </Layer>
       )
+
+      // Teleport bars into graphical layer so they render above cursor but below labels
+      if (graphicalLayerRef?.value) {
+        return <Teleport to={graphicalLayerRef.value}>{barContent}</Teleport>
+      }
+      return barContent
     }
   },
 })

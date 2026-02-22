@@ -12,6 +12,7 @@ import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { ErrorBar } from '@/cartesian/error-bar/ErrorBar'
 import { Brush } from '@/cartesian/brush'
+import { Rectangle } from '@/shape/Rectangle'
 import { numberData, pageData, rangeData } from '@/storybook/data'
 
 const meta = {
@@ -340,6 +341,38 @@ export const RangedBarChart: Story = {
           <CartesianGrid stroke-dasharray="3 3" />
           <Tooltip />
           <Bar dataKey="temperature" fill="violet" stroke="indigo" />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const CustomCursorBarChart: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: {
+      top: 5,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <CartesianGrid stroke-dasharray="3 3" />
+          <Bar dataKey="uv" fill="violet" stroke="indigo" />
+          <Tooltip>
+            {{
+              cursor: (props: any) => <Rectangle {...props} fill="red" fill-opacity={0.6} stroke="#111" />,
+            }}
+          </Tooltip>
         </BarChart>
       </ResponsiveContainer>
     )

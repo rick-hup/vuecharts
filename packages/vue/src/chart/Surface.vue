@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { type CSSProperties, computed, ref } from 'vue'
+import { provideCursorLayerRef } from '@/context/cursorLayerContext'
+import { provideGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import { provideLabelLayerRef } from '@/context/labelLayerContext'
 
 interface SurfaceProps {
@@ -29,6 +31,12 @@ const svgViewBox = computed(() => {
   return `${svgView.x} ${svgView.y} ${svgView.width} ${svgView.height}`
 })
 
+const cursorLayerRef = ref<SVGGElement | null>(null)
+provideCursorLayerRef(cursorLayerRef)
+
+const graphicalLayerRef = ref<SVGGElement | null>(null)
+provideGraphicalLayerRef(graphicalLayerRef)
+
 const labelLayerRef = ref<SVGGElement | null>(null)
 provideLabelLayerRef(labelLayerRef)
 </script>
@@ -46,6 +54,14 @@ provideLabelLayerRef(labelLayerRef)
     <title>{{ title }}</title>
     <desc>{{ desc }}</desc>
     <slot />
+    <g
+      ref="cursorLayerRef"
+      class="v-charts-cursor-layer"
+    />
+    <g
+      ref="graphicalLayerRef"
+      class="v-charts-graphical-layer"
+    />
     <g
       ref="labelLayerRef"
       class="v-charts-label-layer"
