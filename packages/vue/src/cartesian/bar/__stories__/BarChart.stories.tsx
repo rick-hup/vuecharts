@@ -188,6 +188,42 @@ export const StackedWithBrush: Story = {
   },
 }
 
+export const HasLabelBasedOnSeparateDataKey: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: {
+      top: 5,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => {
+    const dataWithLabel = (args.data as typeof pageData).map(({ name, uv, pv }) => ({
+      name,
+      uv,
+      pv,
+      label: uv > pv ? 'UV greater' : 'PV greater',
+    }))
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args} data={dataWithLabel}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Legend />
+          <Tooltip />
+          <Bar dataKey="pv" fill="#8884d8" label={{ dataKey: 'label', position: 'top', fill: '#111' }} />
+          <Bar dataKey="uv" fill="#82ca9d" />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
 export const StackedAndDynamic: Story = {
   args: {
     ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),

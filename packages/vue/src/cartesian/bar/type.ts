@@ -88,6 +88,10 @@ export const BarVueProps = {
     },
   },
   needClip: { type: Boolean, default: false },
+  label: {
+    type: [Boolean, Object] as PropType<boolean | Record<string, any>>,
+    default: false,
+  },
 }
 
 export type BarProps = VuePropsToType<typeof BarVueProps>

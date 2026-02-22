@@ -11,6 +11,7 @@ import { BarRectangles } from '@/cartesian/bar/components/BarRectangles'
 import { useNeedsClip } from '@/cartesian/useNeedsClip'
 import { useChartLayout } from '@/context/chartLayoutContext'
 import { provideErrorBarContext } from '@/cartesian/error-bar/ErrorBarContext'
+import { LabelList } from '@/components/label'
 import type { ErrorBarDataItem, ErrorBarDataPointFormatter } from '@/cartesian/error-bar/ErrorBarContext'
 import type { BarRectangleItem } from '@/types/bar'
 import { getValueByDataKey } from '@/utils/chart'
@@ -74,6 +75,12 @@ export const Bar = defineComponent<BarPropsWithSVG>({
             {props.background && <BarBackground />}
             <BarRectangles />
           </Layer>
+          {props.label && (
+            <LabelList
+              {...(typeof props.label === 'object' ? props.label : {})}
+              data={barData.value}
+            />
+          )}
           {slots.default?.()}
         </Layer>
       )

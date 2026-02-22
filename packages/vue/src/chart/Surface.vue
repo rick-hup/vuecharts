@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { type CSSProperties, computed } from 'vue'
+import { type CSSProperties, computed, ref } from 'vue'
+import { provideLabelLayerRef } from '@/context/labelLayerContext'
 
 interface SurfaceProps {
   width: number
@@ -27,6 +28,9 @@ const svgViewBox = computed(() => {
   const svgView = props.viewBox || { width: props.width, height: props.height, x: 0, y: 0 }
   return `${svgView.x} ${svgView.y} ${svgView.width} ${svgView.height}`
 })
+
+const labelLayerRef = ref<SVGGElement | null>(null)
+provideLabelLayerRef(labelLayerRef)
 </script>
 
 <template>
@@ -42,5 +46,9 @@ const svgViewBox = computed(() => {
     <title>{{ title }}</title>
     <desc>{{ desc }}</desc>
     <slot />
+    <g
+      ref="labelLayerRef"
+      class="v-charts-label-layer"
+    />
   </svg>
 </template>
