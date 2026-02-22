@@ -3,6 +3,7 @@ import { Label } from '@/components/label/Label'
 import { LabelListVueProps } from '@/components/label/types'
 import { parseViewBox } from '@/components/label/utils'
 import { useLabelLayerRef } from '@/context/labelLayerContext'
+import { useCartesianLabelListData } from '@/context/cartesianLabelListContext'
 import { Layer } from '@/container/Layer'
 import { isNullish } from '@/utils'
 import { getValueByDataKey } from '@/utils/chart'
@@ -11,9 +12,11 @@ export const LabelList = defineComponent({
   props: LabelListVueProps,
   setup(props, { attrs }) {
     const labelLayerRef = useLabelLayerRef(null)
+    const contextData = useCartesianLabelListData(null)
 
     return () => {
-      const { data, dataKey, valueAccessor, clockWise, id, ...others } = props
+      const { dataKey, valueAccessor, clockWise, id, ...others } = props
+      const data = props.data ?? contextData?.value
       if (!data || !data.length)
         return null
 
@@ -30,8 +33,6 @@ export const LabelList = defineComponent({
               <Label
                 {...others}
                 {...attrs}
-                width={viewBox?.width}
-                height={viewBox?.height}
                 id={idProps!}
                 parentViewBox={entry.parentViewBox}
                 value={value}

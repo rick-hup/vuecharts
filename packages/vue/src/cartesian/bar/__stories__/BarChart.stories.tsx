@@ -13,6 +13,7 @@ import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { ErrorBar } from '@/cartesian/error-bar/ErrorBar'
 import { Brush } from '@/cartesian/brush'
 import { Rectangle } from '@/shape/Rectangle'
+import { LabelList } from '@/components/label'
 import { numberData, pageData, rangeData } from '@/storybook/data'
 import type { ChartData } from '@/state/chartDataSlice'
 
@@ -581,4 +582,37 @@ export const StackedAndDynamic: Story = {
     },
   },
   render: (args: Record<string, any>) => <StackedAndDynamicWrapper args={args} />,
+}
+
+const verticalLabelListData = [
+  { label: 'World Trade Organization', value: 74 },
+  { label: 'African Development Bank', value: 8 },
+  { label: 'International Bank for Reconstruction and Development', value: 5 },
+]
+
+export const VerticalWithLabelLists: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: verticalLabelListData,
+    margin: {
+      top: 5,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart {...args} layout="vertical">
+        <Bar dataKey="value" fill="#aebbae" isAnimationActive={false}>
+          <LabelList dataKey="value" position="insideLeft" />
+          <LabelList dataKey="label" position="right" />
+        </Bar>
+        <XAxis dataKey="value" type="number" />
+        <YAxis dataKey="label" hide type="category" />
+      </BarChart>
+    </ResponsiveContainer>
+  ),
 }

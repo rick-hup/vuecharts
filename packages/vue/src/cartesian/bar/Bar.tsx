@@ -16,6 +16,7 @@ import type { ErrorBarDataItem, ErrorBarDataPointFormatter } from '@/cartesian/e
 import type { BarRectangleItem } from '@/types/bar'
 import { getValueByDataKey } from '@/utils/chart'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
+import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
 
 const errorBarDataPointFormatter: ErrorBarDataPointFormatter<BarRectangleItem> = (
   dataPoint,
@@ -57,6 +58,19 @@ export const Bar = defineComponent<BarPropsWithSVG>({
       dataPointFormatter: errorBarDataPointFormatter,
       errorBarOffset,
     })
+
+    const labelListData = computed(() => {
+      if (isAnimating.value || !barData.value) return undefined
+      return barData.value.map(entry => ({
+        x: entry.x,
+        y: entry.y,
+        width: entry.width,
+        height: entry.height,
+        value: entry.value,
+        payload: entry.payload,
+      }))
+    })
+    provideCartesianLabelListData(labelListData)
 
     const graphicalLayerRef = useGraphicalLayerRef(null)
 
