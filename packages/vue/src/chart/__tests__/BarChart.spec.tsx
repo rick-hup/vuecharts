@@ -117,7 +117,7 @@ describe('BarChart', () => {
         </BarChart>
       ))
 
-      const backgroundBars = container.querySelectorAll('rect[fill="#eee"]')
+      const backgroundBars = container.querySelectorAll('path[fill="#eee"]')
       expect(backgroundBars.length).toBe(6)
     })
 
@@ -146,8 +146,10 @@ describe('BarChart', () => {
       const rects = getBarRects(container)
       expect(rects.length).toBe(6)
       rects.forEach((rect) => {
-        expect(rect.getAttribute('rx')).toBe('5')
-        expect(rect.getAttribute('ry')).toBe('5')
+        const d = rect.getAttribute('d')
+        expect(d).toBeTruthy()
+        // Rounded corners produce arc commands in the path
+        expect(d).toContain('A ')
       })
     })
 
@@ -163,7 +165,10 @@ describe('BarChart', () => {
       const rects = getBarRects(container)
       expect(rects.length).toBe(6)
       rects.forEach((rect) => {
-        expect(rect.getAttribute('rx')).toBe('10')
+        const d = rect.getAttribute('d')
+        expect(d).toBeTruthy()
+        // Array radius with [10,10,0,0] produces arc commands for first two corners
+        expect(d).toContain('A ')
       })
     })
   })

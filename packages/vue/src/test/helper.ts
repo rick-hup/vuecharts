@@ -16,7 +16,7 @@ export function getBarRectangles(container: Element): NodeListOf<Element> {
 
 export function getBarRects(container: Element): Element[] {
   return Array.from(getBarRectangles(container)).map((layer) => {
-    const rect = layer.querySelector('rect')
+    const rect = layer.querySelector('path') ?? layer.querySelector('rect')
     assertNotNull(rect)
     return rect
   })

@@ -36,7 +36,7 @@ describe('bar', () => {
     ))
 
     // Check that background bars are rendered
-    const backgroundBars = container.querySelectorAll('rect[fill="#eee"]')
+    const backgroundBars = container.querySelectorAll('path[fill="#eee"]')
     expect(backgroundBars.length).toBeGreaterThanOrEqual(0)
   })
 
