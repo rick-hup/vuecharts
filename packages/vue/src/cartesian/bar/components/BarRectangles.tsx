@@ -28,6 +28,7 @@ export const BarRectangles = defineComponent({
     const activeIndex = useAppSelector(selectActiveTooltipIndex)
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)
     let previousRectangles: ReadonlyArray<BarRectangleItem> | null = null
+    let animationId = 0
     const domRef = useDomRef()
 
     const { props, data: barData, layout } = useBarContext()
@@ -122,9 +123,17 @@ export const BarRectangles = defineComponent({
 
       if (isAnimationActive && previousRectangles !== data) {
         const prevData = previousRectangles
+        // Increment animationId on every data change so the Animate component
+        // remounts and restarts its 0→1 animation. This matches React Recharts'
+        // useAnimationId(props) which generates a new key per render.
+        // The key difference from naively restarting: previousRectangles is
+        // updated at t>0 with interpolated step data, so rapid restarts during
+        // Brush drag interpolate from the current visual position (not the
+        // original start), creating a smooth "chase" effect.
+        animationId++
         return (
           <Animate
-            key={`animate-${data.length}-${data[0]?.x}-${data[0]?.y}-${data[0]?.height}`}
+            key={animationId}
             transition={props.transition}
             isActive={isAnimationActive}
             onAnimationStart={onAnimationStart}
@@ -133,7 +142,7 @@ export const BarRectangles = defineComponent({
             {
               (t) => {
                 const stepData = t === 1
-                  ? (previousRectangles = data)
+                  ? data
                   : data.map((entry, index) => {
                       const prev = prevData?.[index]
                       if (prev) {
@@ -168,6 +177,10 @@ export const BarRectangles = defineComponent({
 
                       return { ...entry, width: w }
                     })
+
+                if (t > 0) {
+                  previousRectangles = stepData
+                }
 
                 return (
                   <g ref={domRef}>
