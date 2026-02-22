@@ -38,7 +38,7 @@ export const BarVueProps = {
     type: [String, Number, Function] as PropType<DataKey<any>>,
     required: true,
   },
-  fill: { type: String, default: '#3182bd' },
+  fill: { type: String, default: undefined },
   stroke: { type: String, default: undefined },
   strokeWidth: { type: Number, default: 0 },
   unit: {

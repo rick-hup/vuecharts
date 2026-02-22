@@ -254,6 +254,67 @@ export const NoPadding: Story = {
   },
 }
 
+const dataWithSmallValuesAndZero = [
+  { name: 'Page D', uv: 1397, pv: 0 },
+  { name: 'Page E', uv: 0, pv: 1 },
+  { name: 'Page F', uv: 1520, pv: 1108 },
+  { name: 'Page G', uv: 2, pv: 680 },
+]
+
+export const WithMinPointSize: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: dataWithSmallValuesAndZero,
+    margin: {
+      top: 5,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <CartesianGrid stroke-dasharray="3 3" />
+          <Tooltip />
+          <Bar dataKey="pv" fill="purple" minPointSize={(value: number) => (value === 0 ? 0 : 2)} stackId="a" />
+          <Bar dataKey="uv" fill="green" minPointSize={(value: number) => (value === 0 ? 0 : 2)} stackId="a" />
+          <Bar dataKey="uv" fill="blue" minPointSize={(value: number) => (value === 0 ? 0 : 2)} />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const OneDataPointPercentSize: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: [[4.5, 10]],
+    /* When there's only one data point on a numerical domain, we cannot automatically calculate the bar size */
+    barSize: '30%',
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args}>
+          <XAxis dataKey={(v: number[]) => v[0]} type="number" domain={[0, 10]} />
+          <YAxis />
+          <CartesianGrid stroke-dasharray="3 3" />
+          <Bar dataKey={(v: number[]) => v[1]} />
+          <Tooltip />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
 export const StackedAndDynamic: Story = {
   args: {
     ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
