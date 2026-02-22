@@ -14,6 +14,7 @@ import { ErrorBar } from '@/cartesian/error-bar/ErrorBar'
 import { Brush } from '@/cartesian/brush'
 import { Rectangle } from '@/shape/Rectangle'
 import { numberData, pageData, rangeData } from '@/storybook/data'
+import type { ChartData } from '@/state/chartDataSlice'
 
 const meta = {
   title: 'examples/BarChart',
@@ -377,6 +378,83 @@ export const CustomCursorBarChart: Story = {
       </ResponsiveContainer>
     )
   },
+}
+
+const ChangingDataKeyWrapper = defineComponent({
+  props: {
+    args: { type: Object, default: () => ({}) },
+  },
+  setup(props) {
+    type MockDataType = {
+      x?: { value: number }
+      y?: { value: number }
+      name: string
+    }
+    const data1: ReadonlyArray<MockDataType> = [
+      { x: { value: 1 }, name: 'x1' },
+      { x: { value: 2 }, name: 'x2' },
+      { x: { value: 3 }, name: 'x3' },
+    ]
+    const data2: ReadonlyArray<MockDataType> = [
+      { y: { value: 3 }, name: 'y1' },
+      { y: { value: 2 }, name: 'y2' },
+      { y: { value: 1 }, name: 'y3' },
+    ]
+
+    const dataKey1 = (d: MockDataType) => d.x?.value ?? 0
+    const dataKey2 = (d: MockDataType) => d.y?.value ?? 0
+
+    const useData2 = ref(false)
+    const visible = ref(true)
+
+    return () => (
+      <div>
+        <div>
+          <button type="button" onClick={() => { useData2.value = false; visible.value = true }}>
+            Use data1
+          </button>
+          <button type="button" onClick={() => { useData2.value = true; visible.value = true }}>
+            Use data2
+          </button>
+          <button type="button" onClick={() => { visible.value = false }}>
+            Hide
+          </button>
+        </div>
+        <BarChart {...props.args} data={useData2.value ? data2 as unknown as ChartData : data1 as unknown as ChartData}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" padding={{ left: 30, right: 30 }} />
+          <YAxis dataKey={useData2.value ? dataKey2 : dataKey1} />
+          <Tooltip />
+          <Legend />
+          <Bar
+            name="Animated Bar"
+            hide={!visible.value}
+            type="monotone"
+            dataKey={useData2.value ? dataKey2 : dataKey1}
+            stroke="#8884d8"
+            stroke-dasharray="5 5"
+            label={{ fill: 'red' }}
+            animationDuration={1000}
+          />
+        </BarChart>
+      </div>
+    )
+  },
+})
+
+export const ChangingDataKey: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    margin: {
+      top: 30,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => <ChangingDataKeyWrapper args={args} />,
 }
 
 export const StackedAndDynamic: Story = {

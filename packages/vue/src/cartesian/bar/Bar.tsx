@@ -40,7 +40,7 @@ export const Bar = defineComponent<BarPropsWithSVG>({
   }>,
   setup(props: BarProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     useSetupGraphicalItem(props, 'bar')
-    const { shouldRender, clipPathId, barData } = useBar(props)
+    const { shouldRender, clipPathId, barData, isAnimating } = useBar(props)
     const { needClip } = useNeedsClip(props.xAxisId, props.yAxisId)
     const layout = useChartLayout()
 
@@ -78,7 +78,7 @@ export const Bar = defineComponent<BarPropsWithSVG>({
             {props.background && <BarBackground />}
             <BarRectangles />
           </Layer>
-          {props.label && (
+          {!isAnimating.value && props.label && (
             <LabelList
               {...(typeof props.label === 'object' ? props.label : {})}
               data={barData.value}
