@@ -157,6 +157,37 @@ export const XAxisTickMarginWithBrushDy: Story = {
   },
 }
 
+export const StackedWithBrush: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: {
+      top: 20,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
+          <Tooltip defaultIndex={1} />
+          <Bar dataKey="pv" stackId="a" fill="#8884d8" activeBar={{ fill: 'gold' }} />
+          <Bar dataKey="uv" stackId="a" fill="#82ca9d" activeBar={{ fill: 'silver' }} />
+          <Brush dataKey="name" height={30} stroke="#8884d8" />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
 export const StackedAndDynamic: Story = {
   args: {
     ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
