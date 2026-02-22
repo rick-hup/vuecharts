@@ -101,6 +101,7 @@ export function computeBarRectangles({
   // @ts-expect-error this assumes that the domain is always numeric, but doesn't check for it
   const stackedDomain: ReadonlyArray<number> = stackedData ? numericAxis.scale.domain() : null
   const baseValue = getBaseValueOfBar({ numericAxis })
+  const stackedBarStart: number | undefined = numericAxis.scale(baseValue)
 
   return displayedData.map((rawEntry, index): BarRectangleItem => {
     const entry = toRaw(rawEntry)
@@ -169,6 +170,7 @@ export function computeBarRectangles({
       y,
       width,
       height,
+      stackedBarStart: stackedBarStart ?? 0,
       value: stackedData ? value : value[1],
       payload: entry,
       background,

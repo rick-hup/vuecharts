@@ -159,23 +159,19 @@ export const BarRectangles = defineComponent({
                         }
                       }
 
-                      // 新出现的柱子，从0开始动画
+                      // 新出现的柱子：从堆叠基线开始动画
                       if (layout.value === 'horizontal') {
-                        const interpolatorHeight = interpolateNumber(0, entry.height)
-                        const h = interpolatorHeight(t)
+                        const h = interpolateNumber(0, entry.height)(t)
+                        const y = interpolateNumber(entry.stackedBarStart, entry.y!)(t)
 
-                        return {
-                          ...entry,
-                          y: (entry.y || 0) + entry.height - h,
-                          height: h,
-                        }
+                        return { ...entry, y, height: h }
                       }
 
                       // 垂直布局
-                      const interpolator = interpolateNumber(0, entry.width)
-                      const w = interpolator(t)
+                      const w = interpolateNumber(0, entry.width!)(t)
+                      const x = interpolateNumber(entry.stackedBarStart, entry.x!)(t)
 
-                      return { ...entry, width: w }
+                      return { ...entry, width: w, x }
                     })
 
                 if (t > 0) {

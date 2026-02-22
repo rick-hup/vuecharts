@@ -45,6 +45,8 @@ export interface BarRectangleItem extends RectangleProps {
     width?: number
     height?: number
   }
+  /** Chart range coordinate of the baseValue of the first bar in a stack. */
+  stackedBarStart: number
   tooltipPosition: Coordinate
 }
 
