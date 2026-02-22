@@ -191,6 +191,17 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 ### Vue Reactivity + D3 Integration
 - Always call `toRaw(entry)` before passing reactive data entries to D3 scale functions (e.g., in `computeBarRectangles`); Vue Proxy objects cause incorrect behavior with D3 property access
 - Pattern: `displayedData.map((rawEntry, index) => { const entry = toRaw(rawEntry); ... })`
+
+### Brush Component Pattern
+- `Brush` composes four sub-components: `Background`, `Slide`, `TravellerLayer` (startX), `TravellerLayer` (endX), and conditional `BrushText`
+- `useBrushState`: maintains `brushState` ref via `d3 scalePoint` mapping data indices to pixel positions; `watch` with `immediate: true` re-syncs on data/dimension changes; uses 3-way branch: (1) dimension change (`x`/`width`/`travellerWidth` changed) always recalculates `startX`/`endX` from new scale (even during drag, to handle resize); (2) index-only change during active drag (`isSlideMoving || isTravellerMoving || isTravellerFocused`) only updates `scale`/`scaleValues`, not `startX`/`endX`, to preserve drag positions; (3) no interaction, no dimension change: full update of all four fields; tracks previous dimensions via `prevX`/`prevWidth`/`prevTravellerWidth` variables inside the hook closure
+- `useBrushHandlers`: attaches global `window` `mouseup`/`touchend`/`mousemove` listeners on drag start; detaches on drag end via `handleDragEnd`; `gap` prop snaps traveller movement to data index intervals; keyboard navigation via `handleTravellerMoveKeyboard` (+1/-1 step)
+- `handlerProps` uses `reactive()` with getter properties (e.g., `get x() { return x.value! }`) so event handlers always read current values without stale closure issues
+- `BrushText` sub-component: renders start/end data labels via two `<Text value={...} />` calls (pass content as `value` prop, not slot children); `Text` must be imported as default export (`import Text from '...'`), not named export; CSS class `recharts-brush-texts`
+- BrushText visibility condition: `isTextActive || isSlideMoving || isTravellerMoving || isTravellerFocused || alwaysShowText`
+- `dy` prop offsets: `calculatedY = (y ?? 0) + (dy ?? 0)`; pair with `margin.bottom` on chart to avoid XAxis overlap
+- Redux fallbacks: `x`/`y`/`width` use `selectBrushDimensions` when props are undefined; `startIndex`/`endIndex` fall back to `chartData` Redux slice values
+- Keyboard support: `TravellerLayer` emits `traveller-move-keyboard` event with `(direction: 1 | -1, id: BrushTravellerId)`; focus/blur update `isTravellerFocused` on `brushState`
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: git-insights -->
@@ -204,6 +215,7 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 - **Tooltip component**: Cursor restricted to `tooltipEventType === 'axis'` only; BarChart cursor is a `Rectangle` band sized via `useTooltipAxisBandSize()`, other charts use a `Curve`; `shared` prop now three-state (`true`/`false`/`undefined`); portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
 - **ErrorBar component**: New `cartesian/error-bar/` module; `ErrorBar` rendered as default slot child of `Bar`; context-based data flow via `provideErrorBarContext`/`useErrorBarContext`; supports symmetric and asymmetric `[low, high]` error bounds; auto-detects direction from chart layout
 - **Bar component**: Now provides `ErrorBarContext` to child slots; `tooltipPosition` added to `BarRectangleItem` (center of bar)
+- **Brush component**: Fully implemented; composes Background, Slide, TravellerLayer (x2 for startX/endX), BrushText sub-components; `useBrushHandlers` manages all drag/slide/traveller/keyboard interaction with global `window` mouseup/touchend/mousemove listeners attached on drag start and detached on drag end; `useBrushState` uses `d3 scalePoint` (from `victory-vendor/d3-scale`) to map data indices to pixel positions, 3-way watch branch: dimension change always recalculates positions (handles resize even during drag), index-only change during drag only updates scale/scaleValues, otherwise full update; Redux integration: reads `chartData`/`dataStartIndex`/`dataEndIndex` from store, `x`/`y`/`width` fall back to `selectBrushDimensions` selector when not passed as props, dispatches `setDataStartEndIndexes` on change; `dy` prop offsets Y via `calculatedY = y + dy`; `alwaysShowText` forces BrushText visibility; `isTravellerFocused` tracks keyboard focus; guard returns null if dimensions are invalid; CSS class `.v-charts-brush`; calls `useBrushChartSynchronisation()` for cross-chart sync
 - **Storybook BarChart**: Stories cover `StackedAndDynamic` (interactive legend-driven series toggling), `StackedWithErrorBar` (vertical layout, `direction="x"` error bars), and `XAxisTickMarginWithBrushDy` (XAxis `tickMargin` + Brush `dy` prop for bottom-margin offset)
 - **Testing**: BarChart test suite covers rendering, props (fill, background, hide, radius), stacked bars, vertical layout, context providers (viewBox, clipPathId, width, height), and tooltip interaction
 

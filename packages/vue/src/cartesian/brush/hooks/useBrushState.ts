@@ -1,9 +1,17 @@
-import { onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { scalePoint } from 'victory-vendor/d3-scale'
 import range from 'es-toolkit/compat/range'
-import type { BrushProps, BrushState } from '../type'
+import type { BrushState } from '../type'
+import type { ChartData } from '@/state/chartDataSlice'
 
-export function useBrushState(props: BrushProps) {
+export function useBrushState(
+  getX: () => number | undefined,
+  getWidth: () => number | undefined,
+  getTravellerWidth: () => number,
+  chartData: () => ChartData | undefined,
+  startIndex: () => number,
+  endIndex: () => number,
+) {
   const brushState = ref<BrushState>({
     isTravellerMoving: false,
     isTravellerFocused: false,
@@ -18,33 +26,68 @@ export function useBrushState(props: BrushProps) {
     scaleValues: undefined,
   })
 
-  const createScale = () => {
-    if (!props.data?.length)
-      return {}
+  // Track previous dimensions to detect resize vs index-only changes
+  let prevX: number | undefined
+  let prevWidth: number | undefined
+  let prevTravellerWidth: number | undefined
 
-    const scale = scalePoint()
-      .domain(range(0, props.data.length))
-      .range([props.x, props.x + props.width - props.travellerWidth])
+  const createScale = (data: ChartData, si: number, ei: number, x: number, width: number, tw: number) => {
+    if (!data?.length)
+      return null
 
-    const scaleValues = scale.domain().map(entry => scale(entry))
+    const scale = scalePoint<number>()
+      .domain(range(0, data.length))
+      .range([x, x + width - tw])
+
+    const scaleValues = scale.domain().map(entry => scale(entry)!)
 
     return {
-      isTextActive: false,
-      isSlideMoving: false,
-      isTravellerMoving: false,
-      isTravellerFocused: false,
-      startX: scale(props.startIndex),
-      endX: scale(props.endIndex),
+      startX: scale(si)!,
+      endX: scale(ei)!,
       scale,
       scaleValues,
     }
   }
 
-  onMounted(() => {
-    Object.assign(brushState.value, createScale())
-  })
+  watch(
+    [chartData, getX, getWidth, getTravellerWidth, startIndex, endIndex],
+    ([data, x, width, tw, si, ei]) => {
+      if (!data?.length || x == null || width == null)
+        return
 
-  return {
-    brushState,
-  }
+      const result = createScale(data, si, ei, x, width, tw)
+      if (!result)
+        return
+
+      const isDimensionChange = x !== prevX || width !== prevWidth || tw !== prevTravellerWidth
+      prevX = x
+      prevWidth = width
+      prevTravellerWidth = tw
+
+      const isInteracting = brushState.value.isSlideMoving || brushState.value.isTravellerMoving || brushState.value.isTravellerFocused
+
+      if (isDimensionChange) {
+        // Dimension change (resize): always recalculate positions from the new scale
+        brushState.value.startX = result.startX
+        brushState.value.endX = result.endX
+        brushState.value.scale = result.scale
+        brushState.value.scaleValues = result.scaleValues
+      }
+      else if (isInteracting) {
+        // Index change during active drag/focus: only update scale/scaleValues
+        brushState.value.scale = result.scale
+        brushState.value.scaleValues = result.scaleValues
+      }
+      else {
+        // No interaction, no dimension change: full update
+        brushState.value.startX = result.startX
+        brushState.value.endX = result.endX
+        brushState.value.scale = result.scale
+        brushState.value.scaleValues = result.scaleValues
+      }
+    },
+    { immediate: true },
+  )
+
+  return { brushState }
 }

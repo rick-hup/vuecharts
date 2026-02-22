@@ -1,200 +1,291 @@
-// import { ref } from 'vue'
-// import { getIndex } from '../utils'
-// import type { BrushProps, BrushTravellerId } from '../type'
+import { onUnmounted } from 'vue'
+import type { Ref } from 'vue'
+import { getIndex } from '../utils'
+import type { BrushState, BrushTravellerId } from '../type'
+import type { BrushStartEndIndex } from '@/state/chartDataSlice'
 
-// export function useBrushHandlers(props: BrushProps) {
-//   const leaveTimer = ref<number>()
-//   const state = ref({
-//     isTravellerMoving: false,
-//     isSlideMoving: false,
-//     startX: undefined as number | undefined,
-//     endX: undefined as number | undefined,
-//     slideMoveStartX: undefined as number | undefined,
-//     brushMoveStartX: undefined as number | undefined,
-//     movingTravellerId: undefined as BrushTravellerId | undefined,
-//     isTextActive: false,
-//   })
+export interface UseBrushHandlersProps {
+  x: number
+  width: number
+  travellerWidth: number
+  gap: number
+  startIndex: number
+  endIndex: number
+  leaveTimeOut: number
+  onChange?: (index: BrushStartEndIndex) => void
+  onDragEnd?: (index: BrushStartEndIndex) => void
+  data?: any[]
+}
 
-//   const handleDrag = (e: MouseEvent | Touch) => {
-//     if (leaveTimer.value) {
-//       clearTimeout(leaveTimer.value)
-//       leaveTimer.value = undefined
-//     }
+export function useBrushHandlers(
+  brushState: Ref<BrushState>,
+  props: UseBrushHandlersProps,
+  onChange: (index: BrushStartEndIndex) => void,
+  chartData: () => any[],
+) {
+  let leaveTimer: ReturnType<typeof setTimeout> | null = null
 
-//     if (state.value.isTravellerMoving) {
-//       handleTravellerMove(e)
-//     }
-//     else if (state.value.isSlideMoving) {
-//       handleSlideDrag(e)
-//     }
-//   }
+  // --- internal helpers ---
 
-//   const handleTouchMove = (e: TouchEvent) => {
-//     if (e.changedTouches?.length > 0) {
-//       handleDrag(e.changedTouches[0])
-//     }
-//   }
+  function attachDragEndListener() {
+    window.addEventListener('mouseup', handleDragEnd, true)
+    window.addEventListener('touchend', handleDragEnd, true)
+    window.addEventListener('mousemove', handleMouseDrag, true)
+  }
 
-//   const handleLeaveWrapper = () => {
-//     if (state.value.isTravellerMoving || state.value.isSlideMoving) {
-//       leaveTimer.value = window.setTimeout(handleDragEnd, props.leaveTimeOut)
-//     }
-//   }
+  function detachDragEndListener() {
+    window.removeEventListener('mouseup', handleDragEnd, true)
+    window.removeEventListener('touchend', handleDragEnd, true)
+    window.removeEventListener('mousemove', handleMouseDrag, true)
+  }
 
-//   const handleDragEnd = () => {
-//     state.value.isTravellerMoving = false
-//     state.value.isSlideMoving = false
+  function handleDrag(e: Touch | MouseEvent) {
+    if (leaveTimer != null) {
+      clearTimeout(leaveTimer)
+      leaveTimer = null
+    }
 
-//     const newIndex = getIndex({
-//       startX: state.value.startX!,
-//       endX: state.value.endX!,
-//       data: props.data!,
-//       gap: props.gap!,
-//       scaleValues: state.value.scaleValues!,
-//     })
+    if (brushState.value.isTravellerMoving) {
+      handleTravellerMove(e)
+    }
+    else if (brushState.value.isSlideMoving) {
+      handleSlideDrag(e)
+    }
+  }
 
-//     props.onDragEnd?.(newIndex)
-//   }
+  function handleMouseDrag(e: MouseEvent) {
+    handleDrag(e)
+  }
 
-//   const handleEnterSlideOrTraveller = () => {
-//     state.value.isTextActive = true
-//   }
+  function handleSlideDrag(e: Touch | MouseEvent) {
+    const { slideMoveStartX, startX, endX, scaleValues } = brushState.value
+    if (scaleValues == null || slideMoveStartX == null || startX == null || endX == null) {
+      return
+    }
 
-//   const handleLeaveSlideOrTraveller = () => {
-//     state.value.isTextActive = false
-//   }
+    const { x, width, travellerWidth, startIndex, endIndex, gap } = props
+    const data = chartData()
 
-//   const handleSlideDragStart = (e: MouseEvent | TouchEvent) => {
-//     const event = e instanceof TouchEvent ? e.changedTouches[0] : e
+    let delta = e.pageX - slideMoveStartX
 
-//     state.value.isTravellerMoving = false
-//     state.value.isSlideMoving = true
-//     state.value.slideMoveStartX = event.pageX
-//   }
+    if (delta > 0) {
+      delta = Math.min(
+        delta,
+        x + width - travellerWidth - endX,
+        x + width - travellerWidth - startX,
+      )
+    }
+    else if (delta < 0) {
+      delta = Math.max(delta, x - startX, x - endX)
+    }
 
-//   const handleSlideDrag = (e: MouseEvent | Touch) => {
-//     const { slideMoveStartX, startX, endX } = state.value
-//     const { x, width, travellerWidth } = props
-//     let delta = e.pageX - slideMoveStartX!
+    const newIndex = getIndex({
+      startX: startX + delta,
+      endX: endX + delta,
+      data,
+      gap,
+      scaleValues,
+    })
 
-//     if (delta > 0) {
-//       delta = Math.min(delta, x! + width! - travellerWidth! - endX!, x! + width! - travellerWidth! - startX!)
-//     }
-//     else if (delta < 0) {
-//       delta = Math.max(delta, x! - startX!, x! - endX!)
-//     }
+    if ((newIndex.startIndex !== startIndex || newIndex.endIndex !== endIndex) && onChange) {
+      onChange(newIndex)
+    }
 
-//     const newIndex = getIndex({
-//       startX: startX! + delta,
-//       endX: endX! + delta,
-//       data: props.data!,
-//       gap: props.gap!,
-//       scaleValues: state.value.scaleValues!,
-//     })
+    brushState.value.startX = startX + delta
+    brushState.value.endX = endX + delta
+    brushState.value.slideMoveStartX = e.pageX
+  }
 
-//     if ((newIndex.startIndex !== props.startIndex || newIndex.endIndex !== props.endIndex) && props.onChange) {
-//       props.onChange(newIndex)
-//     }
+  function handleTravellerMove(e: Touch | MouseEvent) {
+    const { brushMoveStartX, movingTravellerId, endX, startX, scaleValues } = brushState.value
+    if (movingTravellerId == null || scaleValues == null || brushMoveStartX == null || startX == null || endX == null) {
+      return
+    }
 
-//     state.value.startX = startX! + delta
-//     state.value.endX = endX! + delta
-//     state.value.slideMoveStartX = e.pageX
-//   }
+    const prevValue = brushState.value[movingTravellerId]
+    if (prevValue == null) {
+      return
+    }
 
-//   const handleTravellerDragStart = (id: BrushTravellerId, e: MouseEvent | TouchEvent) => {
-//     const event = e instanceof TouchEvent ? e.changedTouches[0] : e
+    const { x, width, travellerWidth, gap } = props
+    const data = chartData()
 
-//     state.value.isSlideMoving = false
-//     state.value.isTravellerMoving = true
-//     state.value.movingTravellerId = id
-//     state.value.brushMoveStartX = event.pageX
-//   }
+    const params = {
+      startX: brushState.value.startX!,
+      endX: brushState.value.endX!,
+      data,
+      gap,
+      scaleValues,
+    }
 
-//   const handleTravellerMove = (e: MouseEvent | Touch) => {
-//     const { brushMoveStartX, movingTravellerId, endX, startX } = state.value
-//     const prevValue = state.value[movingTravellerId!]
+    let delta = e.pageX - brushMoveStartX
 
-//     const { x, width, travellerWidth } = props
-//     let delta = e.pageX - brushMoveStartX!
+    if (delta > 0) {
+      delta = Math.min(delta, x + width - travellerWidth - prevValue)
+    }
+    else if (delta < 0) {
+      delta = Math.max(delta, x - prevValue)
+    }
 
-//     if (delta > 0) {
-//       delta = Math.min(delta, x! + width! - travellerWidth! - prevValue!)
-//     }
-//     else if (delta < 0) {
-//       delta = Math.max(delta, x! - prevValue!)
-//     }
+    params[movingTravellerId] = prevValue + delta
 
-//     const params = {
-//       startX: state.value.startX!,
-//       endX: state.value.endX!,
-//       data: props.data!,
-//       gap: props.gap!,
-//       scaleValues: state.value.scaleValues!,
-//     }
+    const newIndex = getIndex(params)
+    const { startIndex, endIndex } = newIndex
 
-//     params[movingTravellerId!] = prevValue! + delta
+    const isFullGap = () => {
+      const lastIndex = data.length - 1
+      if (
+        (movingTravellerId === 'startX'
+          && (endX > startX ? startIndex % gap === 0 : endIndex % gap === 0))
+        || (endX < startX && endIndex === lastIndex)
+        || (movingTravellerId === 'endX'
+          && (endX > startX ? endIndex % gap === 0 : startIndex % gap === 0))
+        || (endX > startX && endIndex === lastIndex)
+      ) {
+        return true
+      }
+      return false
+    }
 
-//     const newIndex = getIndex(params)
-//     const { startIndex, endIndex } = newIndex
-//     const isFullGap = () => {
-//       const lastIndex = props.data!.length - 1
-//       if (
-//         (movingTravellerId === 'startX' && (endX! > startX! ? startIndex % props.gap! === 0 : endIndex % props.gap! === 0))
-//         || (endX! < startX! && endIndex === lastIndex)
-//         || (movingTravellerId === 'endX' && (endX! > startX! ? endIndex % props.gap! === 0 : startIndex % props.gap! === 0))
-//         || (endX! > startX! && endIndex === lastIndex)
-//       ) {
-//         return true
-//       }
-//       return false
-//     }
+    brushState.value[movingTravellerId] = prevValue + delta
+    brushState.value.brushMoveStartX = e.pageX
 
-//     state.value[movingTravellerId!] = prevValue! + delta
-//     state.value.brushMoveStartX = e.pageX
+    if (onChange && isFullGap()) {
+      onChange(newIndex)
+    }
+  }
 
-//     if (props.onChange && isFullGap()) {
-//       props.onChange(newIndex)
-//     }
-//   }
+  // --- returned handlers ---
 
-//   const handleTravellerMoveKeyboard = (direction: 1 | -1, id: BrushTravellerId) => {
-//     const { data, gap } = props
-//     const { scaleValues, startX, endX } = state.value
-//     const currentScaleValue = state.value[id]
+  function handleLeaveWrapper() {
+    if (brushState.value.isTravellerMoving || brushState.value.isSlideMoving) {
+      leaveTimer = setTimeout(handleDragEnd, props.leaveTimeOut)
+    }
+  }
 
-//     const currentIndex = scaleValues!.indexOf(currentScaleValue!)
-//     if (currentIndex === -1)
-//       return
+  function handleTouchMove(e: TouchEvent) {
+    const touch = e.changedTouches?.[0]
+    if (touch != null) {
+      handleDrag(touch)
+    }
+  }
 
-//     const newIndex = currentIndex + direction
-//     if (newIndex === -1 || newIndex >= scaleValues!.length)
-//       return
+  function handleEnterSlideOrTraveller() {
+    brushState.value.isTextActive = true
+  }
 
-//     const newScaleValue = scaleValues![newIndex]
+  function handleLeaveSlideOrTraveller() {
+    brushState.value.isTextActive = false
+  }
 
-//     if ((id === 'startX' && newScaleValue >= endX!) || (id === 'endX' && newScaleValue <= startX!))
-//       return
+  function handleSlideDragStart(e: MouseEvent | TouchEvent) {
+    const event = e instanceof TouchEvent ? e.changedTouches[0] : e
+    if (event == null) {
+      return
+    }
 
-//     state.value[id] = newScaleValue
-//     props.onChange?.(
-//       getIndex({
-//         startX: state.value.startX!,
-//         endX: state.value.endX!,
-//         data: data!,
-//         gap: gap!,
-//         scaleValues: scaleValues!,
-//       }),
-//     )
-//   }
+    brushState.value.isTravellerMoving = false
+    brushState.value.isSlideMoving = true
+    brushState.value.slideMoveStartX = event.pageX
 
-//   return {
-//     state,
-//     handleEnterSlideOrTraveller,
-//     handleLeaveSlideOrTraveller,
-//     handleSlideDragStart,
-//     handleTravellerDragStart,
-//     handleTravellerMoveKeyboard,
-//     handleLeaveWrapper,
-//     handleTouchMove,
-//   }
-// }
+    attachDragEndListener()
+  }
+
+  function handleTravellerDragStart(id: BrushTravellerId, e: MouseEvent | TouchEvent) {
+    const event = e instanceof TouchEvent ? e.changedTouches[0] : e
+    if (event == null) {
+      return
+    }
+
+    brushState.value.isSlideMoving = false
+    brushState.value.isTravellerMoving = true
+    brushState.value.movingTravellerId = id
+    brushState.value.brushMoveStartX = event.pageX
+
+    attachDragEndListener()
+  }
+
+  function handleTravellerMoveKeyboard(direction: 1 | -1, id: BrushTravellerId) {
+    const { scaleValues, startX, endX } = brushState.value
+    if (scaleValues == null) {
+      return
+    }
+
+    const data = chartData()
+    const { gap, startIndex, endIndex } = props
+
+    // Use the index-based approach from Recharts:
+    // determine the current data index from the prop, then move by direction.
+    let currentIndex: number = -1
+    if (id === 'startX') {
+      currentIndex = startIndex
+    }
+    else if (id === 'endX') {
+      currentIndex = endIndex
+    }
+
+    if (currentIndex < 0 || currentIndex >= data.length) {
+      return
+    }
+
+    const newIndex = currentIndex + direction
+    if (newIndex < 0 || newIndex >= scaleValues.length) {
+      return
+    }
+
+    const newScaleValue = scaleValues[newIndex]
+    if (newScaleValue == null) {
+      return
+    }
+
+    // Prevent travellers from overlapping
+    if ((id === 'startX' && newScaleValue >= endX!) || (id === 'endX' && newScaleValue <= startX!)) {
+      return
+    }
+
+    brushState.value[id] = newScaleValue
+
+    onChange(
+      getIndex({
+        startX: brushState.value.startX!,
+        endX: brushState.value.endX!,
+        data,
+        gap,
+        scaleValues,
+      }),
+    )
+  }
+
+  function handleDragEnd() {
+    brushState.value.isTravellerMoving = false
+    brushState.value.isSlideMoving = false
+
+    detachDragEndListener()
+
+    const { startIndex, endIndex } = props
+    props.onDragEnd?.({
+      startIndex,
+      endIndex,
+    })
+  }
+
+  // Cleanup on unmount
+  onUnmounted(() => {
+    if (leaveTimer != null) {
+      clearTimeout(leaveTimer)
+      leaveTimer = null
+    }
+    detachDragEndListener()
+  })
+
+  return {
+    handleLeaveWrapper,
+    handleTouchMove,
+    handleEnterSlideOrTraveller,
+    handleLeaveSlideOrTraveller,
+    handleSlideDragStart,
+    handleTravellerDragStart,
+    handleTravellerMoveKeyboard,
+    handleDragEnd,
+  }
+}

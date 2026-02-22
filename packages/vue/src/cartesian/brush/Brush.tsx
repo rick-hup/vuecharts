@@ -1,72 +1,192 @@
-import type { CSSProperties, SVGAttributes, SlotsType } from 'vue'
-import { computed, defineComponent, nextTick, reactive } from 'vue'
-import type { BrushProps, BrushPropsWithSVG } from './type'
+import type { CSSProperties } from 'vue'
+import { computed, defineComponent, reactive } from 'vue'
+import type { BrushPropsWithSVG, BrushTravellerId } from './type'
 import { BrushVueProps } from './type'
 import { Layer } from '../../container/Layer'
+import { Background } from './components/Background'
+import { Slide } from './components/Slide'
+import { TravellerLayer } from './components/TravellerLayer'
+import { BrushText } from './components/BrushText'
 import { useBrushState } from './hooks/useBrushState'
+import { useBrushHandlers } from './hooks/useBrushHandlers'
 import { useBrushSetting } from '@/cartesian/brush/hooks/useBrushSetting'
 import { useBrushChartSynchronisation } from '@/synchronisation/useChartSynchronisation'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { selectBrushDimensions } from '@/state/selectors/brushSelectors'
+import { setDataStartEndIndexes } from '@/state/chartDataSlice'
+import type { BrushStartEndIndex } from '@/state/chartDataSlice'
+import { isNumber } from '@/utils'
 
 export const Brush = defineComponent<BrushPropsWithSVG>({
   name: 'Brush',
   props: BrushVueProps,
   inheritAttrs: false,
-  setup(props: BrushProps, { attrs, slots }) {
-    // setting brush settings
+  setup(props, { attrs }) {
+    // --- Redux integration ---
     useBrushSetting(props)
     useBrushChartSynchronisation()
 
-    const { brushState } = useBrushState(props)
+    const dispatch = useAppDispatch()
+    const chartData = useAppSelector(state => state.chartData.chartData)
+    const dataStartIndex = useAppSelector(state => state.chartData.dataStartIndex)
+    const dataEndIndex = useAppSelector(state => state.chartData.dataEndIndex)
+    const brushDimensions = useAppSelector(selectBrushDimensions)
 
-    const state = reactive({
-      isTravellerMoving: false,
-    isSlideMoving: false,
+    // --- Computed properties ---
+    const x = computed(() => props.x ?? brushDimensions.value?.x)
+    const y = computed(() => props.y ?? brushDimensions.value?.y)
+    const width = computed(() => props.width ?? brushDimensions.value?.width)
+    const startIndex = computed(() => props.startIndex ?? dataStartIndex.value ?? 0)
+    const endIndex = computed(() => props.endIndex ?? dataEndIndex.value ?? 0)
+    const calculatedY = computed(() => (y.value ?? 0) + (props.dy ?? 0))
+
+    // --- onChange handler ---
+    const onChange = (nextState: BrushStartEndIndex) => {
+      props.onChange?.(nextState)
+      dispatch(setDataStartEndIndexes(nextState))
+    }
+
+    // --- Hook wiring ---
+    const { brushState } = useBrushState(
+      () => x.value,
+      () => width.value,
+      () => props.travellerWidth!,
+      () => chartData.value,
+      () => startIndex.value,
+      () => endIndex.value,
+    )
+
+    // Reactive props object for useBrushHandlers — getters ensure values are current when accessed during event handlers
+    const handlerProps = reactive({
+      get x() { return x.value! },
+      get width() { return width.value! },
+      get travellerWidth() { return props.travellerWidth! },
+      get gap() { return props.gap! },
+      get startIndex() { return startIndex.value },
+      get endIndex() { return endIndex.value },
+      get leaveTimeOut() { return props.leaveTimeOut! },
+      get onChange() { return props.onChange },
+      get onDragEnd() { return props.onDragEnd },
+      get data() { return props.data },
     })
-    let leaveTimer: number | null = null
-    const handleDragEnd = async () => {
-      state.isTravellerMoving = false
-      state.isSlideMoving = false
-      await nextTick()
-      props.onDragEnd?.({
-        endIndex: props.endIndex!,
-        startIndex: props.startIndex!,
-      })
-    }
-    const handleDrag = (e: Touch | MouseEvent) => {
-      if (leaveTimer) {
-        clearTimeout(leaveTimer)
-        leaveTimer = null
-      }
 
-      if (state.isTravellerMoving) {
-        // handleTravellerMove(e)
-      }
-      else if (state.isSlideMoving) {
-        // handleSlideDrag(e)
-      }
-    }
-    const handleLeaveWrapper = () => {
-      if (state.isTravellerMoving || state.isSlideMoving) {
-        leaveTimer = window.setTimeout(handleDragEnd, props.leaveTimeOut)
-      }
-    }
+    const handlers = useBrushHandlers(
+      brushState,
+      handlerProps,
+      onChange,
+      () => chartData.value ?? [],
+    )
 
-    const handleTouchMove = (e: TouchEvent) => {
-    if (e.changedTouches != null && e.changedTouches.length > 0) {
-        handleDrag(e.changedTouches[0])
-      }
-    }
+    // --- Bound traveller drag start handlers ---
+    const startXDragStart = (e: MouseEvent | TouchEvent) => handlers.handleTravellerDragStart('startX', e)
+    const endXDragStart = (e: MouseEvent | TouchEvent) => handlers.handleTravellerDragStart('endX', e)
 
     return () => {
-    return (
-      <Layer
+      const data = chartData.value
+      const xVal = x.value
+      const yVal = calculatedY.value
+      const wVal = width.value
+      const hVal = props.height
+
+      // Guard: return null if no data or dimensions are not valid
+      if (
+        !data
+        || !data.length
+        || !isNumber(xVal)
+        || !isNumber(yVal)
+        || !isNumber(wVal)
+        || !isNumber(hVal)
+        || wVal <= 0
+        || hVal <= 0
+      ) {
+        return null
+      }
+
+      const { startX, endX, isTextActive, isSlideMoving, isTravellerMoving, isTravellerFocused } = brushState.value
+
+      const showText = isTextActive || isSlideMoving || isTravellerMoving || isTravellerFocused || props.alwaysShowText
+
+      const travellerOtherProps = {
+        ...props,
+        x: xVal,
+        y: yVal,
+        width: wVal,
+        data: data as any[],
+        startIndex: startIndex.value,
+        endIndex: endIndex.value,
+      }
+
+      return (
+        <Layer
           class={['v-charts-brush', props.class]}
           style={{ userSelect: 'none', ...attrs.style as CSSProperties }}
-          onMouseleave={handleLeaveWrapper}
-          onTouchmove={handleTouchMove}
+          onMouseleave={handlers.handleLeaveWrapper}
+          onTouchmove={handlers.handleTouchMove}
         >
-          1
-      </Layer>
+          <Background
+            x={xVal}
+            y={yVal}
+            width={wVal}
+            height={hVal}
+            fill={props.fill}
+            stroke={props.stroke}
+          />
+
+          <Slide
+            y={yVal}
+            height={hVal}
+            stroke={props.stroke}
+            travellerWidth={props.travellerWidth}
+            startX={startX}
+            endX={endX}
+            onMouseenter={handlers.handleEnterSlideOrTraveller}
+            onMouseleave={handlers.handleLeaveSlideOrTraveller}
+            onMousedown={handlers.handleSlideDragStart}
+            onTouchstart={handlers.handleSlideDragStart}
+          />
+
+          <TravellerLayer
+            travellerX={startX}
+            id="startX"
+            otherProps={travellerOtherProps}
+            onMouseenter={handlers.handleEnterSlideOrTraveller}
+            onMouseleave={handlers.handleLeaveSlideOrTraveller}
+            onMousedown={startXDragStart}
+            onTouchstart={startXDragStart}
+            {...{ 'onTraveller-move-keyboard': (direction: 1 | -1, id: BrushTravellerId) => handlers.handleTravellerMoveKeyboard(direction, id) }}
+            onFocus={() => { brushState.value.isTravellerFocused = true }}
+            onBlur={() => { brushState.value.isTravellerFocused = false }}
+          />
+
+          <TravellerLayer
+            travellerX={endX}
+            id="endX"
+            otherProps={travellerOtherProps}
+            onMouseenter={handlers.handleEnterSlideOrTraveller}
+            onMouseleave={handlers.handleLeaveSlideOrTraveller}
+            onMousedown={endXDragStart}
+            onTouchstart={endXDragStart}
+            {...{ 'onTraveller-move-keyboard': (direction: 1 | -1, id: BrushTravellerId) => handlers.handleTravellerMoveKeyboard(direction, id) }}
+            onFocus={() => { brushState.value.isTravellerFocused = true }}
+            onBlur={() => { brushState.value.isTravellerFocused = false }}
+          />
+
+          {showText && (
+            <BrushText
+              startIndex={startIndex.value}
+              endIndex={endIndex.value}
+              y={yVal}
+              height={hVal}
+              travellerWidth={props.travellerWidth}
+              stroke={props.stroke}
+              tickFormatter={props.tickFormatter}
+              dataKey={props.dataKey}
+              data={data as any[]}
+              startX={startX}
+              endX={endX}
+            />
+          )}
+        </Layer>
       )
     }
   },

@@ -5,7 +5,7 @@ import type { PropType } from 'vue'
 export const BrushVueProps = {
   height: {
     type: Number,
-    height: 40,
+    default: 40,
   },
   travellerWidth: {
     type: Number,
@@ -52,6 +52,9 @@ export const BrushVueProps = {
   },
   class: {
     type: String,
+  },
+  data: {
+    type: Array as PropType<any[]>,
   },
   dataKey: [String, Function] as PropType<DataKey<any>>,
   startIndex: {

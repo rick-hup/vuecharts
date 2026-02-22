@@ -1,4 +1,4 @@
-import { getValueByDataKey } from '../../utils/ChartUtils'
+import { getValueByDataKey } from '../../utils/chart'
 import type { BrushStartEndIndex } from './type'
 
 export function getIndexInRange(valueRange: number[], x: number) {
