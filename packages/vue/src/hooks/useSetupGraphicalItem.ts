@@ -13,6 +13,15 @@ function getLegendItemColor(stroke: string | undefined, fill: string): string {
   return stroke && stroke !== 'none' ? stroke : fill
 }
 
+function getItemColor(type: CartesianGraphicalItemType, stroke: string | undefined, fill: string | undefined): string | undefined {
+  // Bar's primary visual is fill, not stroke
+  if (type === 'bar') {
+    return fill
+  }
+  // Area/Line primary visual is stroke
+  return getLegendItemColor(stroke, fill!)
+}
+
 export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGraphicalItemType) {
   const attrs = useAttrs() as SVGAttributes
   const isPanorama = useIsPanorama()
@@ -42,11 +51,12 @@ export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGra
   SetTooltipEntrySettings({ fn: getTooltipEntrySettings as any, args: computed(() => ({
     ...props,
     ...attrs,
+    _itemType: type,
   } as AreaPropsWithSVG | any)) })
 }
 
-function getTooltipEntrySettings(props: AreaPropsWithSVG | any) {
-  const { dataKey, data, stroke, fill, name, hide, unit } = props
+function getTooltipEntrySettings(props: AreaPropsWithSVG & { _itemType?: CartesianGraphicalItemType } | any) {
+  const { dataKey, data, stroke, fill, name, hide, unit, _itemType } = props
   return {
     dataDefinedOnItem: data,
     positions: undefined,
@@ -59,7 +69,7 @@ function getTooltipEntrySettings(props: AreaPropsWithSVG | any) {
       name: getTooltipNameProp(name, dataKey),
       hide,
       type: props.tooltipType,
-      color: getLegendItemColor(stroke, fill!),
+      color: getItemColor(_itemType!, stroke, fill),
       unit,
     },
   }

@@ -12,7 +12,7 @@ import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
 import { ErrorBar } from '@/cartesian/error-bar/ErrorBar'
 import { Brush } from '@/cartesian/brush'
-import { numberData, pageData } from '@/storybook/data'
+import { numberData, pageData, rangeData } from '@/storybook/data'
 
 const meta = {
   title: 'examples/BarChart',
@@ -309,6 +309,37 @@ export const OneDataPointPercentSize: Story = {
           <CartesianGrid stroke-dasharray="3 3" />
           <Bar dataKey={(v: number[]) => v[1]} />
           <Tooltip />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const RangedBarChart: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    margin: {
+      top: 5,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+    barSize: '30%',
+  },
+  render: (args: Record<string, any>) => {
+    // Build data inside render to avoid Storybook freezing array values in args,
+    // which causes Vue proxy invariant errors during deep watch traversal
+    const data = rangeData.map(d => ({ ...d, temperature: [...d.temperature] }))
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart {...args} data={data}>
+          <XAxis dataKey="day" />
+          <YAxis />
+          <CartesianGrid stroke-dasharray="3 3" />
+          <Tooltip />
+          <Bar dataKey="temperature" fill="violet" stroke="indigo" />
         </BarChart>
       </ResponsiveContainer>
     )
