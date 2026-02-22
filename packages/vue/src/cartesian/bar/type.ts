@@ -52,7 +52,7 @@ export const BarVueProps = {
   maxBarSize: { type: Number },
   hide: { type: Boolean, default: false },
   background: {
-    type: Boolean,
+    type: [Boolean, Object] as PropType<boolean | Record<string, any>>,
     default: false,
   },
   radius: {

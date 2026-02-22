@@ -29,11 +29,14 @@ export const BarBackground = defineComponent({
               return null
             }
 
+            const backgroundObjectProps = typeof backgroundFromProps === 'object' ? backgroundFromProps : {}
+
             const barRectangleProps = {
               option: backgroundFromProps,
               ...rest,
               fill: '#eee',
               ...backgroundFromDataEntry,
+              ...backgroundObjectProps,
             }
 
             return (
