@@ -442,6 +442,79 @@ const ChangingDataKeyWrapper = defineComponent({
   },
 })
 
+const ChangingDataKeyAndStackedWrapper = defineComponent({
+  props: {
+    args: { type: Object, default: () => ({}) },
+  },
+  setup(props) {
+    const useData2 = ref(false)
+    const visible = ref(true)
+
+    return () => (
+      <div>
+        <div>
+          <button type="button" onClick={() => { useData2.value = false; visible.value = true }}>
+            Use data1
+          </button>
+          <button type="button" onClick={() => { useData2.value = true; visible.value = true }}>
+            Use data2
+          </button>
+          <button type="button" onClick={() => { visible.value = false }}>
+            Hide
+          </button>
+        </div>
+        <BarChart {...props.args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" padding={{ left: 30, right: 30 }} />
+          <YAxis dataKey="uv" />
+          <Tooltip />
+          <Legend />
+          <Bar
+            name="Animated Bar 1"
+            hide={!visible.value}
+            dataKey={useData2.value ? 'uv' : 'pv'}
+            stackId="1"
+            stroke="green"
+            stroke-dasharray="5 5"
+            label={{ fill: 'red' }}
+            transition={{
+              duration: 3,
+            }}
+          />
+          <Bar
+            name="Animated Bar 2"
+            hide={!visible.value}
+            dataKey={useData2.value ? 'pv' : 'amt'}
+            stackId="1"
+            stroke="yellow"
+            stroke-dasharray="5 5"
+            label={{ fill: 'red' }}
+            transition={{
+              duration: 1,
+            }}
+          />
+        </BarChart>
+      </div>
+    )
+  },
+})
+
+export const ChangingDataKeyAndStacked: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: {
+      top: 30,
+      right: 30,
+      left: 20,
+      bottom: 5,
+    },
+  },
+  render: (args: Record<string, any>) => <ChangingDataKeyAndStackedWrapper args={args} />,
+}
+
 export const ChangingDataKey: Story = {
   args: {
     ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
@@ -455,6 +528,43 @@ export const ChangingDataKey: Story = {
     },
   },
   render: (args: Record<string, any>) => <ChangingDataKeyWrapper args={args} />,
+}
+
+const ChangingDataWrapper = defineComponent({
+  props: {
+    args: { type: Object, default: () => ({}) },
+  },
+  setup(props) {
+    const data = ref([{ number: 10 }])
+
+    const reset = () => { data.value = [{ number: 10 }] }
+    const changeSynchronously = () => { data.value = [{ number: 50 }] }
+    const changeAsynchronously = () => {
+      data.value = [{ number: 90 }]
+      setTimeout(() => { data.value = [{ number: 30 }] }, 150)
+    }
+
+    return () => (
+      <div style={{ display: 'flex', gap: '4rem', alignItems: 'center' }}>
+        <BarChart {...props.args} data={data.value}>
+          <YAxis hide domain={[0, 100]} />
+          <Bar dataKey="number" fill="chocolate" background={{ fill: 'bisque' }} />
+        </BarChart>
+        <button type="button" onClick={changeSynchronously}>Change data synchronously</button>
+        <button type="button" onClick={changeAsynchronously}>Change data with setTimeout</button>
+        <button type="button" onClick={reset}>Reset</button>
+      </div>
+    )
+  },
+})
+
+export const ChangingData: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 100,
+    height: 100,
+  },
+  render: (args: Record<string, any>) => <ChangingDataWrapper args={args} />,
 }
 
 export const StackedAndDynamic: Story = {
