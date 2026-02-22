@@ -4,6 +4,7 @@ import type { BrushPropsWithSVG, BrushTravellerId } from './type'
 import { BrushVueProps } from './type'
 import { Layer } from '../../container/Layer'
 import { Background } from './components/Background'
+import { Panorama } from './components/Panorama'
 import { Slide } from './components/Slide'
 import { TravellerLayer } from './components/TravellerLayer'
 import { BrushText } from './components/BrushText'
@@ -21,7 +22,7 @@ export const Brush = defineComponent<BrushPropsWithSVG>({
   name: 'Brush',
   props: BrushVueProps,
   inheritAttrs: false,
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     // --- Redux integration ---
     useBrushSetting(props)
     useBrushChartSynchronisation()
@@ -131,6 +132,17 @@ export const Brush = defineComponent<BrushPropsWithSVG>({
             fill={props.fill}
             stroke={props.stroke}
           />
+
+          <Panorama
+            x={xVal}
+            y={yVal}
+            width={wVal}
+            height={hVal}
+            data={data as any[]}
+            padding={props.padding}
+          >
+            {slots.default?.()}
+          </Panorama>
 
           <Slide
             y={yVal}

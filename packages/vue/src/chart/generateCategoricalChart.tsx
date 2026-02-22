@@ -172,10 +172,14 @@ export function generateCategoricalChart({
 
         if (compact) {
           return (
-            <Surface {...attrs} {...rest} width={width!} height={height!} title={title} desc={desc}>
-              <ClipPath clipPathId={clipPathId} />
-              {slots.default?.()}
-            </Surface>
+            <Fragment>
+              <ChartDataContextProvider chartData={props.data!} />
+              <ReportMainChartProps width={width!} height={height!} layout={props.layout ?? defaultProps.layout ?? defaultLayout} margin={props.margin ?? defaultMargin} />
+              <Surface {...attrs} {...rest} width={width!} height={height!} title={title} desc={desc}>
+                <ClipPath clipPathId={clipPathId} />
+                {slots.default?.()}
+              </Surface>
+            </Fragment>
           )
         }
 
