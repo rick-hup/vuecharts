@@ -97,7 +97,6 @@ function renderActivePoint({
     'stroke': '#fff',
     'payload': point.payload,
     'value': point.value,
-    ...(typeof activeDot === 'object' ? activeDot : {}),
   }
 
   let dot

@@ -11,7 +11,7 @@ import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { CartesianAxis } from '@/cartesian/cartesian-axis/CartesianAxis'
 import type { DataKey } from '@/types'
 import { selectAxisViewBox } from '@/state/selectors/selectChartOffset'
-import type { AxisDomain, AxisInterval } from '@/types/axis'
+import type { AxisDomain } from '@/types/axis'
 import type { AxisTick } from '@/types/tick'
 
 const XAxisImpl = defineComponent({
@@ -194,9 +194,6 @@ export const XAxis = defineComponent({
     },
     ticks: {
       type: Array as PropType<AxisTick[]>,
-    },
-    interval: {
-      type: [String, Number] as PropType<AxisInterval>,
     },
     unit: {
       type: String,

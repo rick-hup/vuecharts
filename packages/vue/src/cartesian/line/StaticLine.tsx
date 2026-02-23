@@ -28,9 +28,9 @@ export const Dots = defineComponent({
         return null
       }
       const dotsProps = {
-        'fill': '#fff',
-        'stroke': props.stroke,
+        'fill': props.stroke,
         'stroke-width': props.strokeWidth,
+        'stroke': '#fff',
       }
       return (
         <Layer

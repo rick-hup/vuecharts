@@ -2,7 +2,7 @@ import type { BaseAxisWithScale } from '@/state/selectors/axisSelectors'
 import type { TickItem } from '@/types'
 import type { LinePointItem, LineProps } from './type'
 import { isNullish } from '@/utils'
-import { getCateCoordinateOfLine, getValueByDataKey } from '@/utils/chart'
+import { getCateCoordinateOfLine } from '@/utils/chart'
 
 export function computeLinePoints({
   layout,
