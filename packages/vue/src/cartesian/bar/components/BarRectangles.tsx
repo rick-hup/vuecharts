@@ -39,6 +39,7 @@ export const BarRectangles = defineComponent({
       onAnimationStart,
       onAnimationEnd,
       activeBar,
+      shape: ShapeComponent,
     } = props
 
     // 事件处理函数
@@ -107,7 +108,9 @@ export const BarRectangles = defineComponent({
                 onMouseleave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
               >
-                <Rectangle {...barRectangleProps} />
+                {ShapeComponent
+                  ? <ShapeComponent {...barRectangleProps} />
+                  : <Rectangle {...barRectangleProps} />}
               </Layer>
             )
           })}

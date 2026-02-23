@@ -8,9 +8,12 @@ import type {
 } from '@/types'
 import type { AnimationOptions } from 'motion-v'
 import type { AxisId } from '@/types/axis'
-import type { PropType } from 'vue'
+import type { FunctionalComponent, PropType } from 'vue'
 import type { LegendType } from '@/types/legend'
 import type { MinPointSize } from '@/shape'
+import type { RectangleProps } from '@/shape/Rectangle'
+
+export type BarShapeFunction = FunctionalComponent<RectangleProps>
 
 export type Rectangle = {
   x: number | null
@@ -91,6 +94,10 @@ export const BarVueProps = {
   label: {
     type: [Boolean, Object] as PropType<boolean | Record<string, any>>,
     default: false,
+  },
+  shape: {
+    type: [Function, Object] as PropType<BarShapeFunction>,
+    default: undefined,
   },
 }
 
