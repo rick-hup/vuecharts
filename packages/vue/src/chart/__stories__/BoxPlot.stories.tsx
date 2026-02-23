@@ -31,7 +31,7 @@ const boxPlots: BoxPlotRaw[] = [
 ]
 
 const boxPlotData = boxPlots.map((v, i) => ({
-  name: `Q${i + 1}`,
+  name: String(i),
   min: v.min,
   'bar-min': 0,
   bottomWhisker: v.lowerQuartile - v.min,
@@ -133,15 +133,25 @@ export const BoxPlotChart: StoryObj = {
       <ComposedChart data={boxPlotData}>
         <CartesianGrid stroke-dasharray="3 3" />
         <Bar isAnimationActive={false} stackId="a" dataKey="min" fill="none" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="bar-min" shape={HorizonBar} />
-        <Bar isAnimationActive={false} stackId="a" dataKey="bottomWhisker" shape={DotBar} />
+        <Bar isAnimationActive={false} stackId="a" dataKey="bar-min">
+          {{ shape: (props: any) => <HorizonBar {...props} /> }}
+        </Bar>
+        <Bar isAnimationActive={false} stackId="a" dataKey="bottomWhisker">
+          {{ shape: (props: any) => <DotBar {...props} /> }}
+        </Bar>
         <Bar isAnimationActive={false} stackId="a" dataKey="bottomBox" fill="#8884d8" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="bar-avg" shape={HorizonBar} />
+        <Bar isAnimationActive={false} stackId="a" dataKey="bar-avg">
+          {{ shape: (props: any) => <HorizonBar {...props} /> }}
+        </Bar>
         <Bar isAnimationActive={false} stackId="a" dataKey="topBox" fill="#8884d8" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="topWhisker" shape={DotBar} />
-        <Bar isAnimationActive={false} stackId="a" dataKey="bar-max" shape={HorizonBar} />
+        <Bar isAnimationActive={false} stackId="a" dataKey="topWhisker">
+          {{ shape: (props: any) => <DotBar {...props} /> }}
+        </Bar>
+        <Bar isAnimationActive={false} stackId="a" dataKey="bar-max">
+          {{ shape: (props: any) => <HorizonBar {...props} /> }}
+        </Bar>
         <AverageDots />
-        <XAxis dataKey="name" />
+        <XAxis dataKey="name" tick={false} scale="band" />
         <YAxis />
       </ComposedChart>
     </ResponsiveContainer>

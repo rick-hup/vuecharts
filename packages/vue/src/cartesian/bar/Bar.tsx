@@ -38,10 +38,11 @@ export const Bar = defineComponent<BarPropsWithSVG>({
   slots: Object as SlotsType<{
     default?: () => any
     activeDot?: (props: any) => any
+    shape?: (props: any) => any
   }>,
   setup(props: BarProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     useSetupGraphicalItem(props, 'bar')
-    const { shouldRender, clipPathId, barData, isAnimating } = useBar(props)
+    const { shouldRender, clipPathId, barData, isAnimating } = useBar(props, slots.shape)
     const { needClip } = useNeedsClip(props.xAxisId, props.yAxisId)
     const layout = useChartLayout()
 

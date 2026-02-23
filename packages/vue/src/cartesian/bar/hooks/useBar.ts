@@ -19,10 +19,11 @@ export interface BarContext {
   attrs: SVGAttributes
   data: Readonly<ShallowRef<readonly BarRectangleItem[]>>
   isAnimating: Ref<boolean>
+  shapeSlot?: (props: any) => any
 }
 export const [useBarContext, provideBarContext] = createContext<BarContext>('BarContext')
 
-export function useBar(props: BarProps) {
+export function useBar(props: BarProps, shapeSlot?: (props: any) => any) {
   const isPanorama = useIsPanorama()
   const attrs = useAttrs() as SVGAttributes
   const layout = useChartLayout()
@@ -51,6 +52,7 @@ export function useBar(props: BarProps) {
     attrs,
     data: rects,
     isAnimating,
+    shapeSlot,
   })
 
   return {

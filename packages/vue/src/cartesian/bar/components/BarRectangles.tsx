@@ -31,7 +31,7 @@ export const BarRectangles = defineComponent({
     let animationId = 0
     const domRef = useDomRef()
 
-    const { props, data: barData, layout, isAnimating } = useBarContext()
+    const { props, data: barData, layout, isAnimating, shapeSlot } = useBarContext()
 
     const {
       dataKey,
@@ -39,7 +39,6 @@ export const BarRectangles = defineComponent({
       onAnimationStart,
       onAnimationEnd,
       activeBar,
-      shape: ShapeComponent,
     } = props
 
     // 事件处理函数
@@ -108,8 +107,8 @@ export const BarRectangles = defineComponent({
                 onMouseleave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
               >
-                {ShapeComponent
-                  ? <ShapeComponent {...barRectangleProps} />
+                {shapeSlot
+                  ? shapeSlot(barRectangleProps)
                   : <Rectangle {...barRectangleProps} />}
               </Layer>
             )
