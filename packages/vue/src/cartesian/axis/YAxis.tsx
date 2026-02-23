@@ -7,7 +7,7 @@ import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { CartesianAxis } from '@/cartesian'
 import type { DataKey } from '@/types'
 import { selectAxisViewBox } from '@/state/selectors/selectChartOffset'
-import type { AxisDomain } from '@/types/axis'
+import type { AxisDomain, AxisInterval } from '@/types/axis'
 
 // Implementation of the YAxis rendering logic
 const YAxisImpl = defineComponent({
@@ -173,6 +173,9 @@ export const YAxis = defineComponent({
     unit: {
       type: String,
       default: undefined,
+    },
+    interval: {
+      type: [String, Number] as PropType<AxisInterval>,
     },
     domain: {
       type: Array as PropType<AxisDomain>,
