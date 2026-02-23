@@ -13,6 +13,7 @@ export type ScaleType =
   | 'quantize'
   | 'utc'
   | 'sequential'
+  | 'symlog'
   | 'threshold'
 
 /**

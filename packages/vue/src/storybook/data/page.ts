@@ -237,4 +237,18 @@ const pageDataWithFillColor = [
   },
 ]
 
-export { pageData, numberData, subjectData, pageDataWithFillColor }
+const logData = [
+  { year: 1970, performance: 1 },
+  { year: 1975, performance: 10 },
+  { year: 1980, performance: 100 },
+  { year: 1985, performance: 1000 },
+  { year: 1990, performance: 10000 },
+  { year: 1995, performance: 100000 },
+  { year: 2000, performance: 1000000 },
+  { year: 2005, performance: 10000000 },
+  { year: 2010, performance: 100000000 },
+  { year: 2015, performance: 1000000000 },
+  { year: 2020, performance: 10000000000 },
+]
+
+export { pageData, numberData, subjectData, pageDataWithFillColor, logData }

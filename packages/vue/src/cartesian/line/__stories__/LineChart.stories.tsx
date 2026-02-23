@@ -10,7 +10,7 @@ import { Brush } from '@/cartesian/brush'
 import { ResponsiveContainer } from '@/index'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
-import { pageData } from '@/storybook/data'
+import { logData, pageData } from '@/storybook/data'
 import type { ChartData } from '@/state/chartDataSlice'
 
 const meta = {
@@ -86,7 +86,7 @@ export const Vertical: Story = {
           <XAxis type="number" />
           <YAxis dataKey="name" type="category" />
           <Legend />
-          <Tooltip />
+          <Tooltip defaultIndex={4} active />
           <Line dataKey="pv" stroke="#8884d8" />
           <Line dataKey="uv" stroke="#82ca9d" />
         </LineChart>
@@ -508,4 +508,38 @@ const ToggleBetweenDataKeysWrapper = defineComponent({
 
 export const ToggleBetweenDataKeys: Story = {
   render: () => <ToggleBetweenDataKeysWrapper />,
+}
+
+export const LogarithmicYAxis: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: logData,
+    margin: { top: 20, right: 30, left: 50, bottom: 5 },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="year" />
+          <YAxis
+            scale="symlog"
+            ticks={[0, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000]}
+          />
+          <Tooltip defaultIndex={1} />
+          <Line
+            type="monotone"
+            dataKey="performance"
+            name="Performance"
+            stroke="#75ABBC"
+            stroke-width={3}
+            activeDot={{ r: 8 }}
+            unit=" KFLOPS"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
 }
