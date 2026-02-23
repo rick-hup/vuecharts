@@ -68,6 +68,7 @@ export const Bar = defineComponent<BarPropsWithSVG>({
         height: entry.height,
         value: entry.value,
         payload: entry.payload,
+        parentViewBox: entry.parentViewBox,
       }))
     })
     provideCartesianLabelListData(labelListData)

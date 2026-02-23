@@ -97,6 +97,7 @@ export function computeBarRectangles({
   offset: ChartOffsetInternal
   displayedData: any[]
 }): ReadonlyArray<BarRectangleItem> | undefined {
+  const parentViewBox = { x: offset.left, y: offset.top, width: offset.width, height: offset.height }
   const numericAxis = layout === 'horizontal' ? yAxis : xAxis
   // @ts-expect-error this assumes that the domain is always numeric, but doesn't check for it
   const stackedDomain: ReadonlyArray<number> = stackedData ? numericAxis.scale.domain() : null
@@ -175,6 +176,7 @@ export function computeBarRectangles({
       payload: entry,
       background,
       tooltipPosition: { x: x + width / 2, y: y + height / 2 },
+      parentViewBox,
     } satisfies BarRectangleItem
 
     return barRectangleItem
