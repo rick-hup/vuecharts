@@ -830,3 +830,33 @@ export const Test = {
     ],
   },
 }
+
+export const AreaChartWithAccessibilityLayer: Story = {
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart
+          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+          data={pageData}
+          {...args}
+        >
+          <Area isAnimationActive={false} dataKey="uv" />
+          <Legend />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+        </AreaChart>
+      </ResponsiveContainer>
+    )
+  },
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'You can tab to this chart. From there, you can use the arrow keys to navigate along the chart.',
+      },
+    },
+  },
+}
