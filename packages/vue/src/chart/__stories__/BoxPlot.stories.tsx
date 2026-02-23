@@ -1,14 +1,12 @@
 import type { StoryObj } from '@storybook/vue3'
-import { Teleport, computed, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { ComposedChart } from '@/chart/ComposedChart'
 import { Bar } from '@/cartesian/bar'
+import { Scatter } from '@/cartesian/scatter'
+import { ZAxis } from '@/cartesian/z-axis'
 import { ResponsiveContainer } from '@/container'
 import { XAxis, YAxis } from '@/cartesian/axis'
 import { CartesianGrid } from '@/cartesian/cartesian-grid'
-import { useAppSelector } from '@/state/hooks'
-import { selectAxisScale } from '@/state/selectors/axisSelectors'
-import { selectChartDataWithIndexes } from '@/state/selectors/dataSelectors'
-import { useLabelLayerRef } from '@/context/labelLayerContext'
 
 export default {
   title: 'examples/ComposedChart',
@@ -46,7 +44,8 @@ const HorizonBar = defineComponent({
   setup(_, { attrs }) {
     return () => {
       const { x, y, width } = attrs as any
-      if (x == null || y == null || width == null) return null
+      if (x == null || y == null || width == null)
+        return null
       return <line x1={x} y1={y} x2={Number(x) + Number(width)} y2={y} stroke="#000" stroke-width={3} />
     }
   },
@@ -57,7 +56,8 @@ const DotBar = defineComponent({
   setup(_, { attrs }) {
     return () => {
       const { x, y, width, height } = attrs as any
-      if (x == null || y == null || width == null || height == null) return null
+      if (x == null || y == null || width == null || height == null)
+        return null
       return (
         <line
           x1={Number(x) + Number(width) / 2}
@@ -73,82 +73,32 @@ const DotBar = defineComponent({
   },
 })
 
-/**
- * Renders red average dots using axis scales from Redux.
- * Substitutes for Scatter + ZAxis which are not yet ported.
- */
-const AverageDots = defineComponent({
-  name: 'AverageDots',
-  setup() {
-    const xScale = useAppSelector(state => selectAxisScale(state, 'xAxis', 0, false))
-    const yScale = useAppSelector(state => selectAxisScale(state, 'yAxis', 0, false))
-    const chartData = useAppSelector(selectChartDataWithIndexes)
-    const labelLayerRef = useLabelLayerRef()
-
-    const dots = computed(() => {
-      const xS = xScale.value
-      const yS = yScale.value
-      const data = chartData.value
-      if (!xS || !yS || !data?.chartData) return []
-
-      const bandwidth = typeof xS.bandwidth === 'function' ? xS.bandwidth() : 0
-
-      return data.chartData.map((entry: any) => {
-        const cx = Number(xS(entry.name)) + bandwidth / 2
-        const cy = Number(yS(entry.average))
-        return { cx, cy }
-      })
-    })
-
-    return () => {
-      const content = (
-        <g class="v-charts-average-dots">
-          {dots.value.map((d, i) => (
-            <circle
-              key={i}
-              cx={d.cx}
-              cy={d.cy}
-              r={8}
-              fill="red"
-              stroke="#FFF"
-            />
-          ))}
-        </g>
-      )
-
-      if (labelLayerRef?.value) {
-        return <Teleport to={labelLayerRef.value}>{content}</Teleport>
-      }
-      return content
-    }
-  },
-})
-
 export const BoxPlotChart: StoryObj = {
   render: () => (
     <ResponsiveContainer minHeight={600}>
-      <ComposedChart data={boxPlotData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+      <ComposedChart data={boxPlotData}>
         <CartesianGrid stroke-dasharray="3 3" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="min" fill="none" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="bar-min">
+        <Bar stackId="a" dataKey="min" fill="none" />
+        <Bar stackId="a" dataKey="bar-min">
           {{ shape: (props: any) => <HorizonBar {...props} /> }}
         </Bar>
-        <Bar isAnimationActive={false} stackId="a" dataKey="bottomWhisker">
+        <Bar stackId="a" dataKey="bottomWhisker">
           {{ shape: (props: any) => <DotBar {...props} /> }}
         </Bar>
-        <Bar isAnimationActive={false} stackId="a" dataKey="bottomBox" fill="#8884d8" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="bar-avg">
+        <Bar stackId="a" dataKey="bottomBox" fill="#8884d8" />
+        <Bar stackId="a" dataKey="bar-avg">
           {{ shape: (props: any) => <HorizonBar {...props} /> }}
         </Bar>
-        <Bar isAnimationActive={false} stackId="a" dataKey="topBox" fill="#8884d8" />
-        <Bar isAnimationActive={false} stackId="a" dataKey="topWhisker">
+        <Bar stackId="a" dataKey="topBox" fill="#8884d8" />
+        <Bar stackId="a" dataKey="topWhisker">
           {{ shape: (props: any) => <DotBar {...props} /> }}
         </Bar>
-        <Bar isAnimationActive={false} stackId="a" dataKey="bar-max">
+        <Bar stackId="a" dataKey="bar-max">
           {{ shape: (props: any) => <HorizonBar {...props} /> }}
         </Bar>
-        <AverageDots />
-        <XAxis dataKey="name" scale="band" />
+        <ZAxis type="number" dataKey="size" range={[0, 250]} />
+        <Scatter dataKey="average" fill="red" stroke="#FFF" />
+        <XAxis />
         <YAxis />
       </ComposedChart>
     </ResponsiveContainer>
