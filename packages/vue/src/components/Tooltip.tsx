@@ -1,5 +1,5 @@
 import { Fragment, Teleport, computed, defineComponent, reactive, ref, watch, watchEffect } from 'vue'
-import type { CSSProperties, PropType } from 'vue'
+import type { CSSProperties, PropType, VNode } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useChartLayout, useOffsetInternal, useViewBox } from '@/context/chartLayoutContext'
 import { useAccessibilityLayer } from '@/context/accessibilityContext'
@@ -30,6 +30,7 @@ import { Curve } from '@/shape/Curve'
 import { Rectangle } from '@/shape/Rectangle'
 import { getCursorPoints } from '@/components/utils'
 import type { Point } from '@/shape'
+import { useCursorLayerRef } from '@/context/cursorLayerContext'
 import { useTooltipAxisBandSize } from '@/context/useTooltipAxis'
 import { sortBy, uniqBy } from 'es-toolkit/compat'
 import { isNumOrStr } from '@/utils'
@@ -261,6 +262,7 @@ const Cursor = defineComponent({
   name: 'Cursor',
   props: {
     cursor: [Boolean, Object],
+    cursorSlot: Function as PropType<(props: Record<string, any>) => VNode>,
     tooltipEventType: String,
     coordinate: Object as PropType<ChartCoordinate>,
     payload: Array as PropType<TooltipPayload>,
@@ -271,6 +273,7 @@ const Cursor = defineComponent({
     const layout = useChartLayout()
     const chartName = useChartName()
     const tooltipAxisBandSize = useTooltipAxisBandSize()
+    const cursorLayerRef = useCursorLayerRef(null)
     const points = computed(() => getCursorPoints(layout.value, props.coordinate!, offset.value))
     return () => {
       if (!props.cursor || !props.coordinate)
@@ -279,6 +282,11 @@ const Cursor = defineComponent({
       if (props.tooltipEventType !== 'axis')
         return null
 
+      const cursor = props.cursor
+      // Extract user-provided SVG props when cursor is a plain object (not boolean)
+      const cursorSvgProps = (typeof cursor === 'object') ? cursor : {}
+
+      let cursorElement: VNode
       const isBarChart = chartName.value === 'BarChart'
       if (isBarChart) {
         const bandSize = tooltipAxisBandSize.value ?? 0
@@ -293,27 +301,28 @@ const Cursor = defineComponent({
           width: layout.value === 'horizontal' ? bandSize : off.width - 1,
           height: layout.value === 'horizontal' ? off.height - 1 : bandSize,
           class: 'recharts-tooltip-cursor',
+          style: { pointerEvents: 'none' },
+          ...cursorSvgProps,
         }
-        return (
-          <Rectangle
-            style={{ pointerEvents: 'none' }}
-            {...rectProps}
-          />
-        )
+        cursorElement = props.cursorSlot ? props.cursorSlot(rectProps) : <Rectangle {...rectProps} />
+      }
+      else {
+        const cursorProps = {
+          stroke: '#ccc',
+          class: ['recharts-tooltip-cursor'],
+          layout: layout.value,
+          points: points.value as ReadonlyArray<Point>,
+          style: { pointerEvents: 'none' },
+          ...cursorSvgProps,
+        }
+        cursorElement = props.cursorSlot ? props.cursorSlot(cursorProps) : <Curve {...cursorProps} />
       }
 
-      const cursorProps = {
-        stroke: '#ccc',
-        class: ['recharts-tooltip-cursor'],
-        layout: layout.value,
-        points: points.value as ReadonlyArray<Point>,
+      // Teleport cursor into the cursor layer so it renders behind graphical items (bars, lines)
+      if (cursorLayerRef?.value) {
+        return <Teleport to={cursorLayerRef.value}>{cursorElement}</Teleport>
       }
-      return (
-        <Curve
-          style={{ pointerEvents: 'none' }}
-          {...cursorProps}
-        />
-      )
+      return cursorElement
     }
   },
 })
@@ -422,7 +431,7 @@ const TooltipVueProps = {
 export const Tooltip = defineComponent({
   name: 'Tooltip',
   props: TooltipVueProps,
-  setup(props) {
+  setup(props, { slots }) {
     const dispatch = useAppDispatch()
 
     const defaultIndexAsString = computed(() =>
@@ -551,6 +560,7 @@ export const Tooltip = defineComponent({
           {finalIsActive.value && (
             <Cursor
               cursor={props.cursor}
+              cursorSlot={slots.cursor}
               tooltipEventType={tooltipEventType.value}
               coordinate={coordinate.value}
               payload={payload.value}

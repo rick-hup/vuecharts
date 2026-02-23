@@ -72,7 +72,7 @@ export const CartesianAxis = defineComponent({
   },
   inheritAttrs: false,
 
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     const state = reactive({
       fontSize: '',
       letterSpacing: '',
@@ -241,10 +241,13 @@ export const CartesianAxis = defineComponent({
                 class={['v-charts-cartesian-axis-tick-line', get(tickLine, 'class')]}
               />
             )}
-            {tick
-            && renderTickItem(
-              tickProps as any,
-              `${typeof tickFormatter === 'function' ? tickFormatter(entry.value, i) : entry.value}${unit || ''}`,
+            {tick && (
+              slots.tick
+                ? slots.tick({ ...tickProps, value: entry.value })
+                : renderTickItem(
+                    tickProps as any,
+                    `${typeof tickFormatter === 'function' ? tickFormatter(entry.value, i) : entry.value}${unit || ''}`,
+                  )
             )}
           </Layer>
         )

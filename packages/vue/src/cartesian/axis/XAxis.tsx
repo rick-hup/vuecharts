@@ -11,7 +11,7 @@ import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { CartesianAxis } from '@/cartesian/cartesian-axis/CartesianAxis'
 import type { DataKey } from '@/types'
 import { selectAxisViewBox } from '@/state/selectors/selectChartOffset'
-import type { AxisDomain } from '@/types/axis'
+import type { AxisDomain, AxisInterval } from '@/types/axis'
 import type { AxisTick } from '@/types/tick'
 
 const XAxisImpl = defineComponent({
@@ -23,7 +23,7 @@ const XAxisImpl = defineComponent({
     ticks: Array,
   },
   inheritAttrs: false,
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     const isPanorama = useIsPanorama()
     const axisType = 'xAxis'
     const scale = useAppSelector(state => selectAxisScale(state, axisType, props.xAxisId, isPanorama))
@@ -49,7 +49,9 @@ const XAxisImpl = defineComponent({
           height={axisSize.value?.height}
           ticks={cartesianTickItems.value!}
           class={['v-charts-xAxis xAxis', attrs.class]}
-        />
+        >
+          {slots.tick ? { tick: slots.tick } : undefined}
+        </CartesianAxis>
       )
     }
   },
@@ -86,7 +88,7 @@ const XAxisSettingsDispatcher = defineComponent({
     tick: { type: [Boolean, Object], default: true },
     tickFormatter: Function,
   },
-  setup(props) {
+  setup(props, { slots: dispatcherSlots }) {
     const dispatch = useAppDispatch()
     watchEffect((onCleanup) => {
       const settings = {
@@ -121,7 +123,9 @@ const XAxisSettingsDispatcher = defineComponent({
       })
     })
     return () => (
-      <XAxisImpl {...props} />
+      <XAxisImpl {...props}>
+        {dispatcherSlots.tick ? { tick: dispatcherSlots.tick } : undefined}
+      </XAxisImpl>
     )
   },
 })
@@ -183,7 +187,7 @@ export const XAxis = defineComponent({
     },
     dataKey: {
       type: [String, Number, Function] as PropType<DataKey<any>>,
-      default: '',
+      default: undefined,
     },
     domain: {
       type: Array as PropType<AxisDomain>,
@@ -195,13 +199,20 @@ export const XAxis = defineComponent({
     ticks: {
       type: Array as PropType<AxisTick[]>,
     },
+    interval: {
+      type: [String, Number] as PropType<AxisInterval>,
+    },
     unit: {
       type: String,
     },
     tickMargin: Number,
     tickFormatter: Function,
   },
-  setup(props, { attrs }) {
-    return () => <XAxisSettingsDispatcher {...props} {...attrs} />
+  setup(props, { attrs, slots }) {
+    return () => (
+      <XAxisSettingsDispatcher {...props} {...attrs}>
+        {slots.tick ? { tick: slots.tick } : undefined}
+      </XAxisSettingsDispatcher>
+    )
   },
 })

@@ -22,6 +22,9 @@ export interface LineContext {
   dot: any
   clipDot: boolean
   dotSize: number
+  shapeSlot?: (props: any) => any
+  dotSlot?: (props: any) => any
+  labelSlot?: (props: any) => any
 }
 
 // Injection Key
@@ -41,7 +44,7 @@ export function useLineContext() {
   return context
 }
 
-export function useLine(props: LinePropsInternal, attrs: SVGAttributes = {}) {
+export function useLine(props: LinePropsInternal, attrs: SVGAttributes = {}, shapeSlot?: (props: any) => any, dotSlot?: (props: any) => any, labelSlot?: (props: any) => any) {
   const layout = useChartLayout()
   const chartName = useChartName()
   const localId = uniqueId('v-charts-line-')
@@ -85,6 +88,9 @@ export function useLine(props: LinePropsInternal, attrs: SVGAttributes = {}) {
     dot,
     clipDot,
     dotSize,
+    shapeSlot,
+    dotSlot,
+    labelSlot,
   }
 
   // Provide context

@@ -72,7 +72,7 @@ export const LineVueProps = {
   transition: {
     type: Object as PropType<AnimationOptions>,
     default: () => ({
-      duration: 800,
+      duration: 0.8,
       ease: 'easeOut',
     }),
   },

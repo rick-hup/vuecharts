@@ -2,7 +2,58 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-<!-- AUTO-MANAGED: project-description -->
+## Workflow Orchestration
+
+### 1. Plan Node Default
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan immediately - don't keep pushing
+- Use plan mode for verification steps, not just building
+- Write detailed specs upfront to reduce ambiguity
+
+### 2. Subagent Strategy
+- Use subagents liberally to keep main context window clean
+- Offload research, exploration, and parallel analysis to subagents
+- For complex problems, throw more compute at it via subagents
+- One tack per subagent for focused execution
+
+### 3. Self-Improvement Loop
+- After ANY correction from the user: update `tasks/lessons.md` with the pattern
+- Write rules for yourself that prevent the same mistake
+- Ruthlessly iterate on these lessons until mistake rate drops
+- Review lessons at session start for relevant project
+### 4. Verification Before Done
+- Never mark a task complete without proving it works
+- Diff behavior between main and your changes when relevant
+- Ask yourself: "Would a staff engineer approve this?"
+- Run tests, check logs, demonstrate correctness
+
+### 5. Demand Elegance (Balanced)
+- For non-trivial changes: pause and ask "is there a more elegant way?"
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
+- Skip this for simple, obvious fixes - don't over-engineer
+- Challenge your own work before presenting it
+
+### 6. Autonomous Bug Fixing
+- When given a bug report: just fix it. Don't ask for hand-holding
+- Point at logs, errors, failing tests - then resolve them
+- Zero context switching required from the user
+- Go fix failing CI tests without being told how
+
+## Task Management
+
+1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
+2. **Verify Plan**: Check in before starting implementation
+3. **Track Progress**: Mark items complete as you go
+4. **Explain Changes**: High-level summary at each step
+5. **Document Results**: Add review section to `tasks/todo.md`
+6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+
+## Core Principles
+
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+- **Minimat Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+
 ## Overview
 
 **Vue Charts (vccs)** - An unofficial Vue 3 port of [Recharts](https://recharts.org/). Provides composable charting components built with Vue 3 Composition API + JSX/TSX.
@@ -40,10 +91,6 @@ pnpm play
 # Run specific test file
 pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
 
-# Lint and typecheck
-pnpm lint
-pnpm typecheck
-
 # Publish release
 pnpm pub:release
 ```
@@ -63,14 +110,19 @@ packages/vue/src/           # Main library source (vccs)
 │   ├── axis/               # XAxis, YAxis
 │   ├── brush/              # Brush component
 │   ├── cartesian-grid/     # CartesianGrid
-│   └── cartesian-axis/     # CartesianAxis
-├── chart/                  # Chart containers (AreaChart, BarChart, LineChart)
+│   ├── cartesian-axis/     # CartesianAxis
+│   ├── funnel/             # Funnel component (types only, not yet implemented)
+│   ├── scatter/            # Scatter component + useScatter hook
+│   ├── reference-line/     # ReferenceLine component (horizontal/vertical reference lines)
+│   ├── utils/              # Shared cartesian utilities (get-ticks)
+│   └── z-axis/             # ZAxis component (data-only, no visual output)
+├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart)
 ├── components/             # Shared: legend, tooltip, text
 ├── container/              # ResponsiveContainer, Surface, Layer
 ├── context/                # Context providers
 ├── events/                 # Event handling
 ├── hooks/                  # Shared composition hooks
-├── shape/                  # SVG shape utilities
+├── shape/                  # SVG shape utilities (Rectangle, Symbols, Curve, Dot)
 ├── state/                  # Redux store, slices, middleware, selectors
 ├── storybook/              # Storybook stories
 ├── synchronisation/        # Chart synchronization
@@ -87,7 +139,7 @@ playground/nuxt/            # Nuxt 3 playground for testing
 1. **Component Architecture**: Vue 3 `defineComponent` + JSX render functions (not SFC)
 2. **State Management**: Redux Toolkit via `@reduxjs/vue-redux` - one store per chart instance created with `createRechartsStore`
 3. **Context**: `provide/inject` pattern for parent-child component communication (e.g., `useAreaContext`)
-4. **Chart Factory**: `generateCategoricalChart()` factory creates chart containers (BarChart, AreaChart, LineChart)
+4. **Chart Factory**: `generateCategoricalChart()` factory creates chart containers (BarChart, AreaChart, LineChart, ComposedChart)
 5. **Animation**: `motion-v` library with custom `Animate` wrapper component
 6. **Event Handling**: Redux middleware for mouse, keyboard, touch, and external events
 7. **Build Output**: Dual format - ES Modules (`.mjs`) + CommonJS (`.js`) + TypeScript declarations
@@ -142,130 +194,81 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 
 ### Porting from Recharts
 - Compare with React source at `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts/src/`
-- React `useState`/`useEffect` → Vue `ref`/`watch`
-- React Context → Vue `provide`/`inject`
-- React Redux hooks → `@reduxjs/vue-redux` hooks (`useSelector`, `useDispatch`)
+- React `useState`/`useEffect` → Vue `ref`/`watch`; Context → `provide`/`inject`; Redux hooks → `@reduxjs/vue-redux`
 - React `useMemo`/`useCallback` → Vue `computed` / plain functions
-- React JSX → Vue JSX (mostly compatible, watch for `class` vs `className`, event handlers)
+- React JSX → Vue JSX (watch for `class` vs `className`, event handlers)
 
 ### Redux Store Pattern
-- Each chart instance has its own Redux store created by `createRechartsStore(preloadedState?, chartName?)`
-- Graphical items (Area, Bar, Line) register themselves via `useSetupGraphicalItem`
-- State slices: `brushSlice`, `cartesianAxisSlice`, `chartDataSlice`, `graphicalItemsSlice`, `layoutSlice`, `legendSlice`, `optionsSlice`, `polarAxisSlice`, `polarOptionsSlice`, `referenceElementsSlice`, `rootPropsSlice`, `tooltipSlice`
-- Middleware stack: `mouseClickMiddleware`, `mouseMoveMiddleware`, `keyboardEventsMiddleware`, `externalEventsMiddleware`, `touchEventMiddleware`
-- Middleware config: `serializableCheck: false` and `immutableCheck: false` (both disabled to avoid Redux warnings with mutable Vue reactive objects)
-- DevTools named `v-charts-${chartName}` with `reduxDevtoolsJsonStringifyReplacer` for serialization
+- One store per chart via `createRechartsStore(preloadedState?, chartName?)`; graphical items register via `useSetupGraphicalItem`
+- Slices: `brushSlice`, `cartesianAxisSlice`, `chartDataSlice`, `graphicalItemsSlice`, `layoutSlice`, `legendSlice`, `optionsSlice`, `polarAxisSlice`, `polarOptionsSlice`, `referenceElementsSlice`, `rootPropsSlice`, `tooltipSlice`
+- Middleware: `mouseClickMiddleware`, `mouseMoveMiddleware`, `keyboardEventsMiddleware`, `externalEventsMiddleware`, `touchEventMiddleware`; `serializableCheck: false`, `immutableCheck: false`
 
 ### Hook Composition
-- Each graphical component has a dedicated hook (e.g., `useArea`, `useBar`)
-- Hooks return render-ready data: `{ shouldRender, data, points, clipPathId, shouldShowAnimation }`
-- Setup hooks register component with the Redux store
-- `useSetupGraphicalItem` uses type-aware `getItemColor(type, stroke, fill)` for tooltip color: Bar → `fill` (primary visual is fill); Area/Line → `getLegendItemColor(stroke, fill)` (stroke-preferring); `_itemType` is forwarded into `getTooltipEntrySettings` via the args spread
+- Each graphical component has a dedicated hook (e.g., `useArea`, `useBar`, `useScatter`) returning render-ready data
+- `useSetupGraphicalItem` uses `getItemColor(type, stroke, fill)`: Bar → `fill`; Area/Line → `getLegendItemColor(stroke, fill)` (stroke-preferring)
 
 ### Testing Patterns
-- Use `isAnimationActive={false}` on graphical items in tests for deterministic, synchronous rendering
+- Use `isAnimationActive={false}` on graphical items for deterministic rendering
 - Use `mockGetBoundingClientRect({ width, height })` in `beforeEach` to simulate container dimensions
-- Test helpers in `@/test/helper`:
-  - `getBarRectangles(container)`: queries `.v-charts-bar-rectangle` nodes
-  - `getBarRects(container)`: maps each `.v-charts-bar-rectangle` to its inner `<path>` element (falls back to `<rect>`); asserts not null; use `.getAttribute('d')` to inspect path data
-  - `expectAreaCurve(container, expectedAreas)`: queries `.v-charts-area-curve` nodes, compares `d` attribute array
-  - `assertNotNull<T>(item)`: throws on null/undefined
-- Two levels of bar tests: `cartesian/bar/__tests__/Bar.test.tsx` (simple smoke tests, no helpers), `chart/__tests__/BarChart.spec.tsx` (comprehensive suite using helpers + `mockGetBoundingClientRect`)
-- Tooltip interaction test pattern: `fireEvent.mouseEnter(bars[0])` then check `container.querySelector('.v-charts-tooltip-content')`
-- Context provider tests: create a `defineComponent` child that calls `useViewBox()`/`useClipPathId()`/`useChartWidth()`/`useChartHeight()` and records values via `vi.fn()` spy; render via template string `<BarChart ...><Comp /></BarChart>`
-- Radius tests: assert `rect.getAttribute('d')` contains `'A '` (SVG arc commands) for rounded corners; `Rectangle` renders `<path>` not `<rect>`
+- Test helpers in `@/test/helper`: `getBarRectangles`, `getBarRects`, `expectAreaCurve`, `assertNotNull`
+- Tooltip interaction: `fireEvent.mouseEnter(bars[0])` then check `.v-charts-tooltip-content`
+- Context provider tests: `defineComponent` child with spy → render via template string
 
-### Tooltip Rendering Pattern
-- `Tooltip` renders into a portal via Vue `Teleport` (target from `usePortal()` context or `portal` prop); returns `null` until portal is available
-- `TooltipBoundingBox` uses `motion.div` directly (not the `Animate` wrapper) for animated CSS `transform` transitions on position changes
-- Cursor only renders when `tooltipEventType === 'axis'`; shape is chart-type-specific: BarChart renders a `Rectangle` band (full chart height/width, centered on coordinate, sized via `useTooltipAxisBandSize()`); other chart types render a `Curve` line
-- `shared` prop is three-state (`true`/`false`/`undefined`); `undefined` lets Recharts decide based on chart type
-- `useTooltipChartSynchronisation` wires tooltip state to cross-chart sync
+### SVG Layer Teleport Pattern
+`chart/Surface.vue` provides three-tier z-ordering via `Teleport`:
+- **Tier 1** cursor layer (`CursorLayerContext`) → **Tier 2** graphical layer (`GraphicalLayerContext`) → **Tier 3** label layer (`LabelLayerContext`)
+- Each context: `[useXxxLayerRef, provideXxxLayerRef]` via `createContext<Ref<SVGGElement | null>>`; fallback: inline rendering
 
-### Storybook Interactive Story Pattern
-- Wrap interactive stories in a `defineComponent` + `ref` wrapper when story needs reactive state (e.g., `StackedAndDynamic` uses `ref` for `focusedDataKey` and `locked` driven by Legend `onMouseEnter`/`onMouseLeave`/`onClick` events)
-- Use `Bar` `hide` prop for dynamic series toggling; `activeBar` prop (e.g., `{ fill: 'gold' }`) for hover highlight
-- `Tooltip` `shared={false}` shows tooltip for individual bar only (not all series at that x position)
-- When story args contain array values Storybook freezes (e.g., `[100, 200]` error bounds), construct derived data inside the `render` function rather than in `args` to avoid Vue proxy invariant errors: `const data = (args.data as typeof pageData).map(d => ({ ...d, pvError: [100, 200] }))` inside render
-- `Brush` `dy` prop offsets the brush vertically (e.g., `dy={30}`) to avoid overlap with `XAxis` when `tickMargin` is large; pair with adequate `margin.bottom` on the chart
-- `HasLabelBasedOnSeparateDataKey` story: demonstrates `Bar` `label` prop as an object (`{ dataKey: 'label', position: 'top', fill: '#111' }`); compute enriched data inside `render` (not in `args`) to avoid Vue proxy invariant errors with derived fields
-- `NoPadding` story: demonstrates `Bar` `background` prop as an object (`{ fill: '#eee' }`) to customize background rectangle fill; uses `XAxis scale="point"` with `padding={{ left, right }}` and fixed `barSize`
-- `WithMinPointSize` story: demonstrates `Bar` `minPointSize` as a function `(value: number) => number` — returns `0` when `value === 0` so zero-value bars are invisible, returns `2` otherwise to guarantee a minimum pixel height; uses `dataWithSmallValuesAndZero` local dataset; covers stacked and non-stacked bars in one chart
-- `OneDataPointPercentSize` story: demonstrates `barSize="30%"` (string percentage) when there is only one data point on a numerical domain (band size cannot be auto-calculated); uses function `dataKey` (`dataKey={(v: number[]) => v[0]}`) and `type="number"` on `XAxis` with explicit `domain`
-- `RangedBarChart` story: demonstrates ranged bars where `dataKey="temperature"` and each data entry's `temperature` is a `[low, high]` tuple; clone array data inside `render` (`rangeData.map(d => ({ ...d, temperature: [...d.temperature] }))`) to avoid Vue proxy invariant errors when Storybook freezes array args
-
-### ErrorBar Child Slot Pattern
-- `ErrorBar` is placed as a child in the `default` slot of `Bar` (and eventually `Line`/`Area`): `<Bar><ErrorBar dataKey="err" /></Bar>`
-- Parent (`Bar`) calls `provideErrorBarContext({ data, xAxisId, yAxisId, dataPointFormatter, errorBarOffset })` so `ErrorBar` can inject data without prop drilling
-- `errorBarOffset` is `computed` from the first bar's half-width (horizontal) or half-height (vertical) to center error bars on each data point
-- `ErrorBar` auto-detects `direction` from chart layout (`horizontal` → `'y'`, `vertical` → `'x'`) when not explicitly set; returns `null` if `direction='x'` and x-axis is not numeric
-- Accepts asymmetric bounds: `dataKey` value can be a `[low, high]` tuple or a single number (symmetric)
-- CSS classes: `.v-charts-errorBars` (wrapper `Layer`), `.v-charts-errorBar` (per-point `Layer`)
-
-### Label / LabelList Pattern
-- `LabelList` renders a `<Layer class="v-charts-label-list">` containing one `Label` per data point
-- Value resolution: if `dataKey` is set, reads from `entry.payload` via `getValueByDataKey`; otherwise calls `valueAccessor(entry, index)` (default: last element of `entry.value` array, or `entry.value` directly)
-- `parseViewBox(entry)` is called first and extracted into a local `viewBox` variable; `width` and `height` are then passed explicitly to `Label` alongside the `viewBox` object (needed for correct cartesian label positioning)
-- `Label` falls back to `useViewBox()` context when no `viewBox` prop is provided; supports `content` slot for custom rendering; renders via `Text.vue` with class `v-charts-label`; polar radial positions (`insideStart`/`insideEnd`/`end`) are TODO stubs
-- `LabelListVueProps` props: `id`, `data`, `valueAccessor`, `clockWise`, `dataKey`, `textBreakAll`, `position`, `offset`, `angle`
-- Usage in `Bar`: `<LabelList {...labelProps} data={barData.value} />` rendered after `BarRectangles`; when `label` prop is an object, its keys are spread as props onto `LabelList`
-- Usage in `RenderArea`: `<LabelList {...labelProps} data={areaData.value?.points ?? []} dataKey={props.dataKey} />` rendered only when `!isAnimating && props.label`
-
-### LabelList Teleport Pattern
-- `LabelList` uses Vue `Teleport` to render labels into a dedicated `<g class="v-charts-label-layer" />` appended as the last child of the SVG in `chart/Surface.vue`; this ensures labels always draw on top of all chart content (bars, lines, areas, etc.)
-- `chart/Surface.vue` creates `labelLayerRef = ref<SVGGElement | null>(null)` and calls `provideLabelLayerRef(labelLayerRef)` to share it via `LabelLayerContext`; `LabelList` injects it via `useLabelLayerRef(null)` (`null` = no-op fallback when unavailable)
-- `container/Surface.tsx` does NOT provide `LabelLayerContext` — it is a lower-level primitive for standalone SVG surfaces
-- Fallback: when `labelLayerRef.value` is null (e.g., Storybook isolation or `container/Surface.tsx`), `LabelList` renders labels inline in document order
-- `LabelLayerContext` lives in `@/context/labelLayerContext.ts`: `export const [useLabelLayerRef, provideLabelLayerRef] = createContext<Ref<SVGGElement | null>>('LabelLayerContext')`
+### Animation Chase Pattern
+- **Bar / Scatter**: `previousData` + incrementing `animationId` as `Animate` key; `previousData` updated at `t > 0` so rapid data changes interpolate from current visual position (not stale target); new items animate from zero
+- **Line (`StaticLine`)**: dual strategy gated by `isFirstRender` flag (local `let`): first render uses pathLength reveal (`strokeDashRatio` ref 1→0, applied as `pathLength=1 stroke-dasharray=1 stroke-dashoffset=ratio` on `<Curve>`); subsequent updates use point interpolation (`prevPoints` + `prevPointsDiffFactor`); `prevPoints` updated in `onComplete` so rapid changes chase the current visual position; `currentAnimation` ref + `stopCurrentAnimation()` cancels in-flight animation on re-trigger; **shape slot exception**: pathLength does not apply to arbitrary JSX — instead a `<clipPath>` rect (`width={(1-dashRatio)*100}%`) is used to reveal the custom shape from left
 
 ### Vue Reactivity + D3 Integration
-- Always call `toRaw(entry)` before passing reactive data entries to D3 scale functions (e.g., in `computeBarRectangles`); Vue Proxy objects cause incorrect behavior with D3 property access
-- Pattern: `displayedData.map((rawEntry, index) => { const entry = toRaw(rawEntry); ... })`
+- Always call `toRaw(entry)` before passing reactive data to D3 scale functions; Vue Proxy objects cause incorrect D3 behavior
 
-### Brush Component Pattern
-- `Brush` composes five sub-components: `Background`, `Panorama`, `Slide`, `TravellerLayer` (startX), `TravellerLayer` (endX), and conditional `BrushText`
-- `Panorama` sub-component: accepts exactly one VNode child (a chart e.g. `<BarChart>`); uses `cloneVNode` to inject `x`, `y`, `width`, `height`, `margin` (from `padding`), `compact=true`, `data` props into the child; wraps in `<PanoramaContextProvider isPanorama>` so descendants detect panorama mode via `useIsPanorama()`; returns null if child count is not exactly 1
-- `useIsPanorama()` composable (`@/context/PanoramaContextProvider`): returns injected `isPanorama` boolean (default: `false`); use to suppress non-panorama UI in compact chart renders
-- Panorama slot usage: pass a chart as `Brush`'s default slot child — `<Brush><BarChart><Bar .../></BarChart></Brush>`; `Panorama` clones it with brush dimensions and `compact=true`
-- `compact=true` chart rendering: `generateCategoricalChart` compact branch wraps render in `<Fragment>` and renders `ChartDataContextProvider` + `ReportMainChartProps` as siblings before `Surface`, ensuring panorama child charts have access to chart data and layout from Redux
-- `Slide` sub-component: renders `<rect class="recharts-brush-slide">` (note: `recharts-` prefix, not `v-charts-`); `fill={stroke}` at `fill-opacity=0.2`, `stroke="none"`, `cursor: move`; geometry computed from `startX`/`endX`: `x = min(startX, endX) + travellerWidth`, `width = max(|endX - startX| - travellerWidth, 0)` (clamped to 0 minimum)
-- `useBrushState`: maintains `brushState` ref via `d3 scalePoint` mapping data indices to pixel positions; `watch` with `immediate: true` re-syncs on data/dimension changes; uses 3-way branch: (1) dimension change (`x`/`width`/`travellerWidth` changed) always recalculates `startX`/`endX` from new scale (even during drag, to handle resize); (2) index-only change during active drag (`isSlideMoving || isTravellerMoving || isTravellerFocused`) only updates `scale`/`scaleValues`, not `startX`/`endX`, to preserve drag positions; (3) no interaction, no dimension change: full update of all four fields; tracks previous dimensions via `prevX`/`prevWidth`/`prevTravellerWidth` variables inside the hook closure
-- `useBrushHandlers`: attaches global `window` `mouseup`/`touchend`/`mousemove` listeners on drag start; detaches on drag end via `handleDragEnd`; `gap` prop snaps traveller movement to data index intervals; keyboard navigation via `handleTravellerMoveKeyboard` (+1/-1 step)
-- `handlerProps` uses `reactive()` with getter properties (e.g., `get x() { return x.value! }`) so event handlers always read current values without stale closure issues
-- `BrushText` sub-component: renders start/end data labels via two `<Text value={...} />` calls (pass content as `value` prop, not slot children); `Text` must be imported as default export (`import Text from '...'`), not named export; CSS class `recharts-brush-texts`
-- BrushText visibility condition: `isTextActive || isSlideMoving || isTravellerMoving || isTravellerFocused || alwaysShowText`
-- `dy` prop offsets: `calculatedY = (y ?? 0) + (dy ?? 0)`; pair with `margin.bottom` on chart to avoid XAxis overlap
-- Redux fallbacks: `x`/`y`/`width` use `selectBrushDimensions` when props are undefined; `startIndex`/`endIndex` fall back to `chartData` Redux slice values
-- Keyboard support: `TravellerLayer` emits `traveller-move-keyboard` event with `(direction: 1 | -1, id: BrushTravellerId)`; focus/blur update `isTravellerFocused` on `brushState`
+### Key Component Gotchas
+- `XAxis.dataKey`/`YAxis.dataKey` default to `undefined` (not `''`); `YAxis.unit` defaults to `undefined`
+- `XAxis.interval`/`YAxis.interval` prop typed as `AxisInterval` (`number | 'preserveStart' | 'preserveEnd' | 'preserveStartEnd' | 'equidistantPreserveStart' | 'equidistantPreserveEnd'`); default applied in dispatcher: `interval ?? 'preserveEnd'`
+- `selectHasBar(state)` uses `cartesianItems.some(item => item.type === 'bar')` (not `countOfBars`)
+- `Rectangle` renders `<path>` (not `<rect>`) with `getRectanglePath()` for rounded corner support
+- `Symbols` is a functional component (not `defineComponent`); renders D3-based `<path>` with class `.v-charts-symbols`
+- `Bar` `fill` defaults to `undefined` — callers must supply fill explicitly
+- `Bar` `shape` uses **named slot** (not prop): `<Bar>{{ shape: (props) => <Custom {...props} /> }}</Bar>`
+- `Line` `shape` uses **named slot** (same pattern as `Bar`): `<Line>{{ shape: (payload: CurveProps) => <MyShape {...payload} /> }}</Line>`; slot receives `{ ...curveAttrs, points, connectNulls, type, layout, class: 'v-charts-line-curve' }`; replaces default `<Curve>` render; passed via context (`shapeSlot`) to `StaticLine` which is context-driven (no props)
+- `ErrorBar` as child slot of `Bar`: data via `provideErrorBarContext`/`useErrorBarContext`; supports `[low, high]` tuples
+- `LabelList` suppressed during animation (`!isAnimating`); slot-based children receive data via `CartesianLabelListContext`; supports named slot `label` for fully custom label rendering: `<LabelList>{{ label: (props) => <CustomLabel {...props} /> }}</LabelList>` — slot receives `{ ...others, ...attrs, ...viewBox, value, index }`; teleports to `labelLayerRef` when available (SVG z-ordering tier 3)
+- `Tooltip` cursor only renders when `tooltipEventType === 'axis'`; custom cursor via `cursor` **slot**
+- `Brush` `Panorama` uses `cloneVNode` + `compact=true`; `useIsPanorama()` for detection; `BrushText` uses `<Text value={...} />` (value prop, not children)
+- `Scatter` `isAnimationActive` defaults to `true`; `transition` prop for custom `AnimationOptions`; always hosted inside `ComposedChart` (no standalone `ScatterChart`); accepts per-component `data` prop OR inherits chart-level `data`; `Scatter data={[]}` renders an empty chart (axes still render with custom `ticks`/`domain`/`tickFormatter`)
+- `ZAxis` is data-only (renders `null`); pairs with `Scatter` for symbol sizing; `range={[60, 400]}` for variable bubble size, `range={[200, 200]}` for fixed size
+- `Line` `dot` prop: plain object `{ stroke, strokeWidth, r, clipDot }` for custom dot styling (`clipDot` boolean controls clipping to chart area); `hide` prop to conditionally show/hide series; `legendType="none"` + `tooltipType="none"` exclude a Line from legend/tooltip (trailing icon pattern); `connectNulls` bridges gaps over null values; `label` prop: plain object `{ fill }` for inline data labels; `dot={false}` hides all dots; `dot` also accepts a **named slot**: `<Line>{{ dot: (props) => <CustomDot {...props} /> }}</Line>` — slot receives `{ fill, stroke, stroke-width, cx, cy, index, value, payload, ...attrs }` per point; implemented via `dotSlot` in `LineContext`; default dot `r=3`; `label` also accepts a **named slot**: `<Line>{{ label: (props) => <CustomLabel {...props} /> }}</Line>` — slot receives `{ ...labelProps, ...attrs, ...viewBox, value, index }` per point; implemented via `labelSlot` in `LineContext`; passed to `LabelList` as named `label` slot; suppressed during animation; `data` prop on `Line` directly provides component-level data (overrides chart-level `data`); `onMouseEnter={undefined}` / `onMouseLeave={undefined}` are safe to pass (no-ops)
+- `ReferenceLine` props: `x` or `y` (value on axis), `xAxisId`/`yAxisId` (default `0`), `stroke` (default `'#ccc'`), `strokeWidth`, `fill`, `label` (string/number → `<Label value>`, object → spread as `<Label>` props), `ifOverflow` (`'discard'` hides out-of-range, `'hidden'` clips via `clip-path`); registers with Redux via `addLine`/`removeLine` from `referenceElementsSlice`; CSS classes: `v-charts-reference-line` (Layer), `v-charts-reference-line-line` (line element)
+- `ScaleType` (`types/scale.ts`) includes `'symlog'` — use `<YAxis scale="symlog" />` for logarithmic axes with negative-value support; explicit `ticks` array required for meaningful tick placement
+- Storybook shared data (`@/storybook/data`): exports `pageData` (7 pages, `{ name, uv, pv, amt }`), `logData` (11 entries, `{ year, performance }`, 1970–2020 exponential), `numberData`, `subjectData`, `pageDataWithFillColor`, `pageDataWithNegativeNumbers`, `rangeData`
+
+### Storybook Patterns
+- Wrap interactive stories in `defineComponent` + `ref` for reactive state
+- When story args contain arrays, construct derived data inside `render` to avoid Vue proxy invariant errors
+- Clone array data in render (`data.map(d => ({ ...d, arr: [...d.arr] }))`) for the same reason
+- Legend `onClick` handler receives `{ dataKey }` payload; use reactive array (`activeSeries`) to toggle series visibility via `Line hide={activeSeries.includes(dataKey)}`
+- Storybook canvas (`.storybook/global.css`): `#storybook-root:not([hidden='true'])` is full-viewport (`100vw`/`100vh`) column flex; direct children use `flex-shrink: 0`; stories that use `height: 100vh` (e.g., `WithAbsolutePositionAndFlexboxParents`) rely on this layout
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: git-insights -->
 ## Git Insights
 
 ### Active Development Areas
-- **Animation system**: Animate component, motion-v integration, ClipRect animations
-- **Line chart**: Recently added LineChart, ActivePoints, StaticLine
-- **Bar component**: Composes BarBackground + BarRectangles directly (RenderBar removed); clipping via useNeedsClip + GraphicalItemClipPath; `activeBar` prop on BarRectangles gates highlight (`false` disables, object merges extra SVG props onto active rect); provides `ErrorBarContext` to child slots; `label` prop (boolean or object) renders `LabelList` after `BarRectangles` — when object, its keys are spread as props onto `LabelList` and `data={barData.value}` is always passed; `background` prop accepts `boolean | Record<string, any>` — when an object, its keys are merged into `barRectangleProps` with highest priority inside `BarBackground`, allowing per-bar background SVG prop overrides; `barSize` accepts a number or a string percentage (e.g., `"30%"`) — useful when there is only one data point on a numerical domain where band size cannot be auto-calculated; `minPointSize` accepts a number or a callback `(value: number, index: number) => number` resolved via `minPointSizeCallback` in `utils.ts`; `fill` prop default is `undefined` (no hardcoded fallback color — callers must supply fill explicitly); `BarRectangleItem` carries `tooltipPosition` (center of bar `{ x: x + width/2, y: y + height/2 }`) and `stackedBarStart: number` (pixel coordinate of the stack base value, defaults to 0); animation uses an incrementing `animationId` integer as the `Animate` key — increments on every data change; `previousRectangles` is updated at `t > 0` so rapid restarts during Brush drag interpolate from the current visual position, producing a smooth "chase" effect; new bars animate from `stackedBarStart` — horizontal: `y`/`height` from `stackedBarStart`/`0`; vertical: `x`/`width` from `stackedBarStart`/`0`
-- **Rectangle shape**: Renders `<path>` (not `<rect>`); `getRectanglePath()` generates SVG path data with `A r,r,0,0,clockWise,...` arc commands for rounded corners; `clockWise` flag derived from sign of `width * height`; `radius` prop accepts a number (uniform) or `[tl, tr, br, bl]` array (per-corner), each clamped to `maxRadius = min(|width|, |height|) / 2`; returns `null` when any of `x`/`y`/`width`/`height` is non-numeric or zero
-- **Tooltip component**: Cursor restricted to `tooltipEventType === 'axis'` only; BarChart cursor is a `Rectangle` band sized via `useTooltipAxisBandSize()`, other charts use a `Curve`; `shared` prop now three-state (`true`/`false`/`undefined`); portal rendering via Vue `Teleport`; `TooltipBoundingBox` uses `motion.div` for animated CSS transform transitions; integrates `useTooltipChartSynchronisation`
-- **Label/LabelList components**: `components/label/` module with `Label`, `LabelList`, `types`, `utils`; `LabelList` iterates data points and renders `Label` per point; `parseViewBox` result extracted as local variable so `width`/`height` can be passed explicitly to `Label`; used by both `Bar` (`label` prop) and `RenderArea` (post-animation, `label` prop); `LabelList` teleports its `<Layer>` into a `<g class="v-charts-label-layer">` provided by `chart/Surface.vue` via `LabelLayerContext` so labels always render above chart shapes; falls back to inline rendering when ref is unavailable
-- **ErrorBar component**: New `cartesian/error-bar/` module; `ErrorBar` rendered as default slot child of `Bar`; context-based data flow via `provideErrorBarContext`/`useErrorBarContext`; supports symmetric and asymmetric `[low, high]` error bounds; auto-detects direction from chart layout
-- **Brush component**: Fully implemented; composes Background, Panorama, Slide, TravellerLayer (x2 for startX/endX), BrushText sub-components; `Panorama` clones single child chart VNode with brush dimensions + `compact=true` and wraps in `PanoramaContextProvider`; `useBrushHandlers` manages all drag/slide/traveller/keyboard interaction with global `window` mouseup/touchend/mousemove listeners attached on drag start and detached on drag end; `useBrushState` uses `d3 scalePoint` (from `victory-vendor/d3-scale`) to map data indices to pixel positions, 3-way watch branch: dimension change always recalculates positions (handles resize even during drag), index-only change during drag only updates scale/scaleValues, otherwise full update; Redux integration: reads `chartData`/`dataStartIndex`/`dataEndIndex` from store, `x`/`y`/`width` fall back to `selectBrushDimensions` selector when not passed as props, dispatches `setDataStartEndIndexes` on change; `dy` prop offsets Y via `calculatedY = y + dy`; `alwaysShowText` forces BrushText visibility; `isTravellerFocused` tracks keyboard focus; guard returns null if dimensions are invalid; CSS class `.v-charts-brush`; calls `useBrushChartSynchronisation()` for cross-chart sync
-- **generateCategoricalChart compact mode**: compact branch now wraps in `<Fragment>` and renders `ChartDataContextProvider` + `ReportMainChartProps` as siblings before `Surface`; required for Panorama child charts to receive chart data and layout context from Redux
-- **Storybook BarChart**: Stories cover `StackedAndDynamic` (interactive legend-driven series toggling), `StackedWithErrorBar` (vertical layout, `direction="x"` error bars), `XAxisTickMarginWithBrushDy` (XAxis `tickMargin={30}` + Brush `dy={30}` + `margin.bottom=35`, no Panorama), `StackedWithBrush` (stacked bars with basic Brush integration, no `dy` offset or Panorama), `HasLabelBasedOnSeparateDataKey` (Bar `label` prop with `dataKey` pointing to a derived field, data enriched inside `render`), `NoPadding` (`Bar` `background` as object `{ fill: '#eee' }`, `XAxis scale="point"` with `padding`, fixed `barSize`), `WithMinPointSize` (`Bar` `minPointSize` as a function returning `0` for zero values and `2` otherwise, covering stacked + non-stacked bars with small/zero data), `OneDataPointPercentSize` (`barSize="30%"` string percentage for single-data-point numerical-domain charts; function `dataKey`; explicit `domain` on `XAxis`), and `RangedBarChart` (`Bar` `dataKey="temperature"` where each entry's `temperature` is a `[low, high]` tuple from `rangeData`; data cloned in render via `rangeData.map(d => ({ ...d, temperature: [...d.temperature] }))` to avoid Vue proxy invariant errors; `fill="violet"` `stroke="indigo"`)
-- **Testing**: BarChart test suite covers rendering (bar count, empty data, missing dataKey, single point), props (fill, background, hide, radius number + array), stacked bars (stackId, stacked+unstacked mix), vertical layout, context providers (viewBox, clipPathId, width, height via spy + template render), tooltip interaction (fireEvent.mouseEnter → `.v-charts-tooltip-content`), and CartesianGrid co-rendering
-
-### Commit Convention
-- Conventional commits: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`
+- Scatter animation (current branch `feat/zaxis-scatter`)
+- Bar component (shape slot, ErrorBar, LabelList, animation)
+- Brush component (Panorama, drag handling, keyboard support)
+- Tooltip (cursor rendering, custom cursor slot, chart synchronization)
+- ComposedChart + BoxPlot story (Scatter + ZAxis integration)
+- **Line chart** (`cartesian/line/`): `computeLinePoints({ layout, xAxis, yAxis, xAxisTicks, yAxisTicks, dataKey, bandSize, displayedData })` in `line/utils.ts` returns `ReadonlyArray<LinePointItem>`; uses `getValueByDataKey` from `@/utils/chart`; horizontal layout: `x` from `getCateCoordinateOfLine`, `y` from `yAxis.scale(value)` (null when value is nullish); vertical layout: `x` from `xAxis.scale(value)` (null when nullish), `y` from `getCateCoordinateOfLine`; `ActivePoints` renders highlighted dot at active tooltip index (`selectActiveTooltipIndex`): `activeDot === false` → nothing; plain object → SVG overrides on default dot; `slots.activeDot` → fully custom; default `<Dot cx cy r=4 fill=mainColor stroke-width=2 stroke="#fff" />` in `<Layer class="v-charts-active-dot">`; `StaticLine` is context-driven (no props) — reads all state via `useLineContext()` including `shapeSlot`; `Dots` (class `LineDots`) uses `fill: '#fff'` + `stroke: props.stroke`; `LabelList` suppressed while `isAnimating`; see Animation Chase Pattern for dual animation strategy; `shape` named slot supported (see Key Component Gotchas); story: `chart/__stories__/CustomLineShapeChart.stories.tsx` (`title: 'Examples/LineChart/CustomLineShapeChart'`) demonstrates custom shape slot with tick marks along line segments
+- **Storybook EquidistantPreserveEnd** (`chart/__stories__/EquidistantPreserveEnd.stories.tsx`, `title: 'Examples/EquidistantPreserveEnd'`): `PreserveEndInterval` story — wraps `LineChart` in `ResponsiveContainer width="100%" height={300}` with 10 data points (Page A–J); uses `<XAxis dataKey="name" interval="equidistantPreserveEnd" />` to demonstrate equidistant tick spacing that preserves the last tick; `Line type="monotone" dataKey="uv" isAnimationActive={false}`; `'equidistantPreserveEnd'` is now part of `AxisInterval` type in `types/axis.ts`; handling in `get-ticks.ts` may still be pending if not yet implemented alongside `'equidistantPreserveStart'`
+- **LineChart test suite** (`chart/__tests__/LineChart.spec.tsx`): in progress — parallel to `AreaChart.spec.tsx` and `BarChart.spec.tsx`
+- **LineChart stories** (`cartesian/line/__stories__/LineChart.stories.tsx`, `title: 'examples/LineChart'`): exports `Simple`, `Dashed`, `Vertical`, `BiAxial`, `VerticalWithSpecifiedDomain`, `ConnectNulls`, `WithXAxisPadding`, `LineChartHasMultiSeries`, `LineChartAxisInterval`, `WithBrush`, `HideOnLegendClick`, `LineTrailingIcon`, `ReversedXAxis`, `ChangingDataKey`, `ToggleBetweenDataKeys`, `LogarithmicYAxis`, `WithReferenceLines`, `WithCustomizedDot`, `ClipDot`, `NegativeValuesWithReferenceLines`, `UndefinedEventHandlers`, `ActiveDotExcludedFromDomain`; `LineChartAxisInterval` demonstrates all `interval` variants (`preserveEnd`, `preserveStart`, `preserveStartEnd`, `0`); `BiAxial` uses two `YAxis` with `yAxisId`; `LineTrailingIcon` uses a second `Line` with `legendType="none"` `tooltipType="none"` for trailing icon effect; `LogarithmicYAxis` uses `YAxis scale="symlog"` with explicit `ticks` array (powers of 10 from 0 to 10^10) and `logData` dataset (`{ year, performance }` — 1970–2020 exponential values); `Line unit=" KFLOPS"` demonstrates axis unit labeling; `WithReferenceLines` uses `<ReferenceLine x="Page C" label="Anything" />` and `<ReferenceLine y={1600} label="Something" />`; `WithCustomizedDot` uses `dot` named slot for custom SVG icons per point; `ClipDot` demonstrates `clipDot` prop on the `dot` object (`dot={{ clipDot: bool, r, ... }}`); `NegativeValuesWithReferenceLines` uses `Line data={...}` (component-level data, not chart-level), `dot={false}`, conditional `ReferenceLine` at x=0/y=0, and `YAxis`/`XAxis` `label` object (`{ value, style, angle, position, offset }`); `ActiveDotExcludedFromDomain` uses `XAxis type="number" domain={[1.01, 1.15]} allowDataOverflow` to test active dot clipping at axis boundaries
+- **ScatterChart stories** (`cartesian/scatter/__stories__/ScatterChart.stories.tsx`, `title: 'examples/ScatterChart'`): exports `ChangingDataKey`, `SimpleScatter`, `EmptyChart`; all use `ComposedChart` (no standalone `ScatterChart`); `SimpleScatter` pairs `XAxis type="number" dataKey="x"` + `YAxis type="number" dataKey="y"` + `ZAxis dataKey="z" range={[60, 400]}`; `EmptyChart` uses `Scatter data={[]}` with timestamp-based `XAxis` (`ticks`, `domain`, `tickFormatter`) to render an empty chart with full axis configuration
 <!-- END AUTO-MANAGED -->
-
-## Development Workflow
-
-1. Make changes in `packages/vue/src/`
-2. Test changes in the playground with `pnpm play`
-3. Run tests with `pnpm test`
-4. Build with `pnpm --filter vccs build`
-5. View Storybook components with `pnpm storybook`
 
 ## Dependencies
 

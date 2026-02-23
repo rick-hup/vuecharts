@@ -31,7 +31,7 @@ export const BarRectangles = defineComponent({
     let animationId = 0
     const domRef = useDomRef()
 
-    const { props, data: barData, layout } = useBarContext()
+    const { props, data: barData, layout, isAnimating, shapeSlot } = useBarContext()
 
     const {
       dataKey,
@@ -107,7 +107,9 @@ export const BarRectangles = defineComponent({
                 onMouseleave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
               >
-                <Rectangle {...barRectangleProps} />
+                {shapeSlot
+                  ? shapeSlot(barRectangleProps)
+                  : <Rectangle {...barRectangleProps} />}
               </Layer>
             )
           })}
@@ -131,13 +133,14 @@ export const BarRectangles = defineComponent({
         // Brush drag interpolate from the current visual position (not the
         // original start), creating a smooth "chase" effect.
         animationId++
+        isAnimating.value = true
         return (
           <Animate
             key={animationId}
             transition={props.transition}
             isActive={isAnimationActive}
             onAnimationStart={onAnimationStart}
-            onAnimationEnd={onAnimationEnd}
+            onAnimationEnd={() => { isAnimating.value = false; onAnimationEnd?.() }}
           >
             {
               (t) => {
@@ -145,7 +148,11 @@ export const BarRectangles = defineComponent({
                   ? data
                   : data.map((entry, index) => {
                       const prev = prevData?.[index]
-                      if (prev) {
+                      // Only interpolate from previous if the coordinate space hasn't changed.
+                      // When the chart re-layouts (e.g. axis scale change), stackedBarStart shifts
+                      // and the old positions are in a stale coordinate system — animating from
+                      // them would place bars outside the current chart area.
+                      if (prev && prev.stackedBarStart === entry.stackedBarStart) {
                         const interpolatorX = interpolateNumber(prev.x || 0, entry.x || 0)
                         const interpolatorY = interpolateNumber(prev.y || 0, entry.y || 0)
                         const interpolatorWidth = interpolateNumber(prev.width, entry.width)
@@ -159,7 +166,7 @@ export const BarRectangles = defineComponent({
                         }
                       }
 
-                      // 新出现的柱子：从堆叠基线开始动画
+                      // 新出现的柱子（或坐标系变更后）：从堆叠基线开始动画
                       if (layout.value === 'horizontal') {
                         const h = interpolateNumber(0, entry.height)(t)
                         const y = interpolateNumber(entry.stackedBarStart, entry.y!)(t)
@@ -190,6 +197,7 @@ export const BarRectangles = defineComponent({
       }
 
       // 无动画或数据未变化时直接渲染
+      isAnimating.value = false
       previousRectangles = data
       return (
         <g ref={domRef}>

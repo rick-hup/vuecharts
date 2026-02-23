@@ -101,11 +101,21 @@ export interface ChartPointer {
 
 export type IfOverflow = 'hidden' | 'visible' | 'discard' | 'extendDomain'
 
+export interface ScatterPointNode {
+  x?: number | string
+  y?: number | string
+  z?: number | string
+}
+
 export interface ScatterPointItem {
-  cx?: number
-  cy?: number
-  size?: number
-  // node?: ScatterPointNode
+  cx: number | undefined
+  cy: number | undefined
+  x: number | undefined
+  y: number | undefined
+  size: number
+  width: number
+  height: number
+  node: ScatterPointNode
   payload?: any
   tooltipPayload?: TooltipPayload
   tooltipPosition: Coordinate

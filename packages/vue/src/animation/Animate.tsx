@@ -3,6 +3,11 @@ import { defineComponent, onUnmounted, ref, watch } from 'vue'
 import { animate } from 'motion-v'
 import type { AnimationOptions } from 'motion-v'
 
+const DEFAULT_TRANSITION: AnimationOptions = {
+  duration: 0.4,
+  ease: 'easeOut',
+}
+
 const Animate = defineComponent({
   name: 'Animate',
   props: {
@@ -14,10 +19,7 @@ const Animate = defineComponent({
     // 动画配置选项
     transition: {
       type: Object as PropType<AnimationOptions>,
-      default: () => ({
-        duration: 400,
-        ease: 'easeOut',
-      }),
+      default: undefined,
     },
     // 动画开始回调
     onAnimationStart: {
@@ -60,6 +62,7 @@ const Animate = defineComponent({
       }
 
       animationControls = animate(props.from, props.to, {
+        ...DEFAULT_TRANSITION,
         ...props.transition,
         onUpdate: (latest) => {
           currentValue.value = latest

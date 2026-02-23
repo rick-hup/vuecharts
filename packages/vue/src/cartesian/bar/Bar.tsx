@@ -1,5 +1,5 @@
 import type { SVGAttributes, SlotsType } from 'vue'
-import { computed, defineComponent } from 'vue'
+import { Teleport, computed, defineComponent } from 'vue'
 import type { BarProps, BarPropsWithSVG } from './type'
 import { BarVueProps } from './type'
 import { useBar } from '@/cartesian/bar/hooks/useBar'
@@ -15,6 +15,8 @@ import { LabelList } from '@/components/label'
 import type { ErrorBarDataItem, ErrorBarDataPointFormatter } from '@/cartesian/error-bar/ErrorBarContext'
 import type { BarRectangleItem } from '@/types/bar'
 import { getValueByDataKey } from '@/utils/chart'
+import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
+import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
 
 const errorBarDataPointFormatter: ErrorBarDataPointFormatter<BarRectangleItem> = (
   dataPoint,
@@ -36,10 +38,11 @@ export const Bar = defineComponent<BarPropsWithSVG>({
   slots: Object as SlotsType<{
     default?: () => any
     activeDot?: (props: any) => any
+    shape?: (props: any) => any
   }>,
   setup(props: BarProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     useSetupGraphicalItem(props, 'bar')
-    const { shouldRender, clipPathId, barData } = useBar(props)
+    const { shouldRender, clipPathId, barData, isAnimating } = useBar(props, slots.shape)
     const { needClip } = useNeedsClip(props.xAxisId, props.yAxisId)
     const layout = useChartLayout()
 
@@ -57,12 +60,28 @@ export const Bar = defineComponent<BarPropsWithSVG>({
       errorBarOffset,
     })
 
+    const labelListData = computed(() => {
+      if (isAnimating.value || !barData.value) return undefined
+      return barData.value.map(entry => ({
+        x: entry.x,
+        y: entry.y,
+        width: entry.width,
+        height: entry.height,
+        value: entry.value,
+        payload: entry.payload,
+        parentViewBox: entry.parentViewBox,
+      }))
+    })
+    provideCartesianLabelListData(labelListData)
+
+    const graphicalLayerRef = useGraphicalLayerRef(null)
+
     return () => {
       if (!shouldRender.value) {
         return null
       }
 
-      return (
+      const barContent = (
         <Layer class={['v-charts-bar', attrs.class]}>
           {
             needClip.value && (
@@ -75,7 +94,7 @@ export const Bar = defineComponent<BarPropsWithSVG>({
             {props.background && <BarBackground />}
             <BarRectangles />
           </Layer>
-          {props.label && (
+          {!isAnimating.value && props.label && (
             <LabelList
               {...(typeof props.label === 'object' ? props.label : {})}
               data={barData.value}
@@ -84,6 +103,12 @@ export const Bar = defineComponent<BarPropsWithSVG>({
           {slots.default?.()}
         </Layer>
       )
+
+      // Teleport bars into graphical layer so they render above cursor but below labels
+      if (graphicalLayerRef?.value) {
+        return <Teleport to={graphicalLayerRef.value}>{barContent}</Teleport>
+      }
+      return barContent
     }
   },
 })

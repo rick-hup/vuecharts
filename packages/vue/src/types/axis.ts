@@ -52,7 +52,7 @@ export type BaseCartesianAxis = {
   domain: AxisDomain | undefined
 }
 
-export type AxisInterval = number | 'preserveStart' | 'preserveEnd' | 'preserveStartEnd' | 'equidistantPreserveStart'
+export type AxisInterval = number | 'preserveStart' | 'preserveEnd' | 'preserveStartEnd' | 'equidistantPreserveStart' | 'equidistantPreserveEnd'
 
 /**
  * These are the external props, visible for users as they set them using our public API.

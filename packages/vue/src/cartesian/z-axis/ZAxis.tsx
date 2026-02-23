@@ -1,0 +1,75 @@
+import type { PropType } from 'vue'
+import { defineComponent, watchEffect } from 'vue'
+import { useAppDispatch } from '@/state/hooks'
+import type { ZAxisSettings } from '@/state/cartesianAxisSlice'
+import { addZAxis, removeZAxis } from '@/state/cartesianAxisSlice'
+import { implicitZAxis } from '@/state/selectors/axisSelectors'
+import type { AxisRange } from '@/state/selectors/axisSelectors'
+import type { DataKey } from '@/types'
+import type { AxisDomain } from '@/types/axis'
+import type { ScaleType } from '@/types/scale'
+
+export const ZAxis = defineComponent({
+  name: 'ZAxis',
+  props: {
+    zAxisId: {
+      type: [String, Number] as PropType<string | number>,
+      default: 0,
+    },
+    dataKey: {
+      type: [String, Number, Function] as PropType<DataKey<any>>,
+      default: undefined,
+    },
+    type: {
+      type: String as PropType<'number' | 'category'>,
+      default: implicitZAxis.type,
+    },
+    range: {
+      type: Array as unknown as PropType<[number, number]>,
+      default: () => implicitZAxis.range,
+    },
+    domain: {
+      type: [Array, String] as PropType<AxisDomain>,
+      default: undefined,
+    },
+    scale: {
+      type: [String, Function] as PropType<ScaleType>,
+      default: implicitZAxis.scale,
+    },
+    name: {
+      type: String,
+      default: undefined,
+    },
+    unit: {
+      type: String,
+      default: undefined,
+    },
+  },
+  setup(props) {
+    const dispatch = useAppDispatch()
+
+    watchEffect((onCleanup) => {
+      const settings: ZAxisSettings = {
+        id: props.zAxisId,
+        dataKey: props.dataKey,
+        type: props.type,
+        range: props.range as AxisRange,
+        domain: props.domain,
+        scale: props.scale,
+        name: props.name,
+        unit: props.unit,
+        allowDuplicatedCategory: implicitZAxis.allowDuplicatedCategory,
+        allowDataOverflow: implicitZAxis.allowDataOverflow,
+        reversed: implicitZAxis.reversed,
+        includeHidden: implicitZAxis.includeHidden,
+      }
+      dispatch(addZAxis(settings))
+
+      onCleanup(() => {
+        dispatch(removeZAxis(settings))
+      })
+    })
+
+    return () => null
+  },
+})

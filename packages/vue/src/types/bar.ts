@@ -1,4 +1,5 @@
 import type { Coordinate } from '@/types/common'
+import type { CartesianViewBox } from '@/cartesian/type'
 
 export type BarPositionPosition = {
   /**
@@ -48,6 +49,8 @@ export interface BarRectangleItem extends RectangleProps {
   /** Chart range coordinate of the baseValue of the first bar in a stack. */
   stackedBarStart: number
   tooltipPosition: Coordinate
+  /** The chart's full plotting area viewBox, used by LabelList for text wrapping calculations */
+  parentViewBox?: CartesianViewBox
 }
 
 export type ErrorBarDirection = 'x' | 'y'

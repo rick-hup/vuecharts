@@ -31,7 +31,7 @@ export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGra
         inactive: props.hide,
         dataKey: props.dataKey,
         type: props.legendType,
-        color: getLegendItemColor(attrs.stroke, props.fill!),
+        color: getItemColor(type, attrs.stroke ?? props.stroke, attrs.fill ?? props.fill),
         value: getTooltipNameProp(props.name, props.dataKey)!,
         payload: {
           ...props,

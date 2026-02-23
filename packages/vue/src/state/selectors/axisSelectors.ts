@@ -235,7 +235,9 @@ export function selectAxisSettings(state: RechartsRootState, axisType: XorYType,
  * @param state RechartsRootState
  * @return boolean true if there is at least one Bar or RadialBar
  */
-export const selectHasBar = (state: RechartsRootState): boolean => state.graphicalItems.countOfBars > 0
+export function selectHasBar(state: RechartsRootState): boolean {
+  return state.graphicalItems.cartesianItems.some(item => item.type === 'bar')
+}
 
 /**
  * Filters CartesianGraphicalItemSettings by the relevant axis ID
