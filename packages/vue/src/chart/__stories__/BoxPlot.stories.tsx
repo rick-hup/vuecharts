@@ -33,13 +33,10 @@ const boxPlots: BoxPlotRaw[] = [
 const boxPlotData = boxPlots.map((v, i) => ({
   name: String(i),
   min: v.min,
-  'bar-min': 0,
   bottomWhisker: v.lowerQuartile - v.min,
   bottomBox: v.median - v.lowerQuartile,
-  'bar-avg': 0,
   topBox: v.upperQuartile - v.median,
   topWhisker: v.max - v.upperQuartile,
-  'bar-max': 0,
   average: v.average,
   size: 250,
 }))
@@ -130,7 +127,7 @@ const AverageDots = defineComponent({
 export const BoxPlotChart: StoryObj = {
   render: () => (
     <ResponsiveContainer minHeight={600}>
-      <ComposedChart data={boxPlotData}>
+      <ComposedChart data={boxPlotData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
         <CartesianGrid stroke-dasharray="3 3" />
         <Bar isAnimationActive={false} stackId="a" dataKey="min" fill="none" />
         <Bar isAnimationActive={false} stackId="a" dataKey="bar-min">
@@ -151,7 +148,7 @@ export const BoxPlotChart: StoryObj = {
           {{ shape: (props: any) => <HorizonBar {...props} /> }}
         </Bar>
         <AverageDots />
-        <XAxis dataKey="name" tick={false} scale="band" />
+        <XAxis dataKey="name" scale="band" />
         <YAxis />
       </ComposedChart>
     </ResponsiveContainer>
