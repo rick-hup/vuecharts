@@ -21,17 +21,19 @@ export const Dots = defineComponent({
     },
   },
   setup(_props) {
-    const { clipPathId, clipDot, props, attrs } = useLineContext()
+    const { clipPathId, clipDot, props, attrs, dotSlot } = useLineContext()
 
     return () => {
       const { points } = _props
       if (!shouldRenderDots(points!, props.dot!)) {
         return null
       }
+      const dotObjProps = typeof props.dot === 'object' && props.dot !== null ? props.dot : {}
       const dotsProps = {
         'fill': '#fff',
         'stroke': props.stroke,
         'stroke-width': props.strokeWidth,
+        ...dotObjProps,
       }
       return (
         <Layer
@@ -39,8 +41,12 @@ export const Dots = defineComponent({
           clip-path={props.needClip ? `url(#clipPath-${clipDot ? '' : 'dots-'}${clipPathId.value})` : undefined}
         >
           {
-            points?.map((point) => {
-              return <Dot {...dotsProps} {...attrs} r={3} cx={point.x} cy={point.y} class="v-charts-line-dot" clipDot={clipDot} />
+            points?.map((point, index) => {
+              const pointAsLine = point as LinePointItem
+              if (dotSlot) {
+                return dotSlot({ ...dotsProps, ...attrs, cx: point.x, cy: point.y, index, value: pointAsLine.value, payload: pointAsLine.payload })
+              }
+              return <Dot r={3} {...dotsProps} {...attrs} cx={point.x} cy={point.y} class="v-charts-line-dot" clipDot={clipDot} />
             })
           }
         </Layer>
@@ -53,7 +59,7 @@ export const Dots = defineComponent({
 export const StaticLine = defineComponent({
   name: 'StaticLine',
   setup() {
-    const { points, clipPathId, layout, attrs, lineData, props, isAnimating, shapeSlot } = useLineContext()
+    const { points, clipPathId, layout, attrs, lineData, props, isAnimating, shapeSlot, labelSlot } = useLineContext()
     const currentPoints = ref<ReadonlyArray<LinePointItem>>([])
 
     // stroke-dashoffset ratio: 1 = fully hidden, 0 = fully revealed
@@ -175,7 +181,7 @@ export const StaticLine = defineComponent({
 
       const dashRatio = strokeDashRatio.value
 
-      const showLabels = !isAnimating.value && props.label
+      const showLabels = !isAnimating.value && (props.label || labelSlot)
       const labelProps = typeof props.label === 'object' ? props.label : {}
 
       // Build the curve/shape content
@@ -192,8 +198,9 @@ export const StaticLine = defineComponent({
           })
         }
         else {
-          // Apply pathLength-based stroke-dash animation only to default Curve
-          const pathAttrs = dashRatio > 0
+          // Apply pathLength-based stroke-dash animation only when user has no custom stroke-dasharray
+          const hasCustomDashArray = attrs['stroke-dasharray'] != null
+          const pathAttrs = !hasCustomDashArray && dashRatio > 0
             ? { 'pathLength': 1, 'stroke-dasharray': 1, 'stroke-dashoffset': dashRatio }
             : {}
           curveContent = (
@@ -210,8 +217,11 @@ export const StaticLine = defineComponent({
         }
       }
 
-      // For shape slot, use clipRect to animate reveal (pathLength only works on single <path>)
-      const needClipAnim = shapeSlot && dashRatio > 0 && curveContent
+      // Use clipRect reveal when pathLength animation can't be used:
+      // - shape slot (pathLength only works on single <path>)
+      // - custom stroke-dasharray (pathLength animation overrides it)
+      const hasCustomDashArray = attrs['stroke-dasharray'] != null
+      const needClipAnim = (shapeSlot || hasCustomDashArray) && dashRatio > 0 && curveContent
 
       return (
         <Fragment>
@@ -236,7 +246,9 @@ export const StaticLine = defineComponent({
           <Dots points={currentPoints.value} />
           {
             showLabels && (
-              <LabelList {...labelProps} data={lineData.value ?? []} dataKey={props.dataKey} />
+              <LabelList {...labelProps} data={lineData.value ?? []} dataKey={props.dataKey}>
+                {labelSlot ? { label: labelSlot } : undefined}
+              </LabelList>
             )
           }
         </Fragment>

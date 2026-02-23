@@ -10,7 +10,7 @@ import { getValueByDataKey } from '@/utils/chart'
 
 export const LabelList = defineComponent({
   props: LabelListVueProps,
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     const labelLayerRef = useLabelLayerRef(null)
     const contextData = useCartesianLabelListData(null)
 
@@ -28,6 +28,10 @@ export const LabelList = defineComponent({
               : (getValueByDataKey(entry && entry.payload, dataKey!) as string | number)
             const idProps = isNullish(id) ? undefined : `${id}-${index}`
             const viewBox = parseViewBox(isNullish(clockWise) ? entry : { ...entry, clockWise })
+
+            if (slots.label) {
+              return slots.label({ ...others, ...attrs, ...viewBox, value, index, key: `label-${index}` })
+            }
 
             return (
               <Label

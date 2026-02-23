@@ -7,6 +7,8 @@ import { CartesianGrid } from '@/cartesian/cartesian-grid'
 import { Tooltip } from '@/components/Tooltip'
 import { Legend } from '@/components/legend'
 import { Brush } from '@/cartesian/brush'
+import { ReferenceArea } from '@/cartesian/reference-area'
+import { ReferenceLine } from '@/cartesian/reference-line'
 import { ResponsiveContainer } from '@/index'
 import { getStoryArgsFromArgsTypesObject } from '@/storybook/api/props/utils'
 import { CategoricalChartProps } from '@/storybook/api/props/chart-props'
@@ -510,6 +512,137 @@ export const ToggleBetweenDataKeys: Story = {
   render: () => <ToggleBetweenDataKeysWrapper />,
 }
 
+export const WithReferenceLines: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    data: pageData,
+    width: 500,
+    height: 300,
+    margin: { top: 20, right: 50, left: 20, bottom: 5 },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Legend />
+          <ReferenceLine x="Page C" stroke="red" label="Anything" />
+          <ReferenceLine y={1600} label="Something" stroke="red" />
+          <Line type="monotone" dataKey="pv" stroke="#8884d8" />
+          <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+          <Tooltip />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const WithCustomizedDot: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: { top: 5, right: 30, left: 20, bottom: 5 },
+  },
+  render: (args: Record<string, any>) => {
+    const CustomizedDot = (props: any) => {
+      const { cx, cy, value } = props
+
+      if (value >= 800) {
+        return (
+          <svg x={cx - 10} y={cy - 10} width={20} height={20} fill="red" viewBox="0 0 1024 1024">
+            <path
+              d={
+                'M512 1009.984c-274.912 0-497.76-222.848-497.76-497.76s222.848-497.76 497.76-497.76'
+                + 'c274.912 0 497.76 222.848 497.76 497.76s-222.848 497.76-497.76 497.76zM340.768 '
+                + '295.936c-39.488 0-71.52 32.8-71.52 73.248s32.032 73.248 71.52 73.248c39.488 0 71.52-'
+                + '32.8 71.52-73.248s-32.032-73.248-71.52-73.248zM686.176 296.704c-39.488 0-71.52 32.8-'
+                + '71.52 73.248s32.032 73.248 71.52 73.248c39.488 0 71.52-32.8 71.52-73.248s-32.032-'
+                + '73.248-71.52-73.248zM772.928 555.392c-18.752-8.864-40.928-0.576-49.632 18.528-40.224 '
+                + '88.576-120.256 143.552-208.832 143.552-85.952 0-164.864-52.64-205.952-137.376-9.184-'
+                + '18.912-31.648-26.592-50.08-17.28-18.464 9.408-21.216 21.472-15.936 32.64 52.8 111.424 '
+                + '155.232 186.784 269.76 186.784 117.984 0 217.12-70.944 269.76-186.784 8.672-19.136 '
+                + '9.568-31.2-9.12-40.096z'
+              }
+            />
+          </svg>
+        )
+      }
+
+      return (
+        <svg x={cx - 10} y={cy - 10} width={20} height={20} fill="green" viewBox="0 0 1024 1024">
+          <path
+            d={
+              'M517.12 53.248q95.232 0 179.2 36.352t145.92 98.304 98.304 145.92 36.352 179.2-36.352 179.2'
+              + '-98.304 145.92-145.92 98.304-179.2 36.352-179.2-36.352-145.92-98.304-98.304-145.92-36.352-'
+              + '179.2 36.352-179.2 98.304-145.92 145.92-98.304 179.2-36.352zM663.552 261.12q-15.36 0-28.16 '
+              + '6.656t-23.04 18.432-15.872 27.648-5.632 33.28q0 35.84 21.504 61.44t51.2 25.6 51.2-25.6 21.504'
+              + '-61.44q0-17.408-5.632-33.28t-15.872-27.648-23.04-18.432-28.16-6.656zM373.76 261.12q-29.696 0-'
+              + '50.688 25.088t-20.992 60.928 20.992 61.44 50.688 25.6 50.176-25.6 20.48-61.44-20.48-60.928-'
+              + '50.176-25.088zM520.192 602.112q-51.2 0-97.28 9.728t-82.944 27.648-62.464 41.472-35.84 51.2q-'
+              + '1.024 1.024-1.024 2.048-1.024 3.072-1.024 8.704t2.56 11.776 7.168 11.264 12.8 6.144q25.6-27.648'
+              + ' 62.464-50.176 31.744-19.456 79.36-35.328t114.176-15.872q67.584 0 116.736 15.872t81.92 35.328q'
+              + '37.888 22.528 63.488 50.176 17.408-5.12 19.968-18.944t0.512-18.944-3.072-7.168-1.024-3.072q-'
+              + '26.624-55.296-100.352-88.576t-176.128-33.28z'
+            }
+          />
+        </svg>
+      )
+    }
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Legend />
+          <Line type="monotone" dataKey="pv" stroke="#8884d8">
+            {{ dot: (props: any) => <CustomizedDot {...props} /> }}
+          </Line>
+          <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+          <Tooltip />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const ClipDot: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    clipDot: false,
+  },
+  render: (args: Record<string, any>) => {
+    const clipDotData = [...pageData, { name: 'Page H', pv: 0 }, { name: 'Page I', uv: 0 }]
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart
+          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+          data={clipDotData}
+        >
+          <Line
+            isAnimationActive={false}
+            dataKey="uv"
+            dot={{ 'clipDot': args.clipDot, 'r': 4, 'stroke-width': 2, 'fill': '#ffffff', 'fill-opacity': 1 }}
+          />
+          <Line
+            isAnimationActive={false}
+            dataKey="pv"
+            dot={{ clipDot: args.clipDot, r: 10 }}
+          />
+          <XAxis dataKey="name" allowDataOverflow />
+          <YAxis allowDataOverflow />
+          <Tooltip />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
 export const LogarithmicYAxis: Story = {
   args: {
     ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
@@ -542,4 +675,420 @@ export const LogarithmicYAxis: Story = {
       </ResponsiveContainer>
     )
   },
+}
+
+export const NegativeValuesWithReferenceLines: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    margin: { top: 5, right: 30, left: 20, bottom: 5 },
+  },
+  render: (args: Record<string, any>) => {
+    const data = [
+      { x: -50, y: -50 },
+      { x: 0, y: 0 },
+      { x: 50, y: 50 },
+      { x: 100, y: 100 },
+      { x: 150, y: 150 },
+      { x: 200, y: 200 },
+      { x: 250, y: 250 },
+      { x: 350, y: 350 },
+      { x: 400, y: 400 },
+      { x: 450, y: 450 },
+      { x: 500, y: 500 },
+    ]
+
+    const minX = Math.min(...data.map(d => d.x))
+    const minY = Math.min(...data.map(d => d.y))
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+
+          <YAxis
+            dataKey="y"
+            domain={['auto', 'auto']}
+            type="number"
+            interval={0}
+            label={{
+              value: 'y',
+              style: { textAnchor: 'middle' },
+              angle: -90,
+              position: 'left',
+              offset: 0,
+            }}
+            allowDataOverflow
+            stroke-width={minX < 0 ? 0 : 1}
+          />
+
+          <XAxis
+            dataKey="x"
+            domain={['auto', 'auto']}
+            interval={0}
+            type="number"
+            label={{
+              key: 'xAxisLabel',
+              value: 'x',
+              position: 'bottom',
+            }}
+            allowDataOverflow
+            stroke-width={minY < 0 ? 0 : 1}
+          />
+
+          {minY < 0 && <ReferenceLine y={0} stroke="gray" stroke-width={1.5} stroke-opacity={0.65} />}
+          {minX < 0 && <ReferenceLine x={0} stroke="gray" stroke-width={1.5} stroke-opacity={0.65} />}
+
+          <Line stroke-width={2} data={data} dot={false} type="monotone" dataKey="y" stroke="black" tooltipType="none" />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const UndefinedEventHandlers: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: { top: 5, right: 30, left: 20, bottom: 5 },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="pv"
+            stroke="#8884d8"
+            activeDot={{ r: 8 }}
+            onMouseEnter={undefined}
+            onMouseLeave={undefined}
+          />
+          <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+          <Tooltip />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+const activeDotExcludedDomainData = [
+  { timestamp: 0.9, pv: 120 },
+  { timestamp: 1.3, pv: 160 },
+]
+
+export const ActiveDotExcludedFromDomain: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 480,
+    height: 260,
+    data: activeDotExcludedDomainData,
+    margin: { top: 20, right: 36, left: 36, bottom: 16 },
+  },
+  render: (args: Record<string, any>) => {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis
+            dataKey="timestamp"
+            type="number"
+            domain={[1.01, 1.15]}
+            allowDataOverflow
+          />
+          <YAxis type="number" domain={[80, 200]} allowDataOverflow />
+          <Tooltip cursor={{ 'stroke': '#999', 'stroke-width': 1 }} />
+          <Line type="monotone" dataKey="pv" stroke="#8884d8" isAnimationActive={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+export const WithCustomizedLabel: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 500,
+    height: 300,
+    data: pageData,
+    margin: { top: 20, right: 30, left: 20, bottom: 10 },
+  },
+  render: (args: Record<string, any>) => {
+    const CustomizedLabel = (props: any) => {
+      const { x, y, stroke, value } = props
+      return (
+        <text x={x} y={y} dy={-4} fill={stroke} font-size={20} text-anchor="middle">
+          {value}
+        </text>
+      )
+    }
+
+    const CustomizedAxisTick = (props: any) => {
+      const { x, y, value } = props
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <text x={0} y={0} dy={16} text-anchor="end" fill="#666" transform="rotate(-35)">
+            {value}
+          </text>
+        </g>
+      )
+    }
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart {...args}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          <XAxis dataKey="name" height={60}>
+            {{ tick: (tickProps: any) => <CustomizedAxisTick {...tickProps} /> }}
+          </XAxis>
+          <YAxis />
+          <Legend />
+          <Line type="monotone" dataKey="pv" stroke="#8884d8">
+            {{ label: (labelProps: any) => <CustomizedLabel {...labelProps} stroke="#8884d8" /> }}
+          </Line>
+          <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+          <Tooltip />
+        </LineChart>
+      </ResponsiveContainer>
+    )
+  },
+}
+
+const impressionsData = [
+  { name: 1, cost: 4.11, impression: 100 },
+  { name: 2, cost: 2.39, impression: 120 },
+  { name: 3, cost: 1.37, impression: 150 },
+  { name: 4, cost: 1.16, impression: 180 },
+  { name: 5, cost: 2.29, impression: 200 },
+  { name: 6, cost: 3, impression: 499 },
+  { name: 7, cost: 0.53, impression: 50 },
+  { name: 8, cost: 2.52, impression: 100 },
+  { name: 9, cost: 1.79, impression: 200 },
+  { name: 10, cost: 2.94, impression: 222 },
+  { name: 11, cost: 4.3, impression: 210 },
+  { name: 12, cost: 4.41, impression: 300 },
+  { name: 13, cost: 2.1, impression: 50 },
+  { name: 14, cost: 8, impression: 190 },
+  { name: 15, cost: 0, impression: 300 },
+  { name: 16, cost: 9, impression: 400 },
+  { name: 17, cost: 3, impression: 200 },
+  { name: 18, cost: 2, impression: 50 },
+  { name: 19, cost: 3, impression: 100 },
+  { name: 20, cost: 7, impression: 100 },
+]
+
+type HighlightAndZoomState = {
+  left: string | number
+  right: string | number
+  refAreaLeft: string | number | undefined
+  refAreaRight: string | number | undefined
+  top: string | number
+  bottom: string | number
+  top2: string | number
+  bottom2: string | number
+}
+
+const highlightInitialState: HighlightAndZoomState = {
+  left: 'dataMin',
+  right: 'dataMax',
+  refAreaLeft: undefined,
+  refAreaRight: undefined,
+  top: 'dataMax+1',
+  bottom: 'dataMin-1',
+  top2: 'dataMax+20',
+  bottom2: 'dataMin-20',
+}
+
+function getAxisYDomain(
+  from: string | number | undefined,
+  to: string | number | undefined,
+  ref: 'cost' | 'impression',
+  offset: number,
+): (number | string)[] {
+  if (from != null && to != null) {
+    const refData = impressionsData.slice(Number(from) - 1, Number(to))
+    let [bottom, top] = [refData[0][ref], refData[0][ref]]
+    refData.forEach((d) => {
+      if (d[ref] > top)
+        top = d[ref]
+      if (d[ref] < bottom)
+        bottom = d[ref]
+    })
+    return [(bottom | 0) - offset, (top | 0) + offset]
+  }
+  return [highlightInitialState.bottom, highlightInitialState.top]
+}
+
+const HighlightAndZoomWrapper = defineComponent({
+  props: {
+    args: { type: Object, default: () => ({}) },
+  },
+  setup(props) {
+    const state = ref<HighlightAndZoomState>({ ...highlightInitialState })
+
+    const zoom = () => {
+      let { refAreaLeft, refAreaRight } = state.value
+      if (refAreaLeft === refAreaRight || refAreaRight === '') {
+        state.value = { ...state.value, refAreaLeft: undefined, refAreaRight: undefined }
+        return
+      }
+      if (refAreaLeft && refAreaRight && refAreaLeft > refAreaRight) {
+        ;[refAreaLeft, refAreaRight] = [refAreaRight, refAreaLeft]
+      }
+      const [bottom, top] = getAxisYDomain(refAreaLeft, refAreaRight, 'cost', 1)
+      const [bottom2, top2] = getAxisYDomain(refAreaLeft, refAreaRight, 'impression', 50)
+      state.value = {
+        ...state.value,
+        refAreaLeft: undefined,
+        refAreaRight: undefined,
+        left: refAreaLeft ?? highlightInitialState.left,
+        right: refAreaRight ?? highlightInitialState.right,
+        bottom,
+        top,
+        bottom2,
+        top2,
+      }
+    }
+
+    const zoomOut = () => {
+      state.value = { ...highlightInitialState }
+    }
+
+    return () => {
+      const { left, right, refAreaLeft, refAreaRight, top, bottom, top2, bottom2 } = state.value
+      return (
+        <div style={{ userSelect: 'none', width: '100%' }}>
+          <button type="button" onClick={zoomOut}>
+            Zoom Out
+          </button>
+          <ResponsiveContainer minHeight={500}>
+            <LineChart
+              {...props.args}
+              data={impressionsData}
+              onMouseDown={(e: any) => {
+                if (e?.activeLabel != null) {
+                  state.value = { ...state.value, refAreaLeft: e.activeLabel }
+                }
+              }}
+              onMouseMove={(e: any) => {
+                if (state.value.refAreaLeft && e?.activeLabel != null) {
+                  state.value = { ...state.value, refAreaRight: e.activeLabel }
+                }
+              }}
+              onMouseUp={zoom}
+            >
+              <CartesianGrid yAxisId="1" stroke-dasharray="3 3" />
+              <XAxis allowDataOverflow dataKey="name" domain={left && right ? [left, right] : undefined} type="number" />
+              <YAxis allowDataOverflow domain={[bottom, top]} type="number" yAxisId="1" />
+              <YAxis orientation="right" allowDataOverflow domain={[bottom2, top2]} type="number" yAxisId="2" />
+              <Line yAxisId="1" type="natural" dataKey="cost" stroke="#8884d8" isAnimationActive={false} />
+              <Line yAxisId="2" type="natural" dataKey="impression" stroke="#82ca9d" isAnimationActive={false} />
+              {refAreaLeft && refAreaRight
+                ? <ReferenceArea yAxisId="1" x1={refAreaLeft} x2={refAreaRight} stroke-opacity={0.3} />
+                : null}
+              <Tooltip />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )
+    }
+  },
+})
+
+export const HighlightAndZoom: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    width: 800,
+    height: 400,
+  },
+  render: (args: Record<string, any>) => <HighlightAndZoomWrapper args={args} />,
+}
+
+const ToggleChildrenWrapper = defineComponent({
+  props: {
+    args: { type: Object, default: () => ({}) },
+  },
+  setup(props) {
+    const isBtnClicked = ref(false)
+
+    return () => (
+      <div>
+        <button data-testid="toggle" type="button" onClick={() => { isBtnClicked.value = !isBtnClicked.value }}>
+          Click Me to Simulate Legend
+        </button>
+        <LineChart {...props.args} data={pageData}>
+          <CartesianGrid stroke-dasharray="3 3" />
+          {isBtnClicked.value
+            ? null
+            : (
+                <>
+                  <XAxis
+                    dataKey="name"
+                    type="category"
+                    allowDuplicatedCategory={false}
+                    interval={0}
+                    ticks={['Page A', 'Page C', 'Page F']}
+                    tick={{ fontSize: 14 }}
+                    tickMargin={25}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    orientation="left"
+                    dataKey="pv"
+                    yAxisId="one"
+                    tick={{ fill: '#555', fontSize: 16 }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    orientation="left"
+                    dataKey="uv"
+                    yAxisId="two"
+                    tick={{ fill: '#555', fontSize: 16 }}
+                  />
+                  <Line
+                    name="PV"
+                    type="monotone"
+                    dataKey="pv"
+                    stroke="#8884d8"
+                    activeDot={{ r: 8 }}
+                    yAxisId="one"
+                    dot={false}
+                  />
+                  <Line
+                    name="UV"
+                    type="monotone"
+                    dataKey="uv"
+                    stroke="#82ca9d"
+                    yAxisId="two"
+                    dot={false}
+                  />
+                  <Tooltip />
+                </>
+              )}
+        </LineChart>
+        <Legend />
+      </div>
+    )
+  },
+})
+
+export const ToggleChildrenComponentsExceptCartesianGrid: Story = {
+  args: {
+    ...getStoryArgsFromArgsTypesObject(CategoricalChartProps),
+    data: pageData,
+    width: 1300,
+    height: 400,
+    margin: { right: 30, bottom: 40 },
+    layout: 'horizontal',
+  },
+  render: (args: Record<string, any>) => <ToggleChildrenWrapper args={args} />,
 }

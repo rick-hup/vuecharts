@@ -23,7 +23,7 @@ const XAxisImpl = defineComponent({
     ticks: Array,
   },
   inheritAttrs: false,
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     const isPanorama = useIsPanorama()
     const axisType = 'xAxis'
     const scale = useAppSelector(state => selectAxisScale(state, axisType, props.xAxisId, isPanorama))
@@ -49,7 +49,9 @@ const XAxisImpl = defineComponent({
           height={axisSize.value?.height}
           ticks={cartesianTickItems.value!}
           class={['v-charts-xAxis xAxis', attrs.class]}
-        />
+        >
+          {slots.tick ? { tick: slots.tick } : undefined}
+        </CartesianAxis>
       )
     }
   },
@@ -86,7 +88,7 @@ const XAxisSettingsDispatcher = defineComponent({
     tick: { type: [Boolean, Object], default: true },
     tickFormatter: Function,
   },
-  setup(props) {
+  setup(props, { slots: dispatcherSlots }) {
     const dispatch = useAppDispatch()
     watchEffect((onCleanup) => {
       const settings = {
@@ -121,7 +123,9 @@ const XAxisSettingsDispatcher = defineComponent({
       })
     })
     return () => (
-      <XAxisImpl {...props} />
+      <XAxisImpl {...props}>
+        {dispatcherSlots.tick ? { tick: dispatcherSlots.tick } : undefined}
+      </XAxisImpl>
     )
   },
 })
@@ -204,7 +208,11 @@ export const XAxis = defineComponent({
     tickMargin: Number,
     tickFormatter: Function,
   },
-  setup(props, { attrs }) {
-    return () => <XAxisSettingsDispatcher {...props} {...attrs} />
+  setup(props, { attrs, slots }) {
+    return () => (
+      <XAxisSettingsDispatcher {...props} {...attrs}>
+        {slots.tick ? { tick: slots.tick } : undefined}
+      </XAxisSettingsDispatcher>
+    )
   },
 })
