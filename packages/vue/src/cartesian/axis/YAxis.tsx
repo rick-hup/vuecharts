@@ -81,7 +81,7 @@ const YAxisSettingsDispatcher = defineComponent({
     domain: Array as PropType<AxisDomain>,
     dataKey: {
       type: [String, Number, Function] as PropType<DataKey<any>>,
-      default: '',
+      default: undefined,
     },
   },
   setup(props) {
@@ -164,7 +164,7 @@ export const YAxis = defineComponent({
     },
     dataKey: {
       type: [String, Number, Function] as PropType<DataKey<any>>,
-      default: '',
+      default: undefined,
     },
     tickFormatter: {
       type: Function,
@@ -172,7 +172,7 @@ export const YAxis = defineComponent({
     },
     unit: {
       type: String,
-      default: '',
+      default: undefined,
     },
     domain: {
       type: Array as PropType<AxisDomain>,

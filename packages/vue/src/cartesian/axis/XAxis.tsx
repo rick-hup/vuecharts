@@ -183,7 +183,7 @@ export const XAxis = defineComponent({
     },
     dataKey: {
       type: [String, Number, Function] as PropType<DataKey<any>>,
-      default: '',
+      default: undefined,
     },
     domain: {
       type: Array as PropType<AxisDomain>,
