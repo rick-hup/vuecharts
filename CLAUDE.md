@@ -175,6 +175,7 @@ Used by both `Bar` and `Scatter`: `previousData` + incrementing `animationId` as
 
 ### Key Component Gotchas
 - `XAxis.dataKey`/`YAxis.dataKey` default to `undefined` (not `''`); `YAxis.unit` defaults to `undefined`
+- `XAxis.interval`/`YAxis.interval` prop typed as `AxisInterval` (`number | 'preserveStart' | 'preserveEnd' | 'preserveStartEnd' | 'equidistantPreserveStart' | 'equidistantPreserveEnd'`); default applied in dispatcher: `interval ?? 'preserveEnd'`
 - `selectHasBar(state)` uses `cartesianItems.some(item => item.type === 'bar')` (not `countOfBars`)
 - `Rectangle` renders `<path>` (not `<rect>`) with `getRectanglePath()` for rounded corner support
 - `Symbols` is a functional component (not `defineComponent`); renders D3-based `<path>` with class `.v-charts-symbols`
@@ -191,6 +192,7 @@ Used by both `Bar` and `Scatter`: `previousData` + incrementing `animationId` as
 - Wrap interactive stories in `defineComponent` + `ref` for reactive state
 - When story args contain arrays, construct derived data inside `render` to avoid Vue proxy invariant errors
 - Clone array data in render (`data.map(d => ({ ...d, arr: [...d.arr] }))`) for the same reason
+- Storybook canvas (`.storybook/global.css`): `#storybook-root:not([hidden='true'])` is full-viewport (`100vw`/`100vh`) column flex; direct children use `flex-shrink: 0`; stories that use `height: 100vh` (e.g., `WithAbsolutePositionAndFlexboxParents`) rely on this layout
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: git-insights -->
@@ -205,6 +207,9 @@ Used by both `Bar` and `Scatter`: `previousData` + incrementing `animationId` as
 - Brush component (Panorama, drag handling, keyboard support)
 - Tooltip (cursor rendering, custom cursor slot, chart synchronization)
 - ComposedChart + BoxPlot story (Scatter + ZAxis integration)
+- **Line chart** (`cartesian/line/`): `computeLinePoints({ layout, xAxis, yAxis, xAxisTicks, yAxisTicks, dataKey, bandSize, displayedData })` in `line/utils.ts` returns `ReadonlyArray<LinePointItem>`; uses `getValueByDataKey` from `@/utils/chart`; horizontal layout: `x` from `getCateCoordinateOfLine`, `y` from `yAxis.scale(value)` (null when value is nullish); vertical layout: `x` from `xAxis.scale(value)` (null when nullish), `y` from `getCateCoordinateOfLine`; `ActivePoints` component renders the highlighted dot at the active tooltip index (read from `selectActiveTooltipIndex`): `activeDot === false` → renders nothing; `activeDot` is a plain object → merges keys onto default `dotProps` as SVG overrides (same pattern as `cursor` on Tooltip, `background` on Bar); `slots.activeDot` provided → calls slot with `dotProps` for fully custom dot; otherwise renders default `<Dot cx cy r=4 fill=mainColor stroke-width=2 stroke="#fff" />`; wrapped in `<Layer class="v-charts-active-dot">`
+- **Storybook EquidistantPreserveEnd** (`chart/__stories__/EquidistantPreserveEnd.stories.tsx`, `title: 'Examples/EquidistantPreserveEnd'`): `PreserveEndInterval` story — wraps `LineChart` in `ResponsiveContainer width="100%" height={300}` with 10 data points (Page A–J); uses `<XAxis dataKey="name" interval="equidistantPreserveEnd" />` to demonstrate equidistant tick spacing that preserves the last tick; `Line type="monotone" dataKey="uv" isAnimationActive={false}`; `'equidistantPreserveEnd'` is now part of `AxisInterval` type in `types/axis.ts`; handling in `get-ticks.ts` may still be pending if not yet implemented alongside `'equidistantPreserveStart'`
+- **LineChart test suite** (`chart/__tests__/LineChart.spec.tsx`): in progress — parallel to `AreaChart.spec.tsx` and `BarChart.spec.tsx`
 <!-- END AUTO-MANAGED -->
 
 ## Development Workflow
