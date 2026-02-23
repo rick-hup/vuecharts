@@ -29,7 +29,7 @@ export const PreserveEndInterval: StoryObj = {
     return (
       <div style={{ width: '100%', height: '300px' }}>
         <ResponsiveContainer>
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <LineChart data={data}>
             <CartesianGrid stroke-dasharray="3 3" />
             <XAxis dataKey="name" interval="equidistantPreserveEnd" />
             <YAxis />

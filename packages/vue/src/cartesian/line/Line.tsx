@@ -13,10 +13,10 @@ export const Line = defineComponent({
   name: 'Line',
   props: LineVueProps,
   inheritAttrs: false,
-  slots: Object as SlotsType<ActivePointsSlots>,
-  setup(props: LineProps, { attrs, slots }: { attrs: SVGAttributes, slots: ActivePointsSlots }) {
+  slots: Object as SlotsType<ActivePointsSlots & { shape?: (props: any) => any }>,
+  setup(props: LineProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     useSetupGraphicalItem(props, 'line')
-    const { shouldRender, lineData, points } = useLine(props, attrs)
+    const { shouldRender, lineData, points } = useLine(props, attrs, slots.shape)
 
     return () => {
       if (!shouldRender.value) {
