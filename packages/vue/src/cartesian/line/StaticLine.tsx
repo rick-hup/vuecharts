@@ -84,6 +84,18 @@ export const StaticLine = defineComponent({
 
     watch(points, (newPoints) => {
       if (newPoints && newPoints.length > 0) {
+        if (!props.isAnimationActive) {
+          // Animation disabled — set points directly without animation
+          isFirstRender = false
+          stopCurrentAnimation()
+          revealAnimationRunning = false
+          isAnimating.value = false
+          currentPoints.value = newPoints
+          prevPoints = newPoints
+          strokeDashRatio.value = 0
+          return
+        }
+
         if (isFirstRender) {
           // First render: use pathLength reveal animation (stroke-dashoffset 1→0)
           isFirstRender = false
@@ -246,9 +258,12 @@ export const StaticLine = defineComponent({
           <Dots points={currentPoints.value} />
           {
             showLabels && (
-              <LabelList {...labelProps} data={lineData.value ?? []} dataKey={props.dataKey}>
-                {labelSlot ? { label: labelSlot } : undefined}
-              </LabelList>
+              <LabelList
+                {...labelProps}
+                data={lineData.value ?? []}
+                dataKey={props.dataKey}
+                v-slots={labelSlot ? { label: labelSlot } : undefined}
+              />
             )
           }
         </Fragment>

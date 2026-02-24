@@ -824,7 +824,7 @@ export const WithCustomizedLabel: Story = {
     const CustomizedLabel = (props: any) => {
       const { x, y, stroke, value } = props
       return (
-        <text x={x} y={y} dy={-4} fill={stroke} font-size={20} text-anchor="middle">
+        <text x={x} y={y} dy={-4} fill={stroke} font-size={10} text-anchor="middle">
           {value}
         </text>
       )
