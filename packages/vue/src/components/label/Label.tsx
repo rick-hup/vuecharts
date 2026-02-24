@@ -37,6 +37,7 @@ export const Label = defineComponent({
           class={['v-charts-label', props.class]}
           {...attrs}
           {...positionAttrs}
+          angle={props.angle}
           breakAll={textBreakAll}
           value={value}
         >

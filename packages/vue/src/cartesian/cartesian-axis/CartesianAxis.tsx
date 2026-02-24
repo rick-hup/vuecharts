@@ -11,6 +11,7 @@ import type { ComponentPublicInstance, PropType } from 'vue'
 import { defineComponent, reactive, ref } from 'vue'
 import { get } from 'es-toolkit/compat'
 import Text from '@/components/Text.vue'
+import { Label } from '@/components/label'
 import { Layer } from '@/container/Layer'
 import { getTicks } from '@/cartesian/utils/get-ticks'
 
@@ -254,6 +255,24 @@ export const CartesianAxis = defineComponent({
       })
       return items.length > 0 ? <g class="v-charts-cartesian-axis-ticks">{items}</g> : null
     }
+    const renderLabel = () => {
+      const { label, x, y, width, height } = props
+      if (!label) {
+        return null
+      }
+      const axisViewBox = { x, y, width, height }
+
+      if (typeof label === 'string' || typeof label === 'number') {
+        return <Label value={label} viewBox={axisViewBox} />
+      }
+
+      if (typeof label === 'object') {
+        return <Label {...label} viewBox={axisViewBox} />
+      }
+
+      return null
+    }
+
     return () => {
       const { axisLine, width, height, hide } = props
 
@@ -287,6 +306,7 @@ export const CartesianAxis = defineComponent({
         >
           {axisLine && renderAxisLine()}
           {renderTicks(props, state.fontSize, state.letterSpacing)}
+          {renderLabel()}
         </Layer>
       )
     }
