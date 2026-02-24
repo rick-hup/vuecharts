@@ -4,7 +4,6 @@ import { cloneVNode, computed, defineOptions, defineSlots, onMounted, onUnmounte
 import { useThrottleFn } from '@vueuse/core'
 import { isPercent } from '../utils/validate'
 import { normalizeStyle } from '@/utils/style'
-import { warn } from '@/utils/log'
 import { provideSizeContext } from '@/container/useSizeContext'
 
 defineOptions({
@@ -123,48 +122,20 @@ onUnmounted(() => {
   observer?.disconnect()
 })
 
-const clonedChildren = computed(() => {
+const isReady = computed(() => {
   const { width: containerWidth, height: containerHeight } = sizes.value
+  return containerWidth >= 0 && containerHeight >= 0
+})
 
-  if (containerWidth < 0 || containerHeight < 0) {
-    return null
-  }
-
-  warn(
-    isPercent(props.width) || isPercent(props.height),
-    `The width(%s) and height(%s) are both fixed numbers,
-       maybe you don't need to use a ResponsiveContainer.`,
-    props.width,
-    props.height,
-  )
-
-  warn(!props.aspect || props.aspect > 0, 'The aspect(%s) must be greater than zero.', props.aspect)
-
-  // Use computed values to prevent recalculation
+function cloneChildren() {
   const calculatedWidthValue = finalCalculatedWidth.value
   const calculatedHeightValue = calculatedHeight.value
 
-  warn(
-    calculatedWidthValue > 0 || calculatedHeightValue > 0,
-    `The width(%s) and height(%s) of chart should be greater than 0,
-       please check the style of container, or the props width(%s) and height(%s),
-       or add a minWidth(%s) or minHeight(%s) or use aspect(%s) to control the
-       height and width.`,
-    calculatedWidthValue,
-    calculatedHeightValue,
-    props.width,
-    props.height,
-    props.minWidth,
-    props.minHeight,
-    props.aspect,
-  )
-
-  // Clone children with stable keys to prevent remounting
-  const children = slots.default?.().map((child, index) => {
+  return slots.default?.().map((child, index) => {
     return cloneVNode(child, {
       width: calculatedWidthValue,
       height: calculatedHeightValue,
-      key: child.key || `responsive-child-${index}`, // Ensure stable key
+      key: child.key || `responsive-child-${index}`,
       style: {
         ...normalizeStyle({
           maxHeight: sizes.value.height,
@@ -176,9 +147,7 @@ const clonedChildren = computed(() => {
       },
     })
   })
-
-  return children
-})
+}
 </script>
 
 <template>
@@ -198,10 +167,10 @@ const clonedChildren = computed(() => {
       }),
     }"
   >
-    <template v-if="clonedChildren">
+    <template v-if="isReady">
       <component
         :is="child"
-        v-for="child in clonedChildren"
+        v-for="child in cloneChildren()"
         :key="child.key"
       />
     </template>

@@ -199,7 +199,6 @@ export function generateCategoricalChart({
             svgAttributes[key] = value
           }
         }
-
         return (
           <Fragment>
             <ChartDataContextProvider chartData={props.data!} />

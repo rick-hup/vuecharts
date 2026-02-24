@@ -15,7 +15,8 @@ import type { RechartsScale } from '@/types/scale'
 
 function scaleValue(scale: RechartsScale, value: number | string, position: 'start' | 'end'): number | undefined {
   const coord = scale(value) as number
-  if (!isWellBehavedNumber(coord)) return undefined
+  if (!isWellBehavedNumber(coord))
+    return undefined
   const bandwidth = scale.bandwidth?.() ?? 0
   return position === 'start' ? coord : coord + bandwidth
 }
@@ -79,21 +80,24 @@ export const ReferenceArea = defineComponent({
     const rect = computed(() => {
       const xScale = xAxisScale.value
       const yScale = yAxisScale.value
-      if (!xScale || !yScale) return null
+      if (!xScale || !yScale)
+        return null
 
       const hasX1 = isNumOrStr(props.x1)
       const hasX2 = isNumOrStr(props.x2)
       const hasY1 = isNumOrStr(props.y1)
       const hasY2 = isNumOrStr(props.y2)
 
-      if (!hasX1 && !hasX2 && !hasY1 && !hasY2) return null
+      if (!hasX1 && !hasX2 && !hasY1 && !hasY2)
+        return null
 
       const px1 = hasX1 ? scaleValue(xScale, props.x1!, 'start') : rangeMin(xScale)
       const px2 = hasX2 ? scaleValue(xScale, props.x2!, 'end') : rangeMax(xScale)
       const py1 = hasY1 ? scaleValue(yScale, props.y1!, 'start') : rangeMin(yScale)
       const py2 = hasY2 ? scaleValue(yScale, props.y2!, 'end') : rangeMax(yScale)
 
-      if (px1 == null || px2 == null || py1 == null || py2 == null) return null
+      if (px1 == null || px2 == null || py1 == null || py2 == null)
+        return null
 
       const x = Math.min(px1, px2)
       const y = Math.min(py1, py2)
@@ -105,15 +109,16 @@ export const ReferenceArea = defineComponent({
 
     return () => {
       const r = rect.value
-      if (!r) return null
+      if (!r)
+        return null
 
       const clipPath = props.ifOverflow === 'hidden' ? `url(#${clipPathId})` : undefined
 
       const svgAttrs: SVGAttributes = {
         ...attrs,
-        stroke: props.stroke,
+        'stroke': props.stroke,
         'stroke-width': props.strokeWidth,
-        fill: props.fill,
+        'fill': props.fill,
         'fill-opacity': props.fillOpacity,
       }
 

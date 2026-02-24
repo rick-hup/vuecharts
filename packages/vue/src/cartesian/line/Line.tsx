@@ -8,6 +8,7 @@ import { StaticLine } from '@/cartesian/line/StaticLine'
 import { ActivePoints } from '@/cartesian/line/ActivePoints'
 import type { ActivePointsSlots } from './ActivePoints'
 import { useSetupGraphicalItem } from '@/hooks/useSetupGraphicalItem'
+import { GraphicalItemClipPath } from '@/cartesian/GraphicalItemClipPath'
 
 export const Line = defineComponent({
   name: 'Line',
@@ -16,7 +17,7 @@ export const Line = defineComponent({
   slots: Object as SlotsType<ActivePointsSlots & { shape?: (props: any) => any, dot?: (props: any) => any, label?: (props: any) => any }>,
   setup(props: LineProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     useSetupGraphicalItem(props, 'line')
-    const { shouldRender, lineData, points } = useLine(props, attrs, slots.shape, slots.dot, slots.label)
+    const { shouldRender, needClip, clipPathId, lineData, points } = useLine(props, attrs, slots.shape, slots.dot, slots.label)
 
     return () => {
       if (!shouldRender.value) {
@@ -33,6 +34,11 @@ export const Line = defineComponent({
       return (
         <Fragment>
           <Layer class={['v-charts-line', attrs.class]}>
+            {needClip.value && (
+              <defs>
+                <GraphicalItemClipPath clipPathId={clipPathId.value} xAxisId={props.xAxisId} yAxisId={props.yAxisId} />
+              </defs>
+            )}
             <StaticLine />
           </Layer>
           <ActivePoints
