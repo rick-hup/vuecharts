@@ -21,8 +21,6 @@ export default defineComponent({
     } = useLegend(props)
 
     const {
-      getWrapperStyle,
-      getContentStyle,
       getItemStyle,
       getSvgStyle,
       formatValue,
@@ -42,46 +40,50 @@ export default defineComponent({
         return null
       }
 
-      const { layout = 'horizontal', align = 'center', verticalAlign = 'bottom', iconSize = 14 } = props
+      const { layout = 'horizontal', align = 'center', iconSize = 14 } = props
+
+      const finalStyle = {
+        padding: 0,
+        margin: 0,
+        textAlign: layout === 'horizontal' ? align : ('left' as const),
+      }
 
       return (
-        <div class="vue-charts-legend" style={getWrapperStyle(layout, align, verticalAlign)}>
-          <ul class="vue-charts-legend-content" style={getContentStyle(layout)}>
-            {processedPayload.value.map((entry, index) => (
-              <li
-                key={`legend-item-${index}`}
-                class="v-charts-legend-item"
-                style={getItemStyle(layout)}
-                onClick={() => handleClick(entry, index)}
-                onMouseenter={() => handleMouseEnter(entry, index)}
-                onMouseleave={() => handleMouseLeave(entry, index)}
+        <ul class="v-charts-default-legend" style={finalStyle}>
+          {processedPayload.value.map((entry, index) => (
+            <li
+              key={`legend-item-${index}`}
+              class="v-charts-legend-item"
+              style={getItemStyle(layout)}
+              onClick={() => handleClick(entry, index)}
+              onMouseenter={() => handleMouseEnter(entry, index)}
+              onMouseleave={() => handleMouseLeave(entry, index)}
+            >
+              <Surface
+                width={iconSize}
+                height={iconSize}
+                viewBox={{
+                  x: 0,
+                  y: 0,
+                  width: SIZE,
+                  height: SIZE,
+                }}
+                style={getSvgStyle()}
+                aria-label={`${formatValue(entry)} legend icon`}
               >
-                <Surface
-                  width={iconSize}
-                  height={iconSize}
-                  viewBox={{
-                    x: 0,
-                    y: 0,
-                    width: SIZE,
-                    height: SIZE,
-                  }}
-                  style={getSvgStyle()}
-                  aria-label={`${formatValue(entry)} legend icon`}
-                >
-                  <LegendSymbol
-                    type={props.iconType ?? entry.type}
-                    color={entry.inactive ? '#ccc' : entry.color}
-                    size={iconSize}
-                    data={entry}
-                  />
-                </Surface>
-                <span class="v-charts-legend-item-text" style={{ color: entry.inactive ? '#ccc' : entry.color }}>
-                  {formatValue(entry)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+                <LegendSymbol
+                  type={props.iconType ?? entry.type}
+                  color={entry.inactive ? '#ccc' : entry.color}
+                  size={iconSize}
+                  data={entry}
+                />
+              </Surface>
+              <span class="v-charts-legend-item-text" style={{ color: entry.inactive ? '#ccc' : entry.color }}>
+                {formatValue(entry)}
+              </span>
+            </li>
+          ))}
+        </ul>
       )
     }
 
