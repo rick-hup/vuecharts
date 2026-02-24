@@ -1,5 +1,4 @@
 import { createAction, createListenerMiddleware } from '@reduxjs/toolkit'
-// import type { SyntheticEvent } from 'react'
 import {
   selectActiveLabel,
   selectActiveTooltipCoordinate,

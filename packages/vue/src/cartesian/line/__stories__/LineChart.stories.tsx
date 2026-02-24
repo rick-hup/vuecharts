@@ -824,7 +824,7 @@ export const WithCustomizedLabel: Story = {
     const CustomizedLabel = (props: any) => {
       const { x, y, stroke, value } = props
       return (
-        <text x={x} y={y} dy={-4} fill={stroke} font-size={20} text-anchor="middle">
+        <text x={x} y={y} dy={-4} fill={stroke} font-size={10} text-anchor="middle">
           {value}
         </text>
       )
@@ -988,10 +988,12 @@ const HighlightAndZoomWrapper = defineComponent({
               <XAxis allowDataOverflow dataKey="name" domain={left && right ? [left, right] : undefined} type="number" />
               <YAxis allowDataOverflow domain={[bottom, top]} type="number" yAxisId="1" />
               <YAxis orientation="right" allowDataOverflow domain={[bottom2, top2]} type="number" yAxisId="2" />
-              <Line yAxisId="1" type="natural" dataKey="cost" stroke="#8884d8" isAnimationActive={false} />
-              <Line yAxisId="2" type="natural" dataKey="impression" stroke="#82ca9d" isAnimationActive={false} />
+              <Line yAxisId="1" type="natural" dataKey="cost" stroke="#8884d8" transition={{ duration: 0.3 }} />
+              <Line yAxisId="2" type="natural" dataKey="impression" stroke="#82ca9d" transition={{ duration: 0.3 }} />
               {refAreaLeft && refAreaRight
-                ? <ReferenceArea yAxisId="1" x1={refAreaLeft} x2={refAreaRight} stroke-opacity={0.3} />
+                ? (
+                    <ReferenceArea yAxisId="1" x1={refAreaLeft} x2={refAreaRight} stroke-opacity={0.3} />
+                  )
                 : null}
               <Tooltip />
             </LineChart>

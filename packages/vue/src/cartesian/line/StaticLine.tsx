@@ -21,7 +21,7 @@ export const Dots = defineComponent({
     },
   },
   setup(_props) {
-    const { clipPathId, clipDot, props, attrs, dotSlot } = useLineContext()
+    const { clipPathId, clipDot, props, attrs, needClip, dotSlot } = useLineContext()
 
     return () => {
       const { points } = _props
@@ -38,7 +38,7 @@ export const Dots = defineComponent({
       return (
         <Layer
           class="v-charts-line-dots"
-          clip-path={props.needClip ? `url(#clipPath-${clipDot ? '' : 'dots-'}${clipPathId.value})` : undefined}
+          clip-path={needClip.value ? `url(#clipPath-${clipDot ? '' : 'dots-'}${clipPathId.value})` : undefined}
         >
           {
             points?.map((point, index) => {
@@ -59,7 +59,7 @@ export const Dots = defineComponent({
 export const StaticLine = defineComponent({
   name: 'StaticLine',
   setup() {
-    const { points, clipPathId, layout, attrs, lineData, props, isAnimating, shapeSlot, labelSlot } = useLineContext()
+    const { points, clipPathId, layout, attrs, lineData, props, isAnimating, needClip, shapeSlot, labelSlot } = useLineContext()
     const currentPoints = ref<ReadonlyArray<LinePointItem>>([])
 
     // stroke-dashoffset ratio: 1 = fully hidden, 0 = fully revealed
@@ -83,7 +83,25 @@ export const StaticLine = defineComponent({
     })
 
     watch(points, (newPoints) => {
+      // Skip if points haven't actually changed (selector may return new reference with same values)
+      if (newPoints && prevPoints.length === newPoints.length
+        && newPoints.every((p, i) => p.x === prevPoints[i].x && p.y === prevPoints[i].y)) {
+        return
+      }
+
       if (newPoints && newPoints.length > 0) {
+        if (!props.isAnimationActive) {
+          // Animation disabled — set points directly without animation
+          isFirstRender = false
+          stopCurrentAnimation()
+          revealAnimationRunning = false
+          isAnimating.value = false
+          currentPoints.value = newPoints
+          prevPoints = newPoints
+          strokeDashRatio.value = 0
+          return
+        }
+
         if (isFirstRender) {
           // First render: use pathLength reveal animation (stroke-dashoffset 1→0)
           isFirstRender = false
@@ -123,6 +141,11 @@ export const StaticLine = defineComponent({
           isAnimating.value = true
           strokeDashRatio.value = 0
 
+          // Capture current visual position so next animation chases from where the line is now,
+          // not from where it was before the previous animation started (prevents flash on rapid changes)
+          if (currentPoints.value.length) {
+            prevPoints = currentPoints.value as ReadonlyArray<LinePointItem>
+          }
           stopCurrentAnimation()
           currentAnimation = animate(0 as number, 1, {
             ...props.transition,
@@ -226,7 +249,7 @@ export const StaticLine = defineComponent({
       return (
         <Fragment>
           {curveContent && (
-            <Layer clip-path={props.needClip ? `url(#clipPath-${clipPathId.value})` : undefined}>
+            <Layer clip-path={needClip.value ? `url(#clipPath-${clipPathId.value})` : undefined}>
               {needClipAnim
                 ? (
                     <g>
@@ -246,9 +269,12 @@ export const StaticLine = defineComponent({
           <Dots points={currentPoints.value} />
           {
             showLabels && (
-              <LabelList {...labelProps} data={lineData.value ?? []} dataKey={props.dataKey}>
-                {labelSlot ? { label: labelSlot } : undefined}
-              </LabelList>
+              <LabelList
+                {...labelProps}
+                data={lineData.value ?? []}
+                dataKey={props.dataKey}
+                v-slots={labelSlot ? { label: labelSlot } : undefined}
+              />
             )
           }
         </Fragment>
