@@ -50,7 +50,11 @@ export default defineComponent({
 
       return (
         <ul class="v-charts-default-legend" style={finalStyle}>
-          {processedPayload.value.map((entry, index) => (
+          {processedPayload.value.map((entry, index) => {
+            if (entry.type === 'none') {
+              return null
+            }
+            return (
             <li
               key={`legend-item-${index}`}
               class="v-charts-legend-item"
@@ -82,7 +86,8 @@ export default defineComponent({
                 {formatValue(entry)}
               </span>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )
     }
