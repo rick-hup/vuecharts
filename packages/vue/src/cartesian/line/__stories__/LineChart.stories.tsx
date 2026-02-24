@@ -1074,10 +1074,10 @@ const ToggleChildrenWrapper = defineComponent({
                     dot={false}
                   />
                   <Tooltip />
+                  <Legend />
                 </>
               )}
         </LineChart>
-        <Legend />
       </div>
     )
   },

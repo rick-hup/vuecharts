@@ -6,7 +6,7 @@ import type { TooltipEntrySettings, TooltipPayloadEntry } from '@/state/tooltipS
 import type { ChartCoordinate, ChartOffsetRequired, ChartPointer, Coordinate, DataKey, LayoutType, StackOffsetType, TickItem, ValueType } from '@/types'
 import type { AxisRange, AxisType, NumberDomain } from '@/types/axis'
 import type { AxisPropsNeededForTicksGenerator, AxisTick, StackId } from '@/types/tick'
-import { mathSign } from '@/utils/data'
+import { findEntryInArray, mathSign } from '@/utils/data'
 import { formatAngleOfSector, getAngleOfPoint, polarToCartesian, reverseFormatAngleOfSector } from '@/utils/polar'
 import { isNan, isNullish, isNumOrStr, isNumber } from '@/utils/validate'
 import { get, isNaN, sortBy } from 'lodash-es'

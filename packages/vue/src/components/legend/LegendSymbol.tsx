@@ -1,7 +1,8 @@
-import type { CSSProperties, PropType } from 'vue'
+import type { PropType } from 'vue'
 import { defineComponent } from 'vue'
 import type { LegendType } from '@/types/legend'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
+import { Symbols } from '@/shape/Symbols'
 
 export const SIZE = 32
 
@@ -17,15 +18,9 @@ export const LegendSymbol = defineComponent({
   },
   setup(props) {
     return () => {
-      const { type, color, size, data } = props
+      const { type, color, data } = props
       if (type === 'none') {
         return null
-      }
-
-      const symbolStyle: CSSProperties = {
-        fill: color,
-        stroke: color,
-        strokeWidth: 2,
       }
 
       const halfSize = SIZE / 2
@@ -71,12 +66,13 @@ export const LegendSymbol = defineComponent({
           )
         default:
           return (
-            <rect
-              x={2}
-              y={2}
-              width={size - 4}
-              height={size - 4}
-              style={symbolStyle}
+            <Symbols
+              fill={color}
+              cx={halfSize}
+              cy={halfSize}
+              size={SIZE}
+              sizeType="diameter"
+              type={type as any}
             />
           )
       }
