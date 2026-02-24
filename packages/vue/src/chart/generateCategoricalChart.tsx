@@ -188,6 +188,18 @@ export function generateCategoricalChart({
           attributes.role = props.role ?? 'application'
         }
 
+        // Separate event handler attrs (onMouseDown, etc.) from SVG attrs
+        const eventHandlerAttrs: Record<string, any> = {}
+        const svgAttributes: Record<string, any> = {}
+        for (const [key, value] of Object.entries(attributes)) {
+          if (key.startsWith('on') && typeof value === 'function') {
+            eventHandlerAttrs[key] = value
+          }
+          else {
+            svgAttributes[key] = value
+          }
+        }
+
         return (
           <Fragment>
             <ChartDataContextProvider chartData={props.data!} />
@@ -198,9 +210,10 @@ export function generateCategoricalChart({
                 class={props.class}
                 width={width!}
                 height={height!}
+                {...eventHandlerAttrs}
               >
                 <Surface
-                  {...attributes}
+                  {...svgAttributes}
                   width={width!}
                   height={height!}
                   title={title}
