@@ -66,6 +66,10 @@ export const StaticLine = defineComponent({
     const strokeDashRatio = ref(1)
     let isFirstRender = true
     let prevPoints: ReadonlyArray<LinePointItem> = []
+    // The target that the current animation is heading toward.
+    // Used by the duplicate guard so that mid-animation arrivals matching the
+    // animation START (prevPoints) are not incorrectly skipped.
+    let animationTarget: ReadonlyArray<LinePointItem> = []
 
     // Manage animation lifecycle manually (not via onCleanup, which kills it on re-trigger)
     let currentAnimation: AnimationPlaybackControls | null = null
@@ -84,8 +88,10 @@ export const StaticLine = defineComponent({
 
     watch(points, (newPoints) => {
       // Skip if points haven't actually changed (selector may return new reference with same values)
-      if (newPoints && prevPoints.length === newPoints.length
-        && newPoints.every((p, i) => p.x === prevPoints[i].x && p.y === prevPoints[i].y)) {
+      // Compare against the animation TARGET (not the start position) so that new points matching
+      // the start of an in-flight animation are correctly processed and interrupt the animation.
+      if (newPoints && animationTarget.length === newPoints.length
+        && newPoints.every((p, i) => p.x === animationTarget[i].x && p.y === animationTarget[i].y)) {
         return
       }
 
@@ -98,6 +104,7 @@ export const StaticLine = defineComponent({
           isAnimating.value = false
           currentPoints.value = newPoints
           prevPoints = newPoints
+          animationTarget = newPoints
           strokeDashRatio.value = 0
           return
         }
@@ -108,6 +115,7 @@ export const StaticLine = defineComponent({
           revealAnimationRunning = true
           isAnimating.value = true
           currentPoints.value = newPoints
+          animationTarget = newPoints
           strokeDashRatio.value = 1
 
           stopCurrentAnimation()
@@ -127,6 +135,7 @@ export const StaticLine = defineComponent({
               revealAnimationRunning = false
               currentAnimation = null
               prevPoints = currentPoints.value as ReadonlyArray<LinePointItem>
+              animationTarget = prevPoints
               props.onAnimationEnd?.()
             },
           })
@@ -135,6 +144,7 @@ export const StaticLine = defineComponent({
           // Reveal animation still in progress — just update the target points
           // so the final shape is correct, but don't interrupt the reveal.
           currentPoints.value = newPoints
+          animationTarget = newPoints
         }
         else {
           // Subsequent updates: interpolate points
@@ -146,6 +156,7 @@ export const StaticLine = defineComponent({
           if (currentPoints.value.length) {
             prevPoints = currentPoints.value as ReadonlyArray<LinePointItem>
           }
+          animationTarget = newPoints
           stopCurrentAnimation()
           currentAnimation = animate(0 as number, 1, {
             ...props.transition,
@@ -178,6 +189,7 @@ export const StaticLine = defineComponent({
             onComplete() {
               isAnimating.value = false
               prevPoints = newPoints
+              animationTarget = newPoints
               currentAnimation = null
               props.onAnimationEnd?.()
             },
@@ -190,6 +202,7 @@ export const StaticLine = defineComponent({
         isAnimating.value = false
         currentPoints.value = newPoints || []
         prevPoints = currentPoints.value as ReadonlyArray<LinePointItem>
+        animationTarget = prevPoints
         strokeDashRatio.value = 0
       }
     }, { immediate: true })
