@@ -165,7 +165,7 @@ const transforms = computed(() => {
     :text-anchor="props.textAnchor"
     :fill="props.fill && props.fill.includes('url') ? '#808080' : props.fill"
     class="v-charts-text"
-    v-bind="props.style"
+    :style="props.style"
   >
     <template
       v-for="(line, index) in wordsByLines"
