@@ -10,7 +10,7 @@ import type {
   TooltipPayloadConfiguration,
 } from '../tooltipSlice'
 import { selectChartDataWithIndexes } from './dataSelectors'
-import { combineTooltipPayload, selectTooltipAxis, selectTooltipAxisTicks, selectTooltipDisplayedData } from './tooltipSelectors'
+import { combineTooltipPayload, selectTooltipAxis, selectTooltipAxisDomain, selectTooltipAxisTicks, selectTooltipDisplayedData } from './tooltipSelectors'
 import type { AxisRange } from './axisSelectors'
 import { selectChartName } from './rootPropsSelectors'
 import { selectChartOffset } from './selectChartOffset'
@@ -58,13 +58,18 @@ export const selectTooltipInteractionState: (
   combineTooltipInteractionState,
 )
 
+const selectTooltipAxisDataKeyForActiveIndex = createSelector(
+  [selectTooltipAxis],
+  axis => axis?.dataKey,
+)
+
 export const selectActiveIndex: (
   state: RechartsRootState,
   tooltipEventType: TooltipEventType,
   trigger: TooltipTrigger,
   defaultIndex: TooltipIndex | undefined,
 ) => TooltipIndex | null = createSelector(
-  [selectTooltipInteractionState, selectTooltipDisplayedData],
+  [selectTooltipInteractionState, selectTooltipDisplayedData, selectTooltipAxisDataKeyForActiveIndex, selectTooltipAxisDomain],
   combineActiveTooltipIndex,
 )
 

@@ -374,7 +374,7 @@ export const LineTrailingIcon: Story = {
             dataKey="lastDot"
             legendType="none"
             tooltipType="none"
-            dot={{ stroke: 'red', strokeWidth: 1, r: 4 }}
+            dot={{ 'stroke': 'red', 'stroke-width': 1, 'r': 4 }}
           />
           <Tooltip />
         </LineChart>
@@ -461,7 +461,7 @@ const ChangingDataKeyWrapper = defineComponent({
             stroke="#8884d8"
             stroke-dasharray="5 5"
             activeDot={{ r: 8 }}
-            label={{ fill: 'red' }}
+            label={{ fill: 'red', dy: -25 }}
           />
         </LineChart>
       </div>
@@ -484,7 +484,7 @@ const ToggleBetweenDataKeysWrapper = defineComponent({
     const dataKey = ref('pv')
 
     return () => (
-      <div>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
         <button
           type="button"
           onClick={() => {

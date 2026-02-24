@@ -6,6 +6,8 @@ import { reduceCSSCalc } from '@/utils/ReduceCSSCalc'
 const props = defineProps({
   x: { type: [Number, String], default: 0 },
   y: { type: [Number, String], default: 0 },
+  dx: { type: Number, default: undefined },
+  dy: { type: Number, default: undefined },
   lineHeight: { type: [Number, String], default: '1em' },
   capHeight: { type: [Number, String], default: '0.71em' },
   scaleToFit: { type: Boolean, default: false },
@@ -132,8 +134,8 @@ const wordsByLines = computed(() => getWordsByLines({
   maxLines: props.maxLines,
 }))
 
-const x = computed(() => Number(props.x))
-const y = computed(() => Number(props.y))
+const x = computed(() => Number(props.x) + (typeof props.dx === 'number' ? props.dx : 0))
+const y = computed(() => Number(props.y) + (typeof props.dy === 'number' ? props.dy : 0))
 const startDy = computed(() => {
   switch (props.verticalAnchor) {
     case 'start':

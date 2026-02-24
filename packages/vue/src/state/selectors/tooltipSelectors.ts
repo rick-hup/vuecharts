@@ -453,8 +453,13 @@ const selectTooltipInteractionState: (state: RechartsRootState) => TooltipIntera
   combineTooltipInteractionState,
 )
 
+const selectTooltipAxisDataKey = createSelector(
+  [selectTooltipAxis],
+  (axis: AxisWithTicksSettings | undefined) => axis?.dataKey,
+)
+
 export const selectActiveTooltipIndex: (state: RechartsRootState) => TooltipIndex | null = createSelector(
-  [selectTooltipInteractionState, selectTooltipDisplayedData],
+  [selectTooltipInteractionState, selectTooltipDisplayedData, selectTooltipAxisDataKey, selectTooltipAxisDomain],
   combineActiveTooltipIndex,
 )
 
