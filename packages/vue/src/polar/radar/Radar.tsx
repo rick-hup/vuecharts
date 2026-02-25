@@ -18,7 +18,10 @@ function getLegendItemColor(stroke: string | undefined, fill: string | undefined
 
 function getSinglePolygonPath(points: ReadonlyArray<{ x: number; y: number }>): string {
   if (!points.length) return ''
-  const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join('')
+  // Repeat first point at end (matching Recharts getParsedPoints behavior) to ensure
+  // explicit close segment for correct SVG fill when used in range paths
+  const pts = [...points, points[0]]
+  const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join('')
   return `${path}Z`
 }
 
