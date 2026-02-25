@@ -60,7 +60,7 @@ export const Sector = defineComponent<SectorPropsWithSVG>({
   setup(props, { attrs }) {
     return () => {
       const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, className } = props
-      if (outerRadius <= 0 || startAngle === endAngle) {
+      if (outerRadius <= 0 || outerRadius < innerRadius || startAngle === endAngle) {
         return null
       }
       return (

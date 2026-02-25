@@ -44,6 +44,13 @@ describe('Sector', () => {
     expect(path!.getAttribute('d')!.match(/A/g)?.length).toBe(2)
   })
 
+  it('returns null when innerRadius exceeds outerRadius', () => {
+    const { container } = render(Sector, {
+      props: { cx: 100, cy: 100, innerRadius: 90, outerRadius: 80, startAngle: 0, endAngle: 90 },
+    })
+    expect(container.querySelector('path')).toBeNull()
+  })
+
   it('applies CSS class v-charts-sector', () => {
     const { container } = render(Sector, {
       props: {
