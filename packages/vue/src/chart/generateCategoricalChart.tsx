@@ -17,6 +17,7 @@ import { ReportMainChartProps } from '@/state/ReportMainChartProps'
 import type { ChartOptions } from '@/state/optionsSlice'
 import ReportChartProps from '@/state/ReportChartProps'
 import { applyDefaultProps } from '@/utils/props'
+import { ReportPolarOptions } from '@/state/ReportPolarOptions'
 
 const defaultLayout: LayoutType = 'horizontal'
 const defaultMargin: Margin = { top: 5, right: 5, bottom: 5, left: 5 }
@@ -170,11 +171,24 @@ export function generateCategoricalChart({
           return null
         }
 
+        const layout = props.layout ?? defaultProps.layout ?? defaultLayout
+        const isPolarChart = layout === 'centric' || layout === 'radial'
+
         if (compact) {
           return (
             <Fragment>
               <ChartDataContextProvider chartData={props.data!} />
-              <ReportMainChartProps width={width!} height={height!} layout={props.layout ?? defaultProps.layout ?? defaultLayout} margin={props.margin ?? defaultMargin} />
+              <ReportMainChartProps width={width!} height={height!} layout={layout} margin={props.margin ?? defaultMargin} />
+              {isPolarChart && (
+                <ReportPolarOptions
+                  cx={props.cx ?? '50%'}
+                  cy={props.cy ?? '50%'}
+                  startAngle={props.startAngle ?? defaultProps.startAngle ?? 90}
+                  endAngle={props.endAngle ?? defaultProps.endAngle ?? -270}
+                  innerRadius={props.innerRadius ?? 0}
+                  outerRadius={props.outerRadius ?? '80%'}
+                />
+              )}
               <Surface {...attrs} {...rest} width={width!} height={height!} title={title} desc={desc}>
                 <ClipPath clipPathId={clipPathId} />
                 {slots.default?.()}
@@ -202,7 +216,17 @@ export function generateCategoricalChart({
         return (
           <Fragment>
             <ChartDataContextProvider chartData={props.data!} />
-            <ReportMainChartProps width={width!} height={height!} layout={props.layout ?? defaultProps.layout ?? defaultLayout} margin={props.margin ?? defaultMargin} />
+            <ReportMainChartProps width={width!} height={height!} layout={layout} margin={props.margin ?? defaultMargin} />
+            {isPolarChart && (
+              <ReportPolarOptions
+                cx={props.cx ?? '50%'}
+                cy={props.cy ?? '50%'}
+                startAngle={props.startAngle ?? defaultProps.startAngle ?? 90}
+                endAngle={props.endAngle ?? defaultProps.endAngle ?? -270}
+                innerRadius={props.innerRadius ?? 0}
+                outerRadius={props.outerRadius ?? '80%'}
+              />
+            )}
             <LegendPortalProvider to={props.to!}>
               <RechartsWrapper
                 style={props.style}
