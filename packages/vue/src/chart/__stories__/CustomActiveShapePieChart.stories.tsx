@@ -22,7 +22,7 @@ const data = [
 
 const RADIAN = Math.PI / 180
 
-function renderActiveShape(sector: PieSectorDataItem & { isActive: boolean }) {
+function renderActiveShape(sector: PieSectorDataItem & { isActive: boolean, stroke?: string }) {
   const {
     cx = 0,
     cy = 0,
@@ -32,6 +32,7 @@ function renderActiveShape(sector: PieSectorDataItem & { isActive: boolean }) {
     startAngle,
     endAngle,
     fill,
+    stroke,
     payload,
     percent = 0,
     value,
@@ -62,6 +63,7 @@ function renderActiveShape(sector: PieSectorDataItem & { isActive: boolean }) {
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
+          stroke={stroke}
         />
         <Sector
           cx={cx}
@@ -71,6 +73,7 @@ function renderActiveShape(sector: PieSectorDataItem & { isActive: boolean }) {
           innerRadius={outerRadius + 6}
           outerRadius={outerRadius + 10}
           fill={fill}
+          stroke={stroke}
         />
         <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
         <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
@@ -93,6 +96,7 @@ function renderActiveShape(sector: PieSectorDataItem & { isActive: boolean }) {
       startAngle={startAngle}
       endAngle={endAngle}
       fill={fill}
+      stroke={stroke}
     />
   )
 }

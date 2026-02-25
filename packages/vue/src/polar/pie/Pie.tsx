@@ -3,6 +3,7 @@ import type { SlotsType } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
 import { Sector } from '@/shape/Sector'
+import { Animate } from '@/animation/Animate'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
 import type { PieSectorDataItem, ResolvedPieSettings } from '@/state/selectors/pieSelectors'
 import { computePieSectors, selectDisplayedData, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
@@ -69,65 +70,74 @@ export const Pie = defineComponent<PiePropsWithSVG>({
       if (!sectors.value || sectors.value.length === 0) {
         return null
       }
+      const stroke = (attrs.stroke as string) ?? props.stroke
       return (
         <Layer class={['v-charts-pie', props.className]}>
-          {sectors.value.map((sector, i) => {
-            const isActive = activeIndex.value === i
-            if (slots.shape) {
-              return (
-                <g
-                  key={`sector-${i}`}
-                  onMouseenter={() => { activeIndex.value = i }}
-                  onMouseleave={() => { activeIndex.value = -1 }}
-                >
-                  {slots.shape({ ...sector, isActive })}
-                </g>
-              )
-            }
-            return (
-              <Sector
-                key={`sector-${i}`}
-                {...attrs}
-                cx={sector.cx}
-                cy={sector.cy}
-                innerRadius={sector.innerRadius}
-                outerRadius={sector.outerRadius}
-                startAngle={sector.startAngle}
-                endAngle={sector.endAngle}
-                fill={sector.fill}
-                stroke={(attrs.stroke as string) ?? props.stroke}
-                onMouseenter={() => { activeIndex.value = i }}
-                onMouseleave={() => { activeIndex.value = -1 }}
-              />
-            )
-          })}
-          {props.label && sectors.value.map((sector, i) => {
-            const edgePoint = polarToCartesian(sector.cx, sector.cy, sector.outerRadius, sector.midAngle)
-            const pos = polarToCartesian(sector.cx, sector.cy, sector.outerRadius + LABEL_OFFSET, sector.midAngle)
-            const anchor = pos.x > sector.cx ? 'start' : pos.x < sector.cx ? 'end' : 'middle'
-            return (
-              <g key={`label-${i}`}>
-                <line
-                  x1={edgePoint.x}
-                  y1={edgePoint.y}
-                  x2={pos.x}
-                  y2={pos.y}
-                  stroke={sector.fill}
-                  fill="none"
-                />
-                <text
-                  x={pos.x}
-                  y={pos.y}
-                  text-anchor={anchor}
-                  dominant-baseline="middle"
-                  fill={sector.fill}
-                  font-size={12}
-                >
-                  {String(sector.value)}
-                </text>
-              </g>
-            )
-          })}
+          <Animate isActive={props.isAnimationActive} from={0} to={1}>
+            {(progress: number) => {
+              const sectorNodes = sectors.value!.map((sector, i) => {
+                const isActive = activeIndex.value === i
+                const animatedEndAngle = sector.startAngle + (sector.endAngle - sector.startAngle) * progress
+                if (slots.shape) {
+                  return (
+                    <g
+                      key={`sector-${i}`}
+                      onMouseenter={() => { activeIndex.value = i }}
+                      onMouseleave={() => { activeIndex.value = -1 }}
+                    >
+                      {slots.shape({ ...sector, endAngle: animatedEndAngle, stroke, isActive })}
+                    </g>
+                  )
+                }
+                return (
+                  <Sector
+                    key={`sector-${i}`}
+                    {...attrs}
+                    cx={sector.cx}
+                    cy={sector.cy}
+                    innerRadius={sector.innerRadius}
+                    outerRadius={sector.outerRadius}
+                    startAngle={sector.startAngle}
+                    endAngle={animatedEndAngle}
+                    fill={sector.fill}
+                    stroke={stroke}
+                    onMouseenter={() => { activeIndex.value = i }}
+                    onMouseleave={() => { activeIndex.value = -1 }}
+                  />
+                )
+              })
+              const labelNodes = progress >= 1 && props.label
+                ? sectors.value!.map((sector, i) => {
+                    const edgePoint = polarToCartesian(sector.cx, sector.cy, sector.outerRadius, sector.midAngle)
+                    const pos = polarToCartesian(sector.cx, sector.cy, sector.outerRadius + LABEL_OFFSET, sector.midAngle)
+                    const anchor = pos.x > sector.cx ? 'start' : pos.x < sector.cx ? 'end' : 'middle'
+                    return (
+                      <g key={`label-${i}`}>
+                        <line
+                          x1={edgePoint.x}
+                          y1={edgePoint.y}
+                          x2={pos.x}
+                          y2={pos.y}
+                          stroke={sector.fill}
+                          fill="none"
+                        />
+                        <text
+                          x={pos.x}
+                          y={pos.y}
+                          text-anchor={anchor}
+                          dominant-baseline="middle"
+                          fill={sector.fill}
+                          font-size={12}
+                        >
+                          {String(sector.value)}
+                        </text>
+                      </g>
+                    )
+                  })
+                : []
+              return [...sectorNodes, ...labelNodes]
+            }}
+          </Animate>
         </Layer>
       )
     }
