@@ -151,6 +151,13 @@ const graphicalItemsSlice = createSlice({
         state.polarItems.splice(index, 1)
       }
     },
+    replacePolarGraphicalItem(state, action: PayloadAction<ReplacePayload<PolarGraphicalItemSettings>>) {
+      const { prev, next } = action.payload
+      const index = current(state).polarItems.indexOf(castDraft(prev))
+      if (index > -1) {
+        state.polarItems[index] = castDraft(next)
+      }
+    },
   },
 })
 
@@ -162,6 +169,7 @@ export const {
   addPolarGraphicalItem,
   replaceCartesianGraphicalItem,
   removePolarGraphicalItem,
+  replacePolarGraphicalItem,
 } = graphicalItemsSlice.actions
 
 export const graphicalItemsReducer = graphicalItemsSlice.reducer

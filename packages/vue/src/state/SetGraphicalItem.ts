@@ -1,9 +1,13 @@
 import { useAppDispatch } from '@/state/hooks'
 import {
   type CartesianGraphicalItemSettings,
+  type PolarGraphicalItemSettings,
   addCartesianGraphicalItem,
+  addPolarGraphicalItem,
   removeCartesianGraphicalItem,
+  removePolarGraphicalItem,
   replaceCartesianGraphicalItem,
+  replacePolarGraphicalItem,
 } from './graphicalItemsSlice'
 
 import type { StackId } from '@/types/tick'
@@ -35,6 +39,28 @@ export function SetCartesianGraphicalItem(_props: MaybeRef<SetCartesianGraphical
   onUnmounted(() => {
     if (preSetting) {
       dispatch(removeCartesianGraphicalItem(preSetting))
+      preSetting = null
+    }
+  })
+}
+
+export function SetPolarGraphicalItem(_props: MaybeRef<Partial<PolarGraphicalItemSettings>>) {
+  const dispatch = useAppDispatch()
+  let preSetting: PolarGraphicalItemSettings | null = null
+  watchEffect(() => {
+    const props = unref(_props)
+    const settings = props as PolarGraphicalItemSettings
+    if (preSetting === null) {
+      dispatch(addPolarGraphicalItem(settings))
+    }
+    else if (preSetting !== settings) {
+      dispatch(replacePolarGraphicalItem({ prev: preSetting, next: settings }))
+    }
+    preSetting = settings
+  })
+  onUnmounted(() => {
+    if (preSetting) {
+      dispatch(removePolarGraphicalItem(preSetting))
       preSetting = null
     }
   })
