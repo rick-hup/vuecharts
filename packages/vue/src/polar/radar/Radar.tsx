@@ -189,25 +189,20 @@ export const Radar = defineComponent({
                 />
               )}
           </g>
-          {props.dot && (() => {
-            const dotsEl = (
-              <g class="v-charts-radar-dots">
-                {points.map((point, i) => (
-                  <Dot
-                    key={`dot-${i}`}
-                    cx={point.x}
-                    cy={point.y}
-                    r={3}
-                    fill={stroke ?? props.fill}
-                    stroke="#fff"
-                  />
-                ))}
-              </g>
-            )
-            return graphicalLayerRef?.value
-              ? <Teleport to={graphicalLayerRef.value}>{dotsEl}</Teleport>
-              : dotsEl
-          })()}
+          {props.dot && (
+            <g class="v-charts-radar-dots">
+              {points.map((point, i) => (
+                <Dot
+                  key={`dot-${i}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r={3}
+                  fill={stroke ?? props.fill}
+                  stroke="#fff"
+                />
+              ))}
+            </g>
+          )}
         </Layer>
       )
     }

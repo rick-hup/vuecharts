@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3'
-import { defineComponent, ref } from 'vue'
+import { Fragment, defineComponent, ref } from 'vue'
 import { RadarChart } from '@/chart/RadarChart'
 import { Radar } from '@/polar/radar/Radar'
 import { PolarGrid } from '@/polar/radar/PolarGrid'
@@ -92,7 +92,6 @@ const RadarWithChangingDataKeyWrapper = defineComponent({
         </form>
         <RadarChart width={360} height={360} data={data}>
           <Legend />
-          <PolarGrid />
           <PolarAngleAxis dataKey="name" />
           <PolarRadiusAxis domain={[0, 20]} tick={false} axisLine={false} />
           <Radar
@@ -103,8 +102,9 @@ const RadarWithChangingDataKeyWrapper = defineComponent({
             stroke="blue"
             strokeDasharray="3 3"
             dot={true}
+            label={{ fill: 'red' }}
           />
-          <Tooltip />
+          <Tooltip defaultIndex={2} />
         </RadarChart>
       </div>
     )
