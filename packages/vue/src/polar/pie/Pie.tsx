@@ -1,14 +1,16 @@
 import { computed, defineComponent, ref } from 'vue'
 import type { SlotsType } from 'vue'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
 import { Sector } from '@/shape/Sector'
 import { Animate } from '@/animation/Animate'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
 import { SetLegendPayload } from '@/state/SetLegendPayload'
+import { SetTooltipEntrySettings } from '@/state/SetTooltipEntrySettings'
 import type { PieSectorDataItem, ResolvedPieSettings } from '@/state/selectors/pieSelectors'
 import { computePieSectors, selectDisplayedData, selectPieLegend, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
 import { selectChartOffset } from '@/state/selectors/selectChartOffset'
+import { mouseLeaveItem, setActiveMouseOverItemIndex } from '@/state/tooltipSlice'
 import { polarToCartesian } from '@/utils/polar'
 import type { PiePropsWithSVG } from './type'
 import { PieVueProps } from './type'
@@ -23,6 +25,7 @@ export const Pie = defineComponent<PiePropsWithSVG>({
     shape?: (props: PieSectorDataItem & { isActive: boolean }) => any
   }>,
   setup(props, { attrs, slots }) {
+    const dispatch = useAppDispatch()
     const activeIndex = ref(props.activeIndex)
 
     const pieSettings = computed<ResolvedPieSettings>(() => ({
@@ -70,6 +73,25 @@ export const Pie = defineComponent<PiePropsWithSVG>({
       })
     })
 
+    SetTooltipEntrySettings({
+      fn: v => v,
+      args: computed(() => ({
+        dataDefinedOnItem: displayedData.value ?? [],
+        positions: sectors.value?.map(s => s.tooltipPosition),
+        settings: {
+          dataKey: props.dataKey,
+          nameKey: props.nameKey,
+          name: String(props.dataKey ?? ''),
+          hide: props.hide,
+          type: props.tooltipType,
+          color: props.fill,
+          fill: props.fill,
+          stroke: props.stroke,
+          unit: '',
+        },
+      })),
+    })
+
     return () => {
       if (!sectors.value || sectors.value.length === 0) {
         return null
@@ -88,12 +110,24 @@ export const Pie = defineComponent<PiePropsWithSVG>({
                 const animatedStartAngle = curAngle + paddingAngle
                 const animatedEndAngle = curAngle + deltaAngle + paddingAngle
                 curAngle = animatedEndAngle
+                const onEnter = (e: MouseEvent) => {
+                  activeIndex.value = i
+                  dispatch(setActiveMouseOverItemIndex({
+                    activeIndex: String(i),
+                    activeDataKey: props.dataKey,
+                    activeCoordinate: sector.tooltipPosition,
+                  }))
+                }
+                const onLeave = () => {
+                  activeIndex.value = -1
+                  dispatch(mouseLeaveItem())
+                }
                 if (slots.shape) {
                   return (
                     <g
                       key={`sector-${i}`}
-                      onMouseenter={() => { activeIndex.value = i }}
-                      onMouseleave={() => { activeIndex.value = -1 }}
+                      onMouseenter={onEnter}
+                      onMouseleave={onLeave}
                     >
                       {slots.shape({ ...sector, startAngle: animatedStartAngle, endAngle: animatedEndAngle, stroke, isActive })}
                     </g>
@@ -111,8 +145,8 @@ export const Pie = defineComponent<PiePropsWithSVG>({
                     endAngle={animatedEndAngle}
                     fill={sector.fill}
                     stroke={stroke}
-                    onMouseenter={() => { activeIndex.value = i }}
-                    onMouseleave={() => { activeIndex.value = -1 }}
+                    onMouseenter={onEnter}
+                    onMouseleave={onLeave}
                   />
                 )
               })
