@@ -4,8 +4,10 @@ import { Layer } from '@/container/Layer'
 import { Sector } from '@/shape/Sector'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
 import type { ResolvedPieSettings } from '@/state/selectors/pieSelectors'
-import { selectPieSectors } from '@/state/selectors/pieSelectors'
-import { PieVueProps, PiePropsWithSVG } from './type'
+import { computePieSectors, selectDisplayedData, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
+import { selectChartOffset } from '@/state/selectors/selectChartOffset'
+import type { PiePropsWithSVG } from './type'
+import { PieVueProps } from './type'
 
 export const Pie = defineComponent<PiePropsWithSVG>({
   name: 'Pie',
@@ -39,7 +41,20 @@ export const Pie = defineComponent<PiePropsWithSVG>({
       radiusAxisId: 0,
     })))
 
-    const sectors = useAppSelector(state => selectPieSectors(state, pieSettings.value))
+    const displayedData = useAppSelector(state => selectDisplayedData(state, pieSettings.value))
+    const synchronisedSettings = useAppSelector(state => selectSynchronisedPieSettings(state, pieSettings.value))
+    const offset = useAppSelector(state => selectChartOffset(state))
+
+    const sectors = computed(() => {
+      if (synchronisedSettings.value == null || displayedData.value == null) {
+        return undefined
+      }
+      return computePieSectors({
+        offset: offset.value,
+        pieSettings: pieSettings.value,
+        displayedData: displayedData.value,
+      })
+    })
 
     return () => {
       if (!sectors.value || sectors.value.length === 0) {
