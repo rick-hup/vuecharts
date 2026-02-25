@@ -11,7 +11,7 @@ export type AngleAxisForRadar = {
   cy: number
 }
 
-interface RadarPoint {
+export interface RadarPoint {
   x: number
   y: number
   cx?: number

@@ -8,9 +8,12 @@ import { selectRadarPoints } from '@/state/selectors/radarSelectors'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { Layer } from '@/container/Layer'
 import { Dot } from '@/shape/Dot'
+import { Animate } from '@/animation/Animate'
+import { interpolate } from '@/utils/data-utils'
 import type { DataKey } from '@/types'
 import type { LegendType } from '@/types/legend'
 import type { TooltipType } from '@/types/tooltip'
+import type { RadarComposedData, RadarPoint } from '@/types/radar'
 
 function getLegendItemColor(stroke: string | undefined, fill: string | undefined): string | undefined {
   return stroke && stroke !== 'none' ? stroke : fill
@@ -36,6 +39,21 @@ function getRangePath(
   return `${outerWithoutZ}L${inner.slice(1)}`
 }
 
+function interpolatePolarPoint(
+  prevPoints: RadarPoint[] | null,
+  prevPointsDiffFactor: number,
+  t: number,
+  entry: RadarPoint,
+  index: number,
+): RadarPoint {
+  const prev = prevPoints && prevPoints[Math.floor(index * prevPointsDiffFactor)]
+  if (prev) {
+    return { ...entry, x: interpolate(prev.x, entry.x, t), y: interpolate(prev.y, entry.y, t) }
+  }
+  // New point: animate from center
+  return { ...entry, x: interpolate(entry.cx ?? 0, entry.x, t), y: interpolate(entry.cy ?? 0, entry.y, t) }
+}
+
 export const Radar = defineComponent({
   name: 'Radar',
   props: {
@@ -53,6 +71,7 @@ export const Radar = defineComponent({
     legendType: { type: String as PropType<LegendType>, default: 'rect' },
     tooltipType: { type: String as PropType<TooltipType>, default: undefined },
     connectNulls: { type: Boolean, default: false },
+    isAnimationActive: { type: Boolean, default: true },
   },
   setup(props) {
     const isPanorama = useIsPanorama()
@@ -98,13 +117,16 @@ export const Radar = defineComponent({
       selectRadarPoints(state, props.radiusAxisId, props.angleAxisId, isPanorama, props.dataKey),
     )
 
-    return () => {
-      if (props.hide) return null
+    let prevPoints: RadarPoint[] | null = null
+    let prevBaseLinePoints: RadarPoint[] | null = null
+    let animationId = 0
+    let lastData: RadarComposedData | undefined = undefined
 
-      const data = radarPoints.value
-      if (data == null || data.points.length === 0) return null
-
-      const { points, baseLinePoints, isRange } = data
+    const renderPolygon = (
+      points: RadarPoint[],
+      baseLinePoints: RadarPoint[],
+      isRange: boolean,
+    ) => {
       const stroke = props.stroke ?? props.fill
       const hasStroke = stroke && stroke !== 'none'
 
@@ -177,6 +199,51 @@ export const Radar = defineComponent({
             </g>
           )}
         </Layer>
+      )
+    }
+
+    return () => {
+      if (props.hide) return null
+
+      const data = radarPoints.value
+      if (data == null || data.points.length === 0) return null
+
+      const { points, baseLinePoints, isRange } = data
+
+      if (!props.isAnimationActive) {
+        prevPoints = points
+        prevBaseLinePoints = baseLinePoints
+        return renderPolygon(points, baseLinePoints, isRange)
+      }
+
+      const prevPts = prevPoints
+      const prevBasePts = prevBaseLinePoints
+      const prevPointsDiffFactor = prevPts ? prevPts.length / points.length : 1
+      const prevBaseDiffFactor = prevBasePts ? prevBasePts.length / baseLinePoints.length : 1
+      if (data !== lastData) {
+        animationId++
+        lastData = data
+      }
+
+      return (
+        <Animate key={animationId} isActive={true}>
+          {(t: number) => {
+            const stepPoints: RadarPoint[] = t === 1
+              ? points
+              : points.map((entry, i) => interpolatePolarPoint(prevPts, prevPointsDiffFactor, t, entry, i))
+
+            const stepBaseLine: RadarPoint[] = t === 1
+              ? baseLinePoints
+              : baseLinePoints.map((entry, i) => interpolatePolarPoint(prevBasePts, prevBaseDiffFactor, t, entry, i))
+
+            if (t > 0) {
+              prevPoints = stepPoints
+              prevBaseLinePoints = stepBaseLine
+            }
+
+            return renderPolygon(stepPoints, stepBaseLine, isRange)
+          }}
+        </Animate>
       )
     }
   },
