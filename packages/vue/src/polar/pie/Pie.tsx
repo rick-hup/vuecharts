@@ -5,8 +5,9 @@ import { Layer } from '@/container/Layer'
 import { Sector } from '@/shape/Sector'
 import { Animate } from '@/animation/Animate'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
+import { SetLegendPayload } from '@/state/SetLegendPayload'
 import type { PieSectorDataItem, ResolvedPieSettings } from '@/state/selectors/pieSelectors'
-import { computePieSectors, selectDisplayedData, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
+import { computePieSectors, selectDisplayedData, selectPieLegend, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
 import { selectChartOffset } from '@/state/selectors/selectChartOffset'
 import { polarToCartesian } from '@/utils/polar'
 import type { PiePropsWithSVG } from './type'
@@ -54,6 +55,9 @@ export const Pie = defineComponent<PiePropsWithSVG>({
     const displayedData = useAppSelector(state => selectDisplayedData(state, pieSettings.value))
     const synchronisedSettings = useAppSelector(state => selectSynchronisedPieSettings(state, pieSettings.value))
     const offset = useAppSelector(state => selectChartOffset(state))
+
+    const legendPayload = useAppSelector(state => selectPieLegend(state, pieSettings.value))
+    SetLegendPayload(computed(() => legendPayload.value ?? []))
 
     const sectors = computed(() => {
       if (synchronisedSettings.value == null || displayedData.value == null) {

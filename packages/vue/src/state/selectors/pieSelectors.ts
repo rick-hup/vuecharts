@@ -98,12 +98,30 @@ export const selectPieLegend: (
   state: RechartsRootState,
   pieSettings: ResolvedPieSettings,
 ) => ReadonlyArray<LegendPayload> | undefined = createSelector(
-  [selectDisplayedData, pickPieSettings, pickCells],
+  [selectDisplayedData, pickPieSettings],
   (
     displayedData,
     pieSettings: ResolvedPieSettings,
-  ): ReadonlyArray<LegendPayload> => {
-    return []
+  ): ReadonlyArray<LegendPayload> | undefined => {
+    if (displayedData == null) {
+      return undefined
+    }
+    return displayedData.map((entry, i): LegendPayload => {
+      const name = getValueByDataKey(entry, pieSettings.nameKey, pieSettings.name)
+      let color: string
+      if (typeof entry === 'object' && entry != null && 'fill' in entry && typeof entry.fill === 'string') {
+        color = entry.fill
+      }
+      else {
+        color = pieSettings.fill
+      }
+      return {
+        value: name ?? String(pieSettings.dataKey ?? i),
+        color,
+        payload: entry as Record<string, unknown>,
+        type: pieSettings.legendType,
+      }
+    })
   },
 )
 
