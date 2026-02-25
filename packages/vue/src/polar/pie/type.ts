@@ -10,7 +10,7 @@ export const PieVueProps = {
   cx: { type: [Number, String], default: '50%' },
   cy: { type: [Number, String], default: '50%' },
   innerRadius: { type: [Number, String], default: 0 },
-  outerRadius: { type: [Number, String], default: '80%' },
+  outerRadius: { type: [Number, String, Function] as PropType<number | string | ((element: any) => number)>, default: '80%' },
   startAngle: { type: Number, default: 0 },
   endAngle: { type: Number, default: 360 },
   paddingAngle: { type: Number, default: 0 },
