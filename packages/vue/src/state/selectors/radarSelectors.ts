@@ -1,4 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
+import { last } from 'es-toolkit/compat'
 import type { RechartsRootState } from '../store'
 import type { BaseAxisWithScale } from './axisSelectors'
 import { selectPolarAxisScale, selectPolarAxisTicks } from './polarScaleSelectors'
@@ -13,8 +14,10 @@ import type { AngleAxisForRadar, RadarComposedData, RadiusAxisForRadar } from '@
 import type { DataKey, LayoutType, TickItem } from '@/types'
 import type { PolarViewBox } from '@/cartesian/type'
 import { isCategoricalAxis } from '@/utils'
-import { getBandSizeOfAxis } from '@/utils/chart'
+import { getBandSizeOfAxis, getValueByDataKey } from '@/utils/chart'
 import { selectChartLayout } from '@/state/selectors/common'
+import { polarToCartesian } from '@/utils/polar'
+import { isNullish } from '@/utils/validate'
 
 function selectRadiusAxisScale(state: RechartsRootState, radiusAxisId: AxisId): RechartsScale | undefined {
   return selectPolarAxisScale(state, 'radiusAxis', radiusAxisId)
@@ -145,6 +148,69 @@ const selectSynchronisedRadarDataKey: (
   },
 )
 
+export function computeRadarPoints({
+  radiusAxis,
+  angleAxis,
+  displayedData,
+  dataKey,
+  bandSize,
+}: {
+  radiusAxis: RadiusAxisForRadar
+  angleAxis: AngleAxisForRadar
+  displayedData: any[]
+  dataKey: DataKey<any>
+  bandSize: number
+}): RadarComposedData {
+  const { cx, cy } = angleAxis
+  let isRange = false
+  const points: any[] = []
+  const angleBandSize = angleAxis.type !== 'number' ? (bandSize ?? 0) : 0
+
+  displayedData.forEach((entry, i) => {
+    const name = getValueByDataKey(entry, angleAxis.dataKey, i)
+    const value = getValueByDataKey(entry, dataKey)
+    const angle: number = (angleAxis.scale(name) ?? 0) + angleBandSize
+    const pointValue = Array.isArray(value) ? last(value) : value
+    const radius: number = isNullish(pointValue) ? 0 : (radiusAxis.scale(pointValue) ?? 0)
+
+    if (Array.isArray(value) && value.length >= 2) {
+      isRange = true
+    }
+
+    points.push({
+      ...polarToCartesian(cx, cy, radius, angle),
+      name,
+      value,
+      cx,
+      cy,
+      radius,
+      angle,
+      payload: entry,
+    })
+  })
+
+  const baseLinePoints: any[] = []
+
+  if (isRange) {
+    points.forEach((point: any) => {
+      if (Array.isArray(point.value)) {
+        const baseValue = point.value[0]
+        const radius: number = isNullish(baseValue) ? 0 : (radiusAxis.scale(baseValue) ?? 0)
+        baseLinePoints.push({
+          ...point,
+          radius,
+          ...polarToCartesian(cx, cy, radius, point.angle),
+        })
+      }
+      else {
+        baseLinePoints.push(point)
+      }
+    })
+  }
+
+  return { points, isRange, baseLinePoints }
+}
+
 export const selectRadarPoints: (
   state: RechartsRootState,
   radiusAxisId: AxisId,
@@ -170,14 +236,13 @@ export const selectRadarPoints: (
     if (radiusAxis == null || angleAxis == null || chartData == null || bandSize == null || dataKey == null) {
       return undefined
     }
-    // const displayedData = chartData.slice(dataStartIndex, dataEndIndex + 1)
-    return undefined
-    // return computeRadarPoints({
-    //   radiusAxis,
-    //   angleAxis,
-    //   displayedData,
-    //   dataKey,
-    //   bandSize,
-    // })
+    const displayedData = chartData.slice(dataStartIndex, dataEndIndex + 1)
+    return computeRadarPoints({
+      radiusAxis,
+      angleAxis,
+      displayedData,
+      dataKey,
+      bandSize,
+    })
   },
 )

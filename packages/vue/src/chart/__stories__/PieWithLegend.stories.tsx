@@ -46,5 +46,5 @@ const PieWithLegendWrapper = defineComponent({
 })
 
 export const PieWithLegend: Story = {
-  render: () => PieWithLegendWrapper,
+  render: () => <PieWithLegendWrapper />,
 }
