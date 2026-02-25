@@ -6,8 +6,11 @@ import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
 import type { ResolvedPieSettings } from '@/state/selectors/pieSelectors'
 import { computePieSectors, selectDisplayedData, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
 import { selectChartOffset } from '@/state/selectors/selectChartOffset'
+import { polarToCartesian } from '@/utils/polar'
 import type { PiePropsWithSVG } from './type'
 import { PieVueProps } from './type'
+
+const LABEL_OFFSET = 25
 
 export const Pie = defineComponent<PiePropsWithSVG>({
   name: 'Pie',
@@ -76,6 +79,23 @@ export const Pie = defineComponent<PiePropsWithSVG>({
               stroke={(attrs.stroke as string) ?? props.stroke}
             />
           ))}
+          {props.label && sectors.value.map((sector, i) => {
+            const pos = polarToCartesian(sector.cx, sector.cy, sector.outerRadius + LABEL_OFFSET, sector.midAngle)
+            const anchor = Math.cos((sector.midAngle * Math.PI) / 180) >= 0 ? 'start' : 'end'
+            return (
+              <text
+                key={`label-${i}`}
+                x={pos.x}
+                y={pos.y}
+                text-anchor={anchor}
+                dominant-baseline="middle"
+                fill="#333"
+                font-size={12}
+              >
+                {String(sector.name)}
+              </text>
+            )
+          })}
         </Layer>
       )
     }

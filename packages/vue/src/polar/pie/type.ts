@@ -21,6 +21,7 @@ export const PieVueProps = {
   tooltipType: { type: String as PropType<TooltipType>, default: undefined },
   hide: { type: Boolean, default: false },
   isAnimationActive: { type: Boolean, default: true },
+  label: { type: Boolean, default: false },
   className: { type: String, default: undefined },
 }
 

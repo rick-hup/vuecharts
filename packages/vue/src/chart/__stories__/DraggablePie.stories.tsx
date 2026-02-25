@@ -5,7 +5,7 @@ import { Pie } from '@/polar/pie/Pie'
 import { getRelativeCoordinate } from '@/utils/getRelativeCoordinate'
 import type { MouseHandlerDataParam } from '@/types'
 
-type PieData = Array<{ name: string; value: number; fill: string }>
+type PieData = Array<{ name: string, value: number, fill: string }>
 
 const meta = {
   title: 'Examples/Pie/DraggablePie',
@@ -30,7 +30,7 @@ function createData(email: number, socialMedia: number, phone: number, webchat: 
  * @param angle angle of the point relative to the zero angle (east, 3 o'clock) in degrees
  * @param radius distance from the center of the chart to the point
  */
-function DraggablePoint({ cx, cy, angle, radius }: { cx: number; cy: number; angle: number; radius: number }) {
+function DraggablePoint({ cx, cy, angle, radius }: { cx: number, cy: number, angle: number, radius: number }) {
   const pointCx = cx + radius * Math.cos((angle * Math.PI) / 180)
   const pointCy = cy - radius * Math.sin((angle * Math.PI) / 180)
   return (
@@ -93,6 +93,7 @@ const DraggablePieWrapper = defineComponent({
             dataKey="value"
             data={data}
             outerRadius={200}
+            label
             isAnimationActive={false}
           />
           <DraggablePoint angle={email.value} radius={200} cx={cx} cy={cy} />
