@@ -4,7 +4,7 @@ import { arrayTooltipSearcher } from '@/state/optionsSlice'
 export const PieChart = generateCategoricalChart({
   chartName: 'PieChart',
   defaultProps: {
-    layout: 'centric' as any,
+    layout: 'centric',
     startAngle: 0,
     endAngle: 360,
   },

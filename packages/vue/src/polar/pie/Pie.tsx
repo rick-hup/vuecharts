@@ -5,9 +5,9 @@ import { Sector } from '@/shape/Sector'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
 import type { ResolvedPieSettings } from '@/state/selectors/pieSelectors'
 import { selectPieSectors } from '@/state/selectors/pieSelectors'
-import { PieVueProps } from './type'
+import { PieVueProps, PiePropsWithSVG } from './type'
 
-export const Pie = defineComponent({
+export const Pie = defineComponent<PiePropsWithSVG>({
   name: 'Pie',
   props: PieVueProps,
   inheritAttrs: false,

@@ -117,8 +117,7 @@ export const selectSynchronisedPieSettings: (
       graphicalItems.some(
         pgis =>
           pgis.type === 'pie'
-          && pieSettingsFromProps.dataKey === pgis.dataKey
-          && pieSettingsFromProps.data === pgis.data,
+          && pieSettingsFromProps.dataKey === pgis.dataKey,
       )
     ) {
       return pieSettingsFromProps
