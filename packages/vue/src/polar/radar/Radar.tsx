@@ -1,4 +1,4 @@
-import { Fragment, computed, defineComponent } from 'vue'
+import { Fragment, Teleport, computed, defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
@@ -11,6 +11,7 @@ import { Dot } from '@/shape/Dot'
 import { Animate } from '@/animation/Animate'
 import { interpolate } from '@/utils/data-utils'
 import { ActivePoints } from '@/cartesian/line/ActivePoints'
+import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import type { DataKey } from '@/types'
 import type { LegendType } from '@/types/legend'
 import type { TooltipType } from '@/types/tooltip'
@@ -119,6 +120,8 @@ export const Radar = defineComponent({
       selectRadarPoints(state, props.radiusAxisId, props.angleAxisId, isPanorama, props.dataKey),
     )
 
+    const graphicalLayerRef = useGraphicalLayerRef()
+
     let prevPoints: RadarPoint[] | null = null
     let prevBaseLinePoints: RadarPoint[] | null = null
     let animationId = 0
@@ -186,20 +189,25 @@ export const Radar = defineComponent({
                 />
               )}
           </g>
-          {props.dot && (
-            <g class="v-charts-radar-dots">
-              {points.map((point, i) => (
-                <Dot
-                  key={`dot-${i}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r={3}
-                  fill={stroke ?? props.fill}
-                  stroke="#fff"
-                />
-              ))}
-            </g>
-          )}
+          {props.dot && (() => {
+            const dotsEl = (
+              <g class="v-charts-radar-dots">
+                {points.map((point, i) => (
+                  <Dot
+                    key={`dot-${i}`}
+                    cx={point.x}
+                    cy={point.y}
+                    r={3}
+                    fill={stroke ?? props.fill}
+                    stroke="#fff"
+                  />
+                ))}
+              </g>
+            )
+            return graphicalLayerRef?.value
+              ? <Teleport to={graphicalLayerRef.value}>{dotsEl}</Teleport>
+              : dotsEl
+          })()}
         </Layer>
       )
     }
@@ -214,18 +222,25 @@ export const Radar = defineComponent({
 
       const mainColor = getLegendItemColor(props.stroke, props.fill) ?? props.fill
 
+      const activePointsEl = (
+        <ActivePoints
+          points={points}
+          mainColor={mainColor}
+          itemDataKey={props.dataKey}
+          activeDot={props.activeDot}
+        />
+      )
+      const activePoints = graphicalLayerRef?.value
+        ? <Teleport to={graphicalLayerRef.value}>{activePointsEl}</Teleport>
+        : activePointsEl
+
       if (!props.isAnimationActive) {
         prevPoints = points
         prevBaseLinePoints = baseLinePoints
         return (
           <Fragment>
             {renderPolygon(points, baseLinePoints, isRange)}
-            <ActivePoints
-              points={points}
-              mainColor={mainColor}
-              itemDataKey={props.dataKey}
-              activeDot={props.activeDot}
-            />
+            {activePoints}
           </Fragment>
         )
       }
@@ -259,12 +274,7 @@ export const Radar = defineComponent({
               return renderPolygon(stepPoints, stepBaseLine, isRange)
             }}
           </Animate>
-          <ActivePoints
-            points={points}
-            mainColor={mainColor}
-            itemDataKey={props.dataKey}
-            activeDot={props.activeDot}
-          />
+          {activePoints}
         </Fragment>
       )
     }
