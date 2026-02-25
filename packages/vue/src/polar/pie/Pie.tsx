@@ -171,7 +171,6 @@ export const Pie = defineComponent<PiePropsWithSVG>({
                           text-anchor={anchor}
                           dominant-baseline="middle"
                           fill={sector.fill}
-                          font-size={12}
                         >
                           {String(sector.value)}
                         </text>
