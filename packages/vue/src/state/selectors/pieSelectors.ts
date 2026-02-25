@@ -182,9 +182,9 @@ export function computePieSectors({
   const totalPaddingAngle = (absDeltaAngle >= 360 ? notZeroItemCount : notZeroItemCount - 1) * paddingAngle
   const realTotalAngle = absDeltaAngle - notZeroItemCount * minAngle - totalPaddingAngle
 
-  const sum = displayedData.reduce((result: number, entry: any) => {
+  const sum: number = displayedData.reduce((result: number, entry: any) => {
     const val = getValueByDataKey(entry, dataKey, 0)
-    return result + (isNumber(val) ? val : 0)
+    return result + (isNumber(val) ? (val as number) : 0)
   }, 0)
 
   if (sum <= 0) {
