@@ -1,4 +1,4 @@
-import { Fragment, Teleport, computed, defineComponent } from 'vue'
+import { Fragment, Teleport, computed, defineComponent, ref } from 'vue'
 import type { PropType } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
@@ -8,10 +8,12 @@ import { selectRadarPoints } from '@/state/selectors/radarSelectors'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { Layer } from '@/container/Layer'
 import { Dot } from '@/shape/Dot'
+import { LabelList } from '@/components/label/LabelList'
 import { Animate } from '@/animation/Animate'
 import { interpolate } from '@/utils/data-utils'
 import { ActivePoints } from '@/cartesian/line/ActivePoints'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
+import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
 import type { DataKey } from '@/types'
 import type { LegendType } from '@/types/legend'
 import type { TooltipType } from '@/types/tooltip'
@@ -58,6 +60,7 @@ function interpolatePolarPoint(
 
 export const Radar = defineComponent({
   name: 'Radar',
+  inheritAttrs: false,
   props: {
     dataKey: { type: [String, Number, Function] as PropType<DataKey<any>>, required: true },
     name: { type: String, default: undefined },
@@ -73,6 +76,7 @@ export const Radar = defineComponent({
     legendType: { type: String as PropType<LegendType>, default: 'rect' },
     tooltipType: { type: String as PropType<TooltipType>, default: undefined },
     connectNulls: { type: Boolean, default: false },
+    label: { type: [Boolean, Object] as PropType<boolean | Record<string, any>>, default: false },
     isAnimationActive: { type: Boolean, default: true },
     activeDot: { type: [Object, Boolean] as PropType<object | boolean>, default: true },
   },
@@ -93,7 +97,7 @@ export const Radar = defineComponent({
       type: props.legendType,
       color: getLegendItemColor(props.stroke, props.fill),
       value: props.name ?? String(props.dataKey ?? ''),
-      payload: props,
+      payload: { ...props },
       inactive: props.hide,
     }]))
 
@@ -121,6 +125,22 @@ export const Radar = defineComponent({
     )
 
     const graphicalLayerRef = useGraphicalLayerRef()
+
+    const isAnimating = ref(props.isAnimationActive)
+
+    provideCartesianLabelListData(computed(() => {
+      if (props.isAnimationActive && isAnimating.value) return undefined
+      const data = radarPoints.value
+      if (!data) return undefined
+      return data.points.map(point => ({
+        x: point.x,
+        y: point.y,
+        width: 0,
+        height: 0,
+        value: point.value ?? '',
+        payload: point.payload,
+      }))
+    }))
 
     let prevPoints: RadarPoint[] | null = null
     let prevBaseLinePoints: RadarPoint[] | null = null
@@ -229,12 +249,17 @@ export const Radar = defineComponent({
         ? <Teleport to={graphicalLayerRef.value}>{activePointsEl}</Teleport>
         : activePointsEl
 
+      const labelEl = !isAnimating.value && props.label
+        ? <LabelList {...(typeof props.label === 'object' ? props.label : {})} />
+        : null
+
       if (!props.isAnimationActive) {
         prevPoints = points
         prevBaseLinePoints = baseLinePoints
         return (
           <Fragment>
             {renderPolygon(points, baseLinePoints, isRange)}
+            {labelEl}
             {activePoints}
           </Fragment>
         )
@@ -251,7 +276,12 @@ export const Radar = defineComponent({
 
       return (
         <Fragment>
-          <Animate key={animationId} isActive={true}>
+          <Animate
+            key={animationId}
+            isActive={true}
+            onAnimationStart={() => { isAnimating.value = true }}
+            onAnimationEnd={() => { isAnimating.value = false }}
+          >
             {(t: number) => {
               const stepPoints: RadarPoint[] = t === 1
                 ? points
@@ -269,6 +299,7 @@ export const Radar = defineComponent({
               return renderPolygon(stepPoints, stepBaseLine, isRange)
             }}
           </Animate>
+          {labelEl}
           {activePoints}
         </Fragment>
       )

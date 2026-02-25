@@ -41,7 +41,7 @@ export const PolarAngleAxis = defineComponent({
     orientation: { type: String as PropType<'inner' | 'outer'>, default: 'outer' },
     tickFormatter: { type: Function as PropType<(value: any, index: number) => string>, default: undefined },
     ticks: { type: Array as PropType<ReadonlyArray<AxisTick>>, default: undefined },
-    stroke: { type: String, default: '#666' },
+    stroke: { type: String, default: undefined },
     type: { type: String as PropType<'category' | 'number'>, default: 'category' },
   },
   setup(props) {
