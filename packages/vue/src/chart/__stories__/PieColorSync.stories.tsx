@@ -6,6 +6,7 @@ import { Sector } from '@/shape/Sector'
 import { Legend } from '@/components/legend'
 import { Tooltip } from '@/components/Tooltip'
 import type { PieSectorDataItem } from '@/state/selectors/pieSelectors'
+import { ResponsiveContainer } from '@/container'
 
 const meta = {
   title: 'Examples/Pie/PieColorSync',
@@ -41,22 +42,24 @@ function renderSectorWithCustomShapeColor(sector: PieSectorDataItem & { isActive
 const PieColorSyncWrapper = defineComponent({
   setup() {
     return () => (
-      <PieChart width={800} height={500}>
-        <Pie
-          dataKey="value"
-          nameKey="name"
-          data={data}
-          cx="50%"
-          cy="50%"
-          fill="#8884d8"
-          innerRadius={60}
-          outerRadius={80}
-        >
-          {{ shape: renderSectorWithCustomShapeColor }}
-        </Pie>
-        <Legend />
-        <Tooltip />
-      </PieChart>
+      <ResponsiveContainer width="100%" height={500}>
+        <PieChart width={400} height={400}>
+          <Pie
+            dataKey="value"
+            nameKey="name"
+            data={data}
+            cx="50%"
+            cy="50%"
+            fill="#8884d8"
+            innerRadius={60}
+            outerRadius={80}
+          >
+            {{ shape: renderSectorWithCustomShapeColor }}
+          </Pie>
+          <Legend />
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
     )
   },
 })
