@@ -73,11 +73,17 @@ export const Pie = defineComponent<PiePropsWithSVG>({
       const stroke = (attrs.stroke as string) ?? props.stroke
       return (
         <Layer class={['v-charts-pie', props.className]}>
-          <Animate isActive={props.isAnimationActive} from={0} to={1}>
+          <Animate isActive={props.isAnimationActive} from={0} to={1} transition={{ duration: 1.5 }}>
             {(progress: number) => {
+              // Recharts chain animation: curAngle accumulates so all sectors sweep as one continuous arc
+              let curAngle = sectors.value![0]?.startAngle ?? 0
               const sectorNodes = sectors.value!.map((sector, i) => {
                 const isActive = activeIndex.value === i
-                const animatedEndAngle = sector.startAngle + (sector.endAngle - sector.startAngle) * progress
+                const paddingAngle = i > 0 ? sector.paddingAngle : 0
+                const deltaAngle = (sector.endAngle - sector.startAngle) * progress
+                const animatedStartAngle = curAngle + paddingAngle
+                const animatedEndAngle = curAngle + deltaAngle + paddingAngle
+                curAngle = animatedEndAngle
                 if (slots.shape) {
                   return (
                     <g
@@ -85,7 +91,7 @@ export const Pie = defineComponent<PiePropsWithSVG>({
                       onMouseenter={() => { activeIndex.value = i }}
                       onMouseleave={() => { activeIndex.value = -1 }}
                     >
-                      {slots.shape({ ...sector, endAngle: animatedEndAngle, stroke, isActive })}
+                      {slots.shape({ ...sector, startAngle: animatedStartAngle, endAngle: animatedEndAngle, stroke, isActive })}
                     </g>
                   )
                 }
@@ -97,7 +103,7 @@ export const Pie = defineComponent<PiePropsWithSVG>({
                     cy={sector.cy}
                     innerRadius={sector.innerRadius}
                     outerRadius={sector.outerRadius}
-                    startAngle={sector.startAngle}
+                    startAngle={animatedStartAngle}
                     endAngle={animatedEndAngle}
                     fill={sector.fill}
                     stroke={stroke}
