@@ -61,9 +61,11 @@ export type PieSectorDataItem = ResolvedPieSettings &
 
 const pickPieSettings = (_state: RechartsRootState, pieSettings: ResolvedPieSettings) => pieSettings
 
+const EMPTY_CELLS: ReadonlyArray<any> = []
+
 // Keep stable reference to an empty array to prevent re-renders
 function pickCells(_state: RechartsRootState, _pieSettings: ResolvedPieSettings): ReadonlyArray<any> | undefined {
-  return []
+  return EMPTY_CELLS
 }
 
 export const selectDisplayedData: (
@@ -73,7 +75,7 @@ export const selectDisplayedData: (
   [selectChartDataAndAlwaysIgnoreIndexes, pickPieSettings, pickCells],
   ({ chartData }: ChartDataState, pieSettings: ResolvedPieSettings, cells): ChartData | undefined => {
     let displayedData: ChartData | undefined
-    if (pieSettings?.data?.length! > 0) {
+    if (pieSettings.data != null && pieSettings.data.length > 0) {
       displayedData = pieSettings.data
     }
     else {
