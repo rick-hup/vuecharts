@@ -217,8 +217,8 @@ export const Radar = defineComponent({
                   cx={point.x}
                   cy={point.y}
                   r={3}
-                  fill={stroke ?? props.fill}
-                  stroke="#fff"
+                  fill={props.fill}
+                  stroke={stroke}
                 />
               ))}
             </g>
