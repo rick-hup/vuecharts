@@ -48,7 +48,7 @@ export function createRechartsStore(preloadedState?: Partial<RechartsRootState>,
         mouseClickMiddleware.middleware,
         mouseMoveMiddleware.middleware,
         keyboardEventsMiddleware.middleware,
-        externalEventsMiddleware.middleware,
+        externalEventsMiddleware,
         touchEventMiddleware.middleware,
       ]),
     devTools: {
