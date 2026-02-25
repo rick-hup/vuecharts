@@ -3,6 +3,20 @@ import type { ChartCoordinate, Coordinate, LayoutType } from '@/types'
 import { polarToCartesian } from '@/utils/polar'
 import type { ChartOffsetInternal } from '@/utils/types'
 
+function getRadialCursorPoints(activeCoordinate: ChartCoordinate): RadialCursorPoints {
+  const { cx, cy, radius, startAngle, endAngle } = activeCoordinate as any
+  const startPoint = polarToCartesian(cx, cy, radius, startAngle)
+  const endPoint = polarToCartesian(cx, cy, radius, endAngle)
+  return {
+    points: [startPoint, endPoint],
+    cx,
+    cy,
+    radius,
+    startAngle,
+    endAngle,
+  }
+}
+
 export function getCursorPoints(
   layout: LayoutType,
   activeCoordinate: ChartCoordinate,

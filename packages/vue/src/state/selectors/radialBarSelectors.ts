@@ -39,12 +39,14 @@ import type { DataKey, LayoutType, TickItem } from '@/types'
 import type { StackId } from '@/types/tick'
 import type { RechartsScale } from '@/types/scale'
 import { isCategoricalAxis, isNullish } from '@/utils'
-import { getBandSizeOfAxis, getBaseValueOfBar } from '@/utils/chart'
+import { getBandSizeOfAxis, getBaseValueOfBar, getCateCoordinateOfBar, getValueByDataKey, truncateByDomain } from '@/utils/chart'
 import type { BarPositionPosition } from '@/types/bar'
-import type { PolarViewBox } from '@/cartesian/type'
+import type { PolarViewBoxRequired } from '@/cartesian/type'
 import type { LegendType } from '@/types/legend'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { selectChartLayout } from '@/state/selectors/common'
+import { mathSign } from '@/utils/data'
+import type { SectorProps } from '@/shape/Sector'
 
 export interface RadialBarSettings extends MaybeStackedGraphicalItem {
   dataKey: DataKey<any> | undefined
@@ -163,10 +165,6 @@ export const selectBaseValue: (
     return getBaseValueOfBar({ numericAxis })
   },
 )
-
-function pickCells(_state: RechartsRootState, _radiusAxisId: AxisId, _angleAxisId: AxisId, _radialBarSettings: RadialBarSettings) {
-  return undefined
-}
 
 function pickAngleAxisId(_state: RechartsRootState, _radiusAxisId: AxisId, angleAxisId: AxisId, _radialBarSettings: RadialBarSettings): AxisId {
   return angleAxisId
@@ -325,13 +323,152 @@ const selectPolarStackedData: (
   combineStackedData,
 )
 
+export interface RadialBarDataItem {
+  cx: number
+  cy: number
+  innerRadius: number | null | undefined
+  outerRadius: number | undefined
+  startAngle: number | null
+  endAngle: number
+  value?: any
+  payload?: any
+  background?: SectorProps
+  [key: string]: any
+}
+
+export function computeRadialBarDataItems({
+  displayedData,
+  stackedData,
+  dataStartIndex,
+  stackedDomain,
+  dataKey,
+  baseValue,
+  layout,
+  radiusAxis,
+  radiusAxisTicks,
+  bandSize,
+  pos,
+  angleAxis,
+  minPointSize,
+  cx,
+  cy,
+  angleAxisTicks,
+  startAngle: rootStartAngle,
+  endAngle: rootEndAngle,
+}: {
+  displayedData: ReadonlyArray<any>
+  stackedData: Series<Record<number, number>, DataKey<any>> | undefined
+  dataStartIndex: number
+  stackedDomain: ReadonlyArray<unknown> | null
+  dataKey: DataKey<any> | undefined
+  baseValue: number | unknown
+  layout: LayoutType
+  radiusAxis: BaseAxisWithScale
+  radiusAxisTicks: ReadonlyArray<TickItem>
+  bandSize: number
+  pos: BarPositionPosition
+  angleAxis: BaseAxisWithScale
+  minPointSize: number
+  cx: number
+  cy: number
+  angleAxisTicks: ReadonlyArray<TickItem>
+  startAngle: number
+  endAngle: number
+}): ReadonlyArray<RadialBarDataItem> {
+  return (displayedData ?? []).map((entry: unknown, index: number) => {
+    let value: any,
+      innerRadius: number | null | undefined,
+      outerRadius: number | undefined,
+      startAngle: number | null,
+      endAngle: number,
+      backgroundSector: { background: SectorProps } | undefined
+
+    if (stackedData) {
+      // @ts-expect-error truncateByDomain expects only numerical domain, but it can receive categorical domain too
+      value = truncateByDomain(stackedData[dataStartIndex + index], stackedDomain)
+    }
+    else {
+      value = getValueByDataKey(entry, dataKey)
+      if (!Array.isArray(value)) {
+        value = [baseValue, value]
+      }
+    }
+
+    if (layout === 'radial') {
+      startAngle = angleAxis.scale(value[0]) ?? rootStartAngle
+      endAngle = angleAxis.scale(value[1]) ?? rootEndAngle
+      innerRadius = getCateCoordinateOfBar({
+        axis: radiusAxis,
+        ticks: radiusAxisTicks,
+        bandSize,
+        offset: pos.offset,
+        entry,
+        index,
+      })
+      if (innerRadius != null && endAngle != null && startAngle != null) {
+        outerRadius = innerRadius + pos.size!
+        const deltaAngle = endAngle - startAngle
+
+        if (Math.abs(minPointSize) > 0 && Math.abs(deltaAngle) < Math.abs(minPointSize)) {
+          const delta = mathSign(deltaAngle || minPointSize) * (Math.abs(minPointSize) - Math.abs(deltaAngle))
+          endAngle += delta
+        }
+        backgroundSector = {
+          background: {
+            cx,
+            cy,
+            innerRadius,
+            outerRadius,
+            startAngle: rootStartAngle,
+            endAngle: rootEndAngle,
+          },
+        }
+      }
+    }
+    else {
+      innerRadius = radiusAxis.scale(value[0])
+      outerRadius = radiusAxis.scale(value[1])
+      startAngle = getCateCoordinateOfBar({
+        axis: angleAxis,
+        ticks: angleAxisTicks,
+        bandSize,
+        offset: pos.offset,
+        entry,
+        index,
+      })
+      if (innerRadius != null && outerRadius != null && startAngle != null) {
+        endAngle = startAngle + pos.size!
+        const deltaRadius = outerRadius - innerRadius
+
+        if (Math.abs(minPointSize) > 0 && Math.abs(deltaRadius) < Math.abs(minPointSize)) {
+          const delta = mathSign(deltaRadius || minPointSize) * (Math.abs(minPointSize) - Math.abs(deltaRadius))
+          outerRadius += delta
+        }
+      }
+    }
+
+    return {
+      ...(entry as any),
+      ...backgroundSector,
+      payload: entry,
+      value: stackedData ? value : value[1],
+      cx,
+      cy,
+      innerRadius,
+      outerRadius,
+      startAngle,
+      endAngle,
+    } as RadialBarDataItem
+  })
+}
+
 export const selectRadialBarSectors: (
   state: RechartsRootState,
   radiusAxisId: AxisId,
   angleAxisId: AxisId,
   radialBarSettings: RadialBarSettings,
-  // @ts-ignore
-) => ReadonlyArray<any> | undefined = createSelector(
+  // @ts-ignore createSelector overload can't handle 13 inputs
+) => ReadonlyArray<RadialBarDataItem> | undefined = createSelector(
   [
     selectAngleAxisWithScale,
     selectAngleAxisTicks,
@@ -343,7 +480,6 @@ export const selectRadialBarSectors: (
     selectChartLayout,
     selectBaseValue,
     selectPolarViewBox,
-    pickCells,
     selectPolarBarPosition,
     selectPolarStackedData,
   ],
@@ -357,7 +493,7 @@ export const selectRadialBarSectors: (
     bandSize: number | undefined,
     layout: LayoutType,
     baseValue: number | unknown,
-    polarViewBox: PolarViewBox,
+    polarViewBox: PolarViewBoxRequired | undefined,
     pos: BarPositionPosition | undefined,
     stackedData: Series<Record<number, number>, DataKey<any>> | undefined,
   ) => {
@@ -368,37 +504,38 @@ export const selectRadialBarSectors: (
       || chartData == null
       || bandSize == null
       || pos == null
+      || polarViewBox == null
+      || angleAxisTicks == null
+      || radiusAxisTicks == null
       || (layout !== 'centric' && layout !== 'radial')
     ) {
       return undefined
     }
-    // const { dataKey, minPointSize } = radialBarSettings
-    // const { cx, cy, startAngle, endAngle } = polarViewBox
-    // const displayedData = chartData.slice(dataStartIndex, dataEndIndex + 1)
-    // const numericAxis = layout === 'centric' ? radiusAxis : angleAxis
-    // const stackedDomain: ReadonlyArray<unknown> | null = stackedData ? numericAxis.scale.domain() : null
-    return undefined
-    // return computeRadialBarDataItems({
-    //   angleAxis,
-    //   angleAxisTicks,
-    //   bandSize,
-    //   baseValue,
-    //   cells,
-    //   cx,
-    //   cy,
-    //   dataKey,
-    //   dataStartIndex,
-    //   displayedData,
-    //   endAngle,
-    //   layout,
-    //   minPointSize,
-    //   pos,
-    //   radiusAxis,
-    //   radiusAxisTicks,
-    //   stackedData,
-    //   stackedDomain,
-    //   startAngle,
-    // })
+    const { dataKey, minPointSize } = radialBarSettings
+    const { cx, cy, startAngle, endAngle } = polarViewBox
+    const displayedData = chartData.slice(dataStartIndex, dataEndIndex + 1)
+    const numericAxis = layout === 'centric' ? radiusAxis : angleAxis
+    const stackedDomain: ReadonlyArray<unknown> | null = stackedData ? numericAxis.scale.domain() : null
+    return computeRadialBarDataItems({
+      angleAxis,
+      angleAxisTicks,
+      bandSize,
+      baseValue,
+      cx,
+      cy,
+      dataKey,
+      dataStartIndex,
+      displayedData,
+      endAngle,
+      layout,
+      minPointSize,
+      pos,
+      radiusAxis,
+      radiusAxisTicks,
+      stackedData,
+      stackedDomain,
+      startAngle,
+    })
   },
 )
 

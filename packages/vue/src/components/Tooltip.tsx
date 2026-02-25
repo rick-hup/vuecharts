@@ -28,7 +28,9 @@ import type { Formatter, TooltipTrigger } from '@/types/tooltip'
 import { getTooltipTranslate } from '@/utils/tooltip/translate'
 import { Curve } from '@/shape/Curve'
 import { Rectangle } from '@/shape/Rectangle'
+import { Sector } from '@/shape/Sector'
 import { getCursorPoints } from '@/components/utils'
+import type { RadialCursorPoints } from '@/components/types'
 import type { Point } from '@/shape'
 import { useCursorLayerRef } from '@/context/cursorLayerContext'
 import { useTooltipAxisBandSize } from '@/context/useTooltipAxis'
@@ -305,6 +307,23 @@ const Cursor = defineComponent({
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(rectProps) : <Rectangle {...rectProps} />
+      }
+      else if (layout.value === 'radial' && props.coordinate?.cx != null) {
+        const radialPoints = points.value as RadialCursorPoints
+        const sectorProps = {
+          cx: radialPoints.cx,
+          cy: radialPoints.cy,
+          startAngle: radialPoints.startAngle,
+          endAngle: radialPoints.endAngle,
+          innerRadius: radialPoints.radius,
+          outerRadius: radialPoints.radius,
+          stroke: '#ccc',
+          fill: 'none',
+          class: 'recharts-tooltip-cursor',
+          style: { pointerEvents: 'none' },
+          ...cursorSvgProps,
+        }
+        cursorElement = props.cursorSlot ? props.cursorSlot(sectorProps) : <Sector {...sectorProps} />
       }
       else {
         const cursorProps = {

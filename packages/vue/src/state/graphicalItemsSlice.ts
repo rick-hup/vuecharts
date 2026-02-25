@@ -7,6 +7,7 @@ import type { MaybeStackedGraphicalItem } from './selectors/barSelectors'
 import type { ErrorBarDirection } from '@/types/bar'
 import type { DataKey } from '@/types'
 import type { NormalizedStackId } from '@/shape'
+import type { StackId } from '@/types/tick'
 
 /**
  * ErrorBars have lot more settings but all the others are scoped to the component itself.
@@ -76,6 +77,13 @@ export type PolarGraphicalItemSettings = GraphicalItemSettings & {
   type: PolarGraphicalItemType
   angleAxisId: AxisId
   radiusAxisId: AxisId
+  /**
+   * Only used by RadialBar items
+   */
+  barSize?: number | string
+  stackId?: StackId
+  minPointSize?: number
+  maxBarSize?: number
 }
 
 type ReplacePayload<T> = {
