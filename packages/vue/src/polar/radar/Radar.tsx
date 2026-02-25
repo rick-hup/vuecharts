@@ -1,4 +1,4 @@
-import { computed, defineComponent } from 'vue'
+import { Fragment, computed, defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
@@ -10,6 +10,7 @@ import { Layer } from '@/container/Layer'
 import { Dot } from '@/shape/Dot'
 import { Animate } from '@/animation/Animate'
 import { interpolate } from '@/utils/data-utils'
+import { ActivePoints } from '@/cartesian/line/ActivePoints'
 import type { DataKey } from '@/types'
 import type { LegendType } from '@/types/legend'
 import type { TooltipType } from '@/types/tooltip'
@@ -72,6 +73,7 @@ export const Radar = defineComponent({
     tooltipType: { type: String as PropType<TooltipType>, default: undefined },
     connectNulls: { type: Boolean, default: false },
     isAnimationActive: { type: Boolean, default: true },
+    activeDot: { type: [Object, Boolean] as PropType<object | boolean>, default: true },
   },
   setup(props) {
     const isPanorama = useIsPanorama()
@@ -210,10 +212,22 @@ export const Radar = defineComponent({
 
       const { points, baseLinePoints, isRange } = data
 
+      const mainColor = getLegendItemColor(props.stroke, props.fill) ?? props.fill
+
       if (!props.isAnimationActive) {
         prevPoints = points
         prevBaseLinePoints = baseLinePoints
-        return renderPolygon(points, baseLinePoints, isRange)
+        return (
+          <Fragment>
+            {renderPolygon(points, baseLinePoints, isRange)}
+            <ActivePoints
+              points={points}
+              mainColor={mainColor}
+              itemDataKey={props.dataKey}
+              activeDot={props.activeDot}
+            />
+          </Fragment>
+        )
       }
 
       const prevPts = prevPoints
@@ -226,24 +240,32 @@ export const Radar = defineComponent({
       }
 
       return (
-        <Animate key={animationId} isActive={true}>
-          {(t: number) => {
-            const stepPoints: RadarPoint[] = t === 1
-              ? points
-              : points.map((entry, i) => interpolatePolarPoint(prevPts, prevPointsDiffFactor, t, entry, i))
+        <Fragment>
+          <Animate key={animationId} isActive={true}>
+            {(t: number) => {
+              const stepPoints: RadarPoint[] = t === 1
+                ? points
+                : points.map((entry, i) => interpolatePolarPoint(prevPts, prevPointsDiffFactor, t, entry, i))
 
-            const stepBaseLine: RadarPoint[] = t === 1
-              ? baseLinePoints
-              : baseLinePoints.map((entry, i) => interpolatePolarPoint(prevBasePts, prevBaseDiffFactor, t, entry, i))
+              const stepBaseLine: RadarPoint[] = t === 1
+                ? baseLinePoints
+                : baseLinePoints.map((entry, i) => interpolatePolarPoint(prevBasePts, prevBaseDiffFactor, t, entry, i))
 
-            if (t > 0) {
-              prevPoints = stepPoints
-              prevBaseLinePoints = stepBaseLine
-            }
+              if (t > 0) {
+                prevPoints = stepPoints
+                prevBaseLinePoints = stepBaseLine
+              }
 
-            return renderPolygon(stepPoints, stepBaseLine, isRange)
-          }}
-        </Animate>
+              return renderPolygon(stepPoints, stepBaseLine, isRange)
+            }}
+          </Animate>
+          <ActivePoints
+            points={points}
+            mainColor={mainColor}
+            itemDataKey={props.dataKey}
+            activeDot={props.activeDot}
+          />
+        </Fragment>
       )
     }
   },
