@@ -79,23 +79,33 @@ const RadarWithChangingDataKeyWrapper = defineComponent({
             />
             dataKey 2
           </label>
-        </form>
-        <ResponsiveContainer width="100%" height={400}>
-          <RadarChart width={360} height={360} data={data}>
-            <Legend />
-            <PolarAngleAxis dataKey="name" />
-            <PolarRadiusAxis domain={[0, 20]} tick={false} axisLine={false} />
-            <Radar
-              dataKey={dataKey.value}
-              fill="orange"
-              fillOpacity={0.5}
-              stroke="blue"
-              strokeDasharray="3 3"
-              dot={true}
+          <label style={{ display: 'flex', flexDirection: 'row' }}>
+            <input
+              type="radio"
+              name="dataKey"
+              value="hidden"
+              checked={dataKey.value === 'hidden'}
+              onChange={() => { dataKey.value = 'hidden' }}
             />
-            <Tooltip />
-          </RadarChart>
-        </ResponsiveContainer>
+            Hidden
+          </label>
+        </form>
+        <RadarChart width={360} height={360} data={data}>
+          <Legend />
+          <PolarGrid />
+          <PolarAngleAxis dataKey="name" />
+          <PolarRadiusAxis domain={[0, 20]} tick={false} axisLine={false} />
+          <Radar
+            dataKey={dataKey.value === 'hidden' ? 'key1' : dataKey.value}
+            hide={dataKey.value === 'hidden'}
+            fill="orange"
+            fillOpacity={0.5}
+            stroke="blue"
+            strokeDasharray="3 3"
+            dot={true}
+          />
+          <Tooltip />
+        </RadarChart>
       </div>
     )
   },
