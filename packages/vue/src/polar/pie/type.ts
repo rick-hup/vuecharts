@@ -20,6 +20,7 @@ export const PieVueProps = {
   legendType: { type: String as PropType<LegendType>, default: 'rect' },
   tooltipType: { type: String as PropType<TooltipType>, default: undefined },
   hide: { type: Boolean, default: false },
+  activeIndex: { type: Number, default: -1 },
   isAnimationActive: { type: Boolean, default: true },
   label: { type: Boolean, default: false },
   className: { type: String, default: undefined },

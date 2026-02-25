@@ -1,9 +1,10 @@
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
+import type { SlotsType } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
 import { Sector } from '@/shape/Sector'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
-import type { ResolvedPieSettings } from '@/state/selectors/pieSelectors'
+import type { PieSectorDataItem, ResolvedPieSettings } from '@/state/selectors/pieSelectors'
 import { computePieSectors, selectDisplayedData, selectSynchronisedPieSettings } from '@/state/selectors/pieSelectors'
 import { selectChartOffset } from '@/state/selectors/selectChartOffset'
 import { polarToCartesian } from '@/utils/polar'
@@ -16,7 +17,12 @@ export const Pie = defineComponent<PiePropsWithSVG>({
   name: 'Pie',
   props: PieVueProps,
   inheritAttrs: false,
-  setup(props, { attrs }) {
+  slots: Object as SlotsType<{
+    shape?: (props: PieSectorDataItem & { isActive: boolean }) => any
+  }>,
+  setup(props, { attrs, slots }) {
+    const activeIndex = ref(props.activeIndex)
+
     const pieSettings = computed<ResolvedPieSettings>(() => ({
       data: props.data,
       dataKey: props.dataKey,
@@ -65,20 +71,36 @@ export const Pie = defineComponent<PiePropsWithSVG>({
       }
       return (
         <Layer class={['v-charts-pie', props.className]}>
-          {sectors.value.map((sector, i) => (
-            <Sector
-              key={`sector-${i}`}
-              {...attrs}
-              cx={sector.cx}
-              cy={sector.cy}
-              innerRadius={sector.innerRadius}
-              outerRadius={sector.outerRadius}
-              startAngle={sector.startAngle}
-              endAngle={sector.endAngle}
-              fill={sector.fill}
-              stroke={(attrs.stroke as string) ?? props.stroke}
-            />
-          ))}
+          {sectors.value.map((sector, i) => {
+            const isActive = activeIndex.value === i
+            if (slots.shape) {
+              return (
+                <g
+                  key={`sector-${i}`}
+                  onMouseenter={() => { activeIndex.value = i }}
+                  onMouseleave={() => { activeIndex.value = -1 }}
+                >
+                  {slots.shape({ ...sector, isActive })}
+                </g>
+              )
+            }
+            return (
+              <Sector
+                key={`sector-${i}`}
+                {...attrs}
+                cx={sector.cx}
+                cy={sector.cy}
+                innerRadius={sector.innerRadius}
+                outerRadius={sector.outerRadius}
+                startAngle={sector.startAngle}
+                endAngle={sector.endAngle}
+                fill={sector.fill}
+                stroke={(attrs.stroke as string) ?? props.stroke}
+                onMouseenter={() => { activeIndex.value = i }}
+                onMouseleave={() => { activeIndex.value = -1 }}
+              />
+            )
+          })}
           {props.label && sectors.value.map((sector, i) => {
             const edgePoint = polarToCartesian(sector.cx, sector.cy, sector.outerRadius, sector.midAngle)
             const pos = polarToCartesian(sector.cx, sector.cy, sector.outerRadius + LABEL_OFFSET, sector.midAngle)
