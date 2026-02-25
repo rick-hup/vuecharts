@@ -18,8 +18,17 @@ export function getRelativeCoordinate(event: MousePointer): RelativePointer {
   }
   else {
     const el = event.currentTarget as HTMLElement
-    scaleX = el.offsetWidth > 0 ? rect.width / el.offsetWidth : 1
-    scaleY = el.offsetHeight > 0 ? rect.height / el.offsetHeight : 1
+    // Use the inline style dimensions as the coordinate space reference.
+    // offsetWidth reflects the actual rendered size, which can differ from the
+    // chart's declared width when CSS layout (e.g. flexbox align-items:stretch)
+    // resizes the wrapper element. The inline style always holds the chart's
+    // intended coordinate space (e.g. "500px"), giving the correct scale factor.
+    const styleWidth = el.style ? parseFloat(el.style.width) : NaN
+    const styleHeight = el.style ? parseFloat(el.style.height) : NaN
+    const coordWidth = styleWidth > 0 ? styleWidth : el.offsetWidth
+    const coordHeight = styleHeight > 0 ? styleHeight : el.offsetHeight
+    scaleX = coordWidth > 0 ? rect.width / coordWidth : 1
+    scaleY = coordHeight > 0 ? rect.height / coordHeight : 1
   }
 
   return {
