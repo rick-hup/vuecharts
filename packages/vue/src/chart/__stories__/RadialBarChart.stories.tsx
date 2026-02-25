@@ -63,7 +63,7 @@ const RadialBarWithAxesAndGridWrapper = defineComponent({
           <PolarGrid gridType="circle" />
           <PolarAngleAxis dataKey="pv" type="number" axisLineType="circle" stroke="red" />
           <PolarRadiusAxis dataKey="name" orientation="middle" type="category" angle={90} stroke="black" />
-          <Tooltip cursor={{ strokeWidth: 3, stroke: 'black', strokeDasharray: '4 4' }} />
+          <Tooltip cursor={{ 'stroke-width': 3, 'stroke': 'black', 'stroke-dasharray': '4 4' }} />
         </RadialBarChart>
       </div>
     )

@@ -7,12 +7,14 @@ import { selectPolarViewBox } from '@/state/selectors/polarAxisSelectors'
 import { polarToCartesian } from '@/utils/polar'
 import type { AxisDomain } from '@/types/axis'
 import type { AxisTick } from '@/types/tick'
+import type { DataKey } from '@/types'
 import Text from '@/components/Text.vue'
 
 export const PolarRadiusAxis = defineComponent({
   name: 'PolarRadiusAxis',
   props: {
     radiusAxisId: { type: [String, Number] as PropType<string | number>, default: 0 },
+    dataKey: { type: [String, Number, Function] as PropType<DataKey<any>>, default: undefined },
     angle: { type: Number, default: 0 },
     tick: { type: Boolean, default: true },
     axisLine: { type: Boolean, default: true },
@@ -33,7 +35,7 @@ export const PolarRadiusAxis = defineComponent({
       const settings = {
         id: props.radiusAxisId,
         type: props.type,
-        dataKey: undefined,
+        dataKey: props.dataKey,
         scale: 'auto' as const,
         allowDuplicatedCategory: true,
         allowDataOverflow: props.domain != null,
