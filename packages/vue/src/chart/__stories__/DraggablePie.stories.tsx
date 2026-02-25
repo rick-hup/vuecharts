@@ -60,11 +60,11 @@ const DraggablePieWrapper = defineComponent({
     const cx = 250
     const cy = 250
 
-    const onMouseDown = () => {
+    const onMouseDown = (_chartData: MouseHandlerDataParam, _e: Event) => {
       isDragging.value = 'email'
     }
 
-    const onMouseUp = () => {
+    const onMouseUp = (_chartData: MouseHandlerDataParam, _e: Event) => {
       isDragging.value = null
     }
 
@@ -85,9 +85,9 @@ const DraggablePieWrapper = defineComponent({
           width={500}
           height={500}
           margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-          onMousedown={onMouseDown}
-          onMouseup={onMouseUp}
-          onMousemove={onMouseMove}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
+          onMouseMove={onMouseMove}
         >
           <Pie
             dataKey="value"
