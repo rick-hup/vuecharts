@@ -1,11 +1,12 @@
 import type { PropType } from 'vue'
-import { defineComponent } from 'vue'
+import { defineComponent, onUnmounted } from 'vue'
 import { Layer } from '@/container/Layer'
-import { useErrorBarContext } from './ErrorBarContext'
+import { useErrorBarContext, useErrorBarRegistry } from './ErrorBarContext'
 import { useAppSelector } from '@/state/hooks'
 import { selectAxisWithScale } from '@/state/selectors/axisSelectors'
 import { useChartLayout } from '@/context/chartLayoutContext'
 import type { ErrorBarDirection } from '@/types/bar'
+import type { ErrorBarsSettings } from '@/state/graphicalItemsSlice'
 
 interface LineCoordinate {
   x1: number
@@ -28,6 +29,16 @@ export const ErrorBar = defineComponent({
   setup(props) {
     const layout = useChartLayout()
     const { data, dataPointFormatter, xAxisId, yAxisId, errorBarOffset } = useErrorBarContext()
+
+    // Register this ErrorBar's settings into the parent's registry so the graphical item
+    // can report them to Redux, allowing axis domain to extend for error bar ranges.
+    const registry = useErrorBarRegistry(null)
+    if (registry) {
+      const direction: ErrorBarDirection = props.direction ?? (layout.value === 'horizontal' ? 'y' : 'x')
+      const settings: ErrorBarsSettings = { direction, dataKey: props.dataKey! }
+      registry.register(settings)
+      onUnmounted(() => registry.unregister(settings))
+    }
 
     const xAxis = useAppSelector(state => selectAxisWithScale(state, 'xAxis', xAxisId, false))
     const yAxis = useAppSelector(state => selectAxisWithScale(state, 'yAxis', yAxisId, false))

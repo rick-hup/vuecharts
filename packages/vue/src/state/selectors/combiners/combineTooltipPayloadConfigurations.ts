@@ -21,6 +21,15 @@ export function combineTooltipPayloadConfigurations(tooltipState: TooltipState, 
   else {
     filterByDataKey = tooltipState.itemInteraction.click.dataKey
   }
+  if (tooltipState.syncInteraction.active && filterByDataKey == null) {
+    /*
+     * When a tooltip is synchronised from another chart, the local itemInteraction
+     * has no dataKey because the user hasn't hovered over this chart.
+     * In that case we show all tooltip items so the receiving chart can display
+     * its own data at the synced index — matching the behaviour of axis-type tooltips.
+     */
+    return tooltipState.tooltipItemPayloads
+  }
   if (filterByDataKey == null && defaultIndex != null) {
     /*
      * So when we use `defaultIndex` - we don't have a dataKey to filter by because user did not hover over anything yet.

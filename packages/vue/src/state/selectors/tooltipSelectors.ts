@@ -121,6 +121,7 @@ export function combineTooltipPayload(tooltipPayloadConfigurations: ReadonlyArra
       tooltipAxis?.dataKey
       && !tooltipAxis?.allowDuplicatedCategory
       && Array.isArray(sliced)
+      && activeLabel != null
       /*
        * If the tooltipEventType is 'axis', we should search for the dataKey in the sliced data
        * because thanks to allowDuplicatedCategory=false, the order of elements in the array
@@ -135,7 +136,9 @@ export function combineTooltipPayload(tooltipPayloadConfigurations: ReadonlyArra
     ) {
       tooltipPayload = findEntryInArray(sliced, tooltipAxis.dataKey, activeLabel)
     }
-    else {
+    // Fall back to index-based search if findEntryInArray didn't find a match
+    // (e.g. scatter tooltip data where items are TooltipPayloadEntry arrays, not raw data objects)
+    if (tooltipPayload == null) {
       tooltipPayload = tooltipPayloadSearcher(sliced, activeIndex, computedData, finalNameKey)
     }
 
@@ -144,10 +147,8 @@ export function combineTooltipPayload(tooltipPayloadConfigurations: ReadonlyArra
         const newSettings: TooltipEntrySettings = {
           ...settings,
           name: item.name,
-          // unit: item.unit,
-          // color and fill are erased to keep 100% the identical behaviour to recharts 2.x - but there's nothing stopping us from returning them here. It's technically a breaking change.
+          unit: item.unit,
           color: undefined,
-          // color and fill are erased to keep 100% the identical behaviour to recharts 2.x - but there's nothing stopping us from returning them here. It's technically a breaking change.
           fill: undefined,
         }
         agg.push(

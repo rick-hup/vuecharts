@@ -1,7 +1,11 @@
 import type { Ref, ShallowRef } from 'vue'
+import { shallowRef } from 'vue'
 import { createContext } from 'motion-v'
-import type { BarRectangleItem, ErrorBarDirection } from '@/types/bar'
+import { createContext as createNullableContext } from '@/utils/createContext'
+import type { ErrorBarDirection } from '@/types/bar'
 import type { DataKey } from '@/types'
+import type { AxisId } from '@/state/cartesianAxisSlice'
+import type { ErrorBarsSettings } from '@/state/graphicalItemsSlice'
 
 export interface ErrorBarDataItem {
   x: number | undefined
@@ -17,11 +21,32 @@ export type ErrorBarDataPointFormatter<T> = (
 ) => ErrorBarDataItem
 
 export interface ErrorBarContextType {
-  data: Readonly<ShallowRef<readonly BarRectangleItem[]>>
-  xAxisId: string
-  yAxisId: string
-  dataPointFormatter: ErrorBarDataPointFormatter<BarRectangleItem>
+  data: Readonly<ShallowRef<readonly any[]>>
+  xAxisId: AxisId
+  yAxisId: AxisId
+  dataPointFormatter: ErrorBarDataPointFormatter<any>
   errorBarOffset: Ref<number>
 }
 
 export const [useErrorBarContext, provideErrorBarContext] = createContext<ErrorBarContextType>('ErrorBarContext')
+
+export interface ErrorBarRegistryType {
+  errorBars: ShallowRef<ReadonlyArray<ErrorBarsSettings>>
+  register: (settings: ErrorBarsSettings) => void
+  unregister: (settings: ErrorBarsSettings) => void
+}
+
+export const [useErrorBarRegistry, provideErrorBarRegistry] = createNullableContext<ErrorBarRegistryType>('ErrorBarRegistry')
+
+export function createErrorBarRegistry(): ErrorBarRegistryType {
+  const errorBars = shallowRef<ReadonlyArray<ErrorBarsSettings>>([])
+  return {
+    errorBars,
+    register(settings) {
+      errorBars.value = [...errorBars.value, settings]
+    },
+    unregister(settings) {
+      errorBars.value = errorBars.value.filter(s => s !== settings)
+    },
+  }
+}

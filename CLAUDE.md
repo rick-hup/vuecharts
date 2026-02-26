@@ -149,15 +149,65 @@ Customization uses **named slots**: `shape`, `dot`, `activeDot`, `label`, `conte
 
 ### Storybook
 - Interactive stories: wrap in `defineComponent` + `ref`
-- Clone array data in `render` to avoid Vue proxy errors
+- Clone array data in `render` to avoid Vue proxy errors: `data={[...data1]}`
 - Story titles must match Recharts conventions
-- Shared data: `@/storybook/data` (`pageData`, `logData`, `subjectData`, etc.)
+- Shared data: `@/storybook/data` (`pageData`, `logData`, `subjectData`, `timeData`, etc.); domain-specific datasets imported directly by path (e.g. `babiesAndVideosCorrelation` from `@/storybook/data/spurriousCorrelations`)
+- `timeData`: 7-entry daily dataset `{ x: Date, y: number, z: number }` (2019-07-04 → 2019-07-10), exported from `@/storybook/data`
+- Synchronised charts: add `syncId="<id>"` to chart containers to link tooltip/hover; use `syncMethod="index"` to sync by data index rather than x-value
+- Item-level data: series data can be passed to the graphical item directly (`<Line data={s.data}>`) instead of the chart container; mix both styles in the same chart
+- `Tooltip cursor` as object: pass `cursor={{ stroke: 'red' }}` for stroke-only customization — this is NOT a VNode, just a style config object
+
+### TimeSeries / Date Axis
+- `XAxis` with Date dataKey: use `domain={['auto', 'auto']}` for automatic date domain inference
+- Custom d3 scale: pass `scaleTime()` via `scale` prop with `type='number'`, manual `ticks` array (numeric timestamps), and a `tickFormatter`
+- Multi-scale tick formatter pattern: use `victory-vendor/d3-time` boundary helpers (`timeSecond`, `timeMinute`, `timeHour`, `timeDay`, `timeWeek`, `timeMonth`, `timeYear`) with native `Date` methods — avoids importing `d3-time-format`; see `TimeSeries.stories.tsx` `multiFormat()` for reference
+- Story title convention: `'Examples/TimeSeries'`
 
 ### PolarRadiusAxis
 - Props: `radiusAxisId` (default `0`), `dataKey` (DataKey, default `undefined` — passed through to Redux store), `angle` (default `0`), `tick` (default `true`), `axisLine` (default `true`), `orientation` (`'left'|'right'|'middle'`, default `'right'` — controls textAnchor), `tickFormatter`, `stroke` (default `'#ccc'`), `allowDecimals` (default `false`), `domain`, `tickCount` (default `5`), `type` (default `'number'`)
 - Dispatches `addRadiusAxis`/`removeRadiusAxis`; when both `tick={false}` and `axisLine={false}`: renders `null` (use to set domain without visual output)
 - Tick label rotation uses `angle={90 - angle}` prop on `<Text>` (not CSS `transform`)
 - CSS classes: `v-charts-polar-radius-axis` (g), `v-charts-polar-radius-axis-line` (axis line), `v-charts-polar-radius-axis-ticks` (tick group g), `v-charts-polar-radius-axis-tick-value` (tick Text)
+- **Scale type in radial layout**: `combineRealScaleType` (`state/selectors/axisSelectors.ts`) does NOT override scale for polar axes based on layout — polar axes use their `type` prop just like cartesian axes (`type='number'` → `'linear'`, `type='category'` + bar → `'band'`); there are no special `layout === 'radial'` overrides for `radiusAxis`/`angleAxis` scale type selection
+
+### Scatter
+- Props: `line` (Boolean|Object, default `false`), `lineType` (`'joint'|'fitting'`, default `'joint'`), `lineJointType` (CurveType, default `'linear'`), `label` (Boolean|Object, default `false`)
+- `line` prop: when `lineType='joint'` renders a `<Curve>` through all points in order; when `lineType='fitting'` computes least-squares regression via `getLinearRegression(data)` (`utils/getLinearRegression.ts`) and draws a two-point best-fit line; pass object to `line` to override stroke/fill on the curve
+- `getLinearRegression` takes `{ cx?, cy? }[]` (pixel coords) and returns `{ xmin, xmax, a, b }` (y = ax + b)
+- `label` prop: renders `<LabelList>` outside the animation block using `data.map(point => ({ x, y, width: 0, height: 0, value: undefined, payload }))` — labels always show current frame position, not animated position
+- Animation: symbols and line are wrapped together inside `<Animate>`; the `label` layer is rendered outside animation so it always shows at final data position
+- Tooltip: uses `skipTooltip: true` in `useSetupGraphicalItem` and sets its own `SetTooltipEntrySettings` with per-point `tooltipPayload` arrays; dispatches both `setMouseOverAxisIndex` and `setActiveMouseOverItemIndex` per symbol so it works in both `ComposedChart` (axis tooltip) and `ScatterChart` (item tooltip)
+- CSS classes: `v-charts-scatter` (outer Layer), `v-charts-scatter-line` (line Layer), `v-charts-scatter-symbol` (per-symbol `<g>`)
+- Provides `ErrorBarContext` + `ErrorBarRegistry` in setup so child `<ErrorBar>` components in `slots.default` work; `errorBarOffset` is always `0` for Scatter (non-zero only for grouped Bar)
+
+### ErrorBar
+- Props: `dataKey` (required, DataKey — resolved against parent series payload), `width` (default `5`, half-width of end caps), `direction` (`'x'|'y'`, default: `'y'` for horizontal layout, `'x'` for vertical layout), `stroke` (default `'black'`), `strokeWidth` (default `1.5`)
+- Consumes `ErrorBarContext` provided by the parent series (`Scatter`, `Bar`); context supplies `data`, `dataPointFormatter`, `xAxisId`, `yAxisId`, `errorBarOffset`
+- Self-registers into parent's `ErrorBarRegistry` (via `useErrorBarRegistry`) on mount and unregisters `onUnmounted`; registry propagates `ErrorBarsSettings` to Redux so the axis domain extends to include error bar ranges
+- `errorVal` resolved via `dataKey` on payload: number → symmetric error; `[low, high]` tuple → asymmetric error
+- Direction `'x'` requires `xAxis.type === 'number'` — silently renders nothing otherwise
+- Renders 3 SVG `<line>` elements per point: main bar + two end caps; `errorBarOffset` shifts the midpoint perpendicular to the error direction
+- CSS classes: `v-charts-errorBars` (outer Layer), `v-charts-errorBar` (per-point Layer)
+- Usage: place as a child slot of `<Scatter>` or `<Bar>` — e.g. `<Scatter>{{ default: () => <ErrorBar dataKey="error" /> }}</Scatter>`
+
+### useSetupGraphicalItem
+- Signature: `useSetupGraphicalItem(props, type, options?)` — `options: { skipTooltip?: boolean, errorBars?: ShallowRef<ReadonlyArray<ErrorBarsSettings>> }`
+- `skipTooltip: true`: skip `SetTooltipEntrySettings` (used by Scatter which registers its own custom tooltip entries)
+- `errorBars`: passed to `SetCartesianGraphicalItem` so Redux knows each error bar's `direction` + `dataKey` for axis domain extension
+- Both `Bar` and `Scatter` call `createErrorBarRegistry()` + `provideErrorBarRegistry()` in setup, then pass `errorBarRegistry.errorBars` to this hook
+
+### Tooltip Payload Selection
+- `combineTooltipPayloadConfigurations` (`state/selectors/combiners/`) filters `tooltipState.tooltipItemPayloads` for display
+- `tooltipEventType='axis'`: returns all items (every series shown at the hovered axis index)
+- `tooltipEventType='item'`: filters by `filterByDataKey` from hover/click `itemInteraction`; three special cases:
+  1. `syncInteraction.active && filterByDataKey == null` → return all items (receiving chart hasn't been hovered; show full data at synced index, matching axis-tooltip behaviour)
+  2. `filterByDataKey == null && defaultIndex != null` → return first item only (`defaultIndex` pre-selection with no hover)
+  3. Normal case: filter by matching `settings.dataKey`
+
+### Cross Shape
+- Functional component (not `defineComponent`): `Cross(props) → <path class="v-charts-cross">`
+- Props: `x`, `y`, `width`, `height`, `top`, `left` (all optional, default `0`); returns `null` if any is non-numeric
+- Path formula: `M{x},{top}v{height}M{left},{y}h{width}` (vertical line + horizontal line forming a cross)
 <!-- END AUTO-MANAGED -->
 
 ## Dependencies

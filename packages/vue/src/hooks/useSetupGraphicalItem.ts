@@ -1,12 +1,12 @@
 import type { AreaProps, AreaPropsWithSVG } from '@/cartesian/area/type'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
-import type { CartesianGraphicalItemType } from '@/state/graphicalItemsSlice'
+import type { CartesianGraphicalItemType, ErrorBarsSettings } from '@/state/graphicalItemsSlice'
 import { SetCartesianGraphicalItem } from '@/state/SetGraphicalItem'
 import { SetLegendPayload } from '@/state/SetLegendPayload'
 import { SetTooltipEntrySettings } from '@/state/SetTooltipEntrySettings'
 import { getTooltipNameProp } from '@/utils/chart'
-import type { SVGAttributes } from 'vue'
+import type { SVGAttributes, ShallowRef } from 'vue'
 import { computed, useAttrs } from 'vue'
 
 function getLegendItemColor(stroke: string | undefined, fill: string): string {
@@ -22,7 +22,7 @@ function getItemColor(type: CartesianGraphicalItemType, stroke: string | undefin
   return getLegendItemColor(stroke, fill!)
 }
 
-export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGraphicalItemType) {
+export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGraphicalItemType, options?: { skipTooltip?: boolean, errorBars?: ShallowRef<ReadonlyArray<ErrorBarsSettings>> }) {
   const attrs = useAttrs() as SVGAttributes
   const isPanorama = useIsPanorama()
   const legendPayload = computed(() => {
@@ -44,15 +44,18 @@ export function useSetupGraphicalItem(props: AreaProps | any, type: CartesianGra
       ...props,
       isPanorama,
       type,
+      errorBars: options?.errorBars?.value,
     }
   }))
 
   SetLegendPayload(legendPayload)
-  SetTooltipEntrySettings({ fn: getTooltipEntrySettings as any, args: computed(() => ({
-    ...props,
-    ...attrs,
-    _itemType: type,
-  } as AreaPropsWithSVG | any)) })
+  if (!options?.skipTooltip) {
+    SetTooltipEntrySettings({ fn: getTooltipEntrySettings as any, args: computed(() => ({
+      ...props,
+      ...attrs,
+      _itemType: type,
+    } as AreaPropsWithSVG | any)) })
+  }
 }
 
 function getTooltipEntrySettings(props: AreaPropsWithSVG & { _itemType?: CartesianGraphicalItemType } | any) {

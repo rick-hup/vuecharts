@@ -10,7 +10,7 @@ import { BarBackground } from '@/cartesian/bar/components/BarBackground'
 import { BarRectangles } from '@/cartesian/bar/components/BarRectangles'
 import { useNeedsClip } from '@/cartesian/useNeedsClip'
 import { useChartLayout } from '@/context/chartLayoutContext'
-import { provideErrorBarContext } from '@/cartesian/error-bar/ErrorBarContext'
+import { createErrorBarRegistry, provideErrorBarContext, provideErrorBarRegistry } from '@/cartesian/error-bar/ErrorBarContext'
 import { LabelList } from '@/components/label'
 import type { ErrorBarDataItem, ErrorBarDataPointFormatter } from '@/cartesian/error-bar/ErrorBarContext'
 import type { BarRectangleItem } from '@/types/bar'
@@ -41,7 +41,9 @@ export const Bar = defineComponent<BarPropsWithSVG>({
     shape?: (props: any) => any
   }>,
   setup(props: BarProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
-    useSetupGraphicalItem(props, 'bar')
+    const errorBarRegistry = createErrorBarRegistry()
+    provideErrorBarRegistry(errorBarRegistry)
+    useSetupGraphicalItem(props, 'bar', { errorBars: errorBarRegistry.errorBars })
     const { shouldRender, clipPathId, barData, isAnimating } = useBar(props, slots.shape)
     const { needClip } = useNeedsClip(props.xAxisId, props.yAxisId)
     const layout = useChartLayout()

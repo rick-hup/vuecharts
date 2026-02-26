@@ -26,6 +26,7 @@ import type {
 } from '@/types'
 import type { Formatter, TooltipTrigger } from '@/types/tooltip'
 import { getTooltipTranslate } from '@/utils/tooltip/translate'
+import { Cross } from '@/shape/Cross'
 import { Curve } from '@/shape/Curve'
 import { Rectangle } from '@/shape/Rectangle'
 import { Sector } from '@/shape/Sector'
@@ -281,7 +282,8 @@ const Cursor = defineComponent({
       if (!props.cursor || !props.coordinate)
         return null
 
-      if (props.tooltipEventType !== 'axis')
+      const isScatterChart = chartName.value === 'ScatterChart'
+      if (!isScatterChart && props.tooltipEventType !== 'axis')
         return null
 
       const cursor = props.cursor
@@ -289,8 +291,21 @@ const Cursor = defineComponent({
       const cursorSvgProps = (typeof cursor === 'object') ? cursor : {}
 
       let cursorElement: VNode
-      const isBarChart = chartName.value === 'BarChart'
-      if (isBarChart) {
+      if (isScatterChart) {
+        const coord = props.coordinate!
+        const off = offset.value
+        const crossProps = {
+          stroke: '#ccc',
+          fill: 'none',
+          ...coord,
+          ...off,
+          class: 'recharts-tooltip-cursor',
+          style: { pointerEvents: 'none' },
+          ...cursorSvgProps,
+        }
+        cursorElement = props.cursorSlot ? props.cursorSlot(crossProps) : <Cross {...crossProps} />
+      }
+      else if (chartName.value === 'BarChart') {
         const bandSize = tooltipAxisBandSize.value ?? 0
         const halfSize = bandSize / 2
         const coord = props.coordinate!
