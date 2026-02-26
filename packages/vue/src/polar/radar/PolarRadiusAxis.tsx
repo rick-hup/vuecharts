@@ -114,7 +114,7 @@ export const PolarRadiusAxis = defineComponent({
                     textAnchor={textAnchor}
                     verticalAnchor="middle"
                     fill={stroke}
-                    style={{ transform: `rotate(${90 - angle}deg)` }}
+                    angle={90 - angle}
                     value={String(value)}
                   />
                 )

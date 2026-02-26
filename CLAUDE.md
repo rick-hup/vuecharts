@@ -2,97 +2,51 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Workflow Orchestration
+## Workflow
 
-### 1. Plan Node Default
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately - don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
-
-### 2. Subagent Strategy
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One tack per subagent for focused execution
-
-### 3. Self-Improvement Loop
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
-### 4. Verification Before Done
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
-
-### 5. Demand Elegance (Balanced)
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes - don't over-engineer
-- Challenge your own work before presenting it
-
-### 6. Autonomous Bug Fixing
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests - then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
+- Enter plan mode for non-trivial tasks (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan — don't keep pushing
+- Use subagents to keep main context clean; one task per subagent
+- After corrections: update `tasks/lessons.md` with the pattern
+- Never mark a task complete without proving it works (run tests, check logs)
+- Autonomous bug fixing: just fix it, don't ask for hand-holding
 
 ## Task Management
 
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+1. Write plan to `tasks/todo.md` with checkable items
+2. Check in before starting implementation
+3. Mark items complete as you go; capture lessons in `tasks/lessons.md`
 
 ## Core Principles
 
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **Simplicity First**: Make every change as simple as possible. Minimal code impact.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimat Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Minimal Impact**: Only touch what's necessary. Avoid introducing bugs.
 
 ## Overview
 
-**Vue Charts (vccs)** - An unofficial Vue 3 port of [Recharts](https://recharts.org/). Provides composable charting components built with Vue 3 Composition API + JSX/TSX.
+**Vue Charts (vccs)** — An unofficial Vue 3 port of [Recharts](https://recharts.org/). Composable charting components built with Vue 3 Composition API + JSX/TSX.
 
-- **Recharts React source reference:** `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts`
-- When porting components, refer to the React source for behavior parity
-- Monorepo with pnpm workspaces: `vccs` (library) + `play` (Nuxt playground)
+- **Recharts source:** `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts`
+- When porting, refer to React source for behavior parity
+- Monorepo: `vccs` (library) + `play` (Nuxt playground), managed by pnpm workspaces
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: build-commands -->
 ## Build & Development Commands
 
 ```bash
-# Install dependencies
-pnpm install
+pnpm install              # Install dependencies
+pnpm dev                  # Watch mode
+pnpm test                 # Run tests
+pnpm test:coverage        # Tests with coverage
+pnpm --filter vccs build  # Build library
+pnpm storybook            # Storybook
+pnpm play                 # Playground
+pnpm pub:release          # Publish
 
-# Start development mode (watch mode)
-pnpm dev
-
-# Run tests
-pnpm test
-
-# Run tests with coverage
-pnpm test:coverage
-
-# Build the library
-pnpm --filter vccs build
-
-# Run Storybook
-pnpm storybook
-
-# Run playground
-pnpm play
-
-# Run specific test file
+# Run specific test
 pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
-
-# Publish release
-pnpm pub:release
 ```
 <!-- END AUTO-MANAGED -->
 
@@ -101,67 +55,40 @@ pnpm pub:release
 
 ```
 packages/vue/src/           # Main library source (vccs)
-├── animation/              # Animate component, motion-v utilities
-├── cartesian/              # Cartesian chart components
-│   ├── area/               # Area component (hooks, context, types)
-│   ├── bar/                # Bar component
-│   ├── line/               # Line component
-│   ├── error-bar/          # ErrorBar component (child slot of Bar/Line/Area)
-│   ├── axis/               # XAxis, YAxis
-│   ├── brush/              # Brush component
-│   ├── cartesian-grid/     # CartesianGrid
-│   ├── cartesian-axis/     # CartesianAxis
-│   ├── funnel/             # Funnel component (types only, not yet implemented)
-│   ├── scatter/            # Scatter component + useScatter hook
-│   ├── reference-line/     # ReferenceLine component (horizontal/vertical reference lines)
-│   ├── utils/              # Shared cartesian utilities (get-ticks)
-│   └── z-axis/             # ZAxis component (data-only, no visual output)
-├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart)
-├── components/             # Shared: legend, tooltip, text
+├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid, etc.
+├── polar/                  # Pie, Radar, RadialBar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, etc.)
+├── components/             # Legend, Tooltip, Text, Label
 ├── container/              # ResponsiveContainer, Surface, Layer
-├── context/                # Context providers
-├── events/                 # Event handling
-├── hooks/                  # Shared composition hooks
-├── polar/                  # Polar chart components
-│   ├── pie/               # Pie component (types, Pie.tsx)
-│   └── radar/             # Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
-├── shape/                  # SVG shape utilities (Rectangle, Symbols, Curve, Dot, Sector)
+├── shape/                  # SVG shapes (Rectangle, Symbols, Curve, Dot, Sector)
 ├── state/                  # Redux store, slices, middleware, selectors
-├── storybook/              # Storybook stories
-├── synchronisation/        # Chart synchronization
-├── test/                   # Test utilities
+├── animation/              # Animate component, motion-v utilities
+├── context/                # provide/inject context providers
+├── hooks/                  # Shared composition hooks
+├── storybook/              # Stories
 ├── types/                  # Shared type definitions
 ├── utils/                  # Utility functions
-└── index.ts                # Public API entry point
-
-playground/nuxt/            # Nuxt 3 playground for testing
+└── index.ts                # Public API
 ```
 
-### Key Architecture Decisions
+### Key Decisions
 
-1. **Component Architecture**: Vue 3 `defineComponent` + JSX render functions (not SFC)
-2. **State Management**: Redux Toolkit via `@reduxjs/vue-redux` - one store per chart instance created with `createRechartsStore`
-3. **Context**: `provide/inject` pattern for parent-child component communication (e.g., `useAreaContext`)
-4. **Chart Factory**: `generateCategoricalChart()` factory creates chart containers (BarChart, AreaChart, LineChart, ComposedChart, RadarChart)
-5. **Animation**: `motion-v` library with custom `Animate` wrapper component
-6. **Event Handling**: Redux middleware for mouse, keyboard, touch, and external events
-7. **Build Output**: Dual format - ES Modules (`.mjs`) + CommonJS (`.js`) + TypeScript declarations
+1. **Components**: `defineComponent` + JSX (not SFC)
+2. **State**: Redux Toolkit via `@reduxjs/vue-redux` — one store per chart (`createRechartsStore`)
+3. **Context**: `provide/inject` for parent-child communication
+4. **Chart Factory**: `generateCategoricalChart()` creates chart containers
+5. **Animation**: `motion-v` with `Animate` wrapper
+6. **Events**: Redux middleware (must be synchronous — no `createListenerMiddleware`)
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: conventions -->
 ## Code Conventions
 
 ### Naming
-- **Components**: PascalCase (`Area`, `BarChart`, `CartesianGrid`)
-- **Directories**: kebab-case (`cartesian-grid`, `cartesian-axis`)
-- **Hooks**: `use` prefix (`useArea`, `useBar`, `useSetupGraphicalItem`)
-- **Context hooks**: `use` + `Context` suffix (`useAreaContext`, `useBarContext`)
-- **Types**: PascalCase + `Props` suffix (`AreaProps`, `BarPropsWithSVG`)
-- **Type files**: `type.ts` in each component directory
-- **Tests**: `__tests__/*.spec.tsx`
-- **Stories**: `__stories__/*.stories.tsx`
+- Components: PascalCase; Directories: kebab-case; Hooks: `use` prefix; Types: `Props` suffix
+- Type files: `type.ts`; Tests: `__tests__/*.spec.tsx`; Stories: `__stories__/*.stories.tsx`
 
-### Component Structure Pattern
+### Component Pattern
 ```typescript
 export const Component = defineComponent<PropsWithSVG>({
   name: 'Component',
@@ -169,16 +96,15 @@ export const Component = defineComponent<PropsWithSVG>({
   inheritAttrs: false,
   slots: Object as SlotsType<Slots>,
   setup(props, { attrs, slots }) {
-    useSetupGraphicalItem(props, 'itemType')  // Register with Redux
+    useSetupGraphicalItem(props, 'itemType')
     const { ...data } = useComponentHook(props, attrs)
     return () => (/* JSX */)
   },
 })
 ```
 
-### Props Definition Pattern
+### Props Pattern
 ```typescript
-// type.ts - Vue props object + TypeScript type extraction
 export const ComponentVueProps = {
   dataKey: { type: [String, Number, Function] as PropType<DataKey<any>>, required: true },
   fill: { type: String, default: undefined },
@@ -187,120 +113,51 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 ```
 
 ### Imports
-- Path alias: `@/` maps to `packages/vue/src/`
+- `@/` → `packages/vue/src/`
 - Prefer `import type` for type-only imports
-- Re-export from `index.ts` barrel files
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: patterns -->
-## Detected Patterns
+## Key Patterns
 
 ### Porting from Recharts
-- Compare with React source at `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts/src/`
-- React `useState`/`useEffect` → Vue `ref`/`watch`; Context → `provide`/`inject`; Redux hooks → `@reduxjs/vue-redux`
+- React `useState`/`useEffect` → Vue `ref`/`watch`; Context → `provide`/`inject`
 - React `useMemo`/`useCallback` → Vue `computed` / plain functions
-- React JSX → Vue JSX (watch for `class` vs `className`, event handlers)
+- React JSX → Vue JSX (`class` not `className`, kebab-case SVG attrs)
 
-### Redux Store Pattern
-- One store per chart via `createRechartsStore(preloadedState?, chartName?)`; graphical items register via `useSetupGraphicalItem`
-- Slices: `brushSlice`, `cartesianAxisSlice`, `chartDataSlice`, `graphicalItemsSlice`, `layoutSlice`, `legendSlice`, `optionsSlice`, `polarAxisSlice`, `polarOptionsSlice`, `referenceElementsSlice`, `rootPropsSlice`, `tooltipSlice`
-- `polarOptionsSlice` (`state/polarOptionsSlice.ts`): stores `PolarChartOptions = { cx, cy, startAngle, endAngle, innerRadius, outerRadius }` (initial state `null`); updated via `updatePolarOptions` action which replaces entire state; `ReportPolarOptions` (`state/ReportPolarOptions.tsx`) is a `defineComponent` (NOT a plain function) that dispatches `updatePolarOptions` with `{ immediate: true }` — watches each prop individually so initial mount dispatches correctly; rendered conditionally by `generateCategoricalChart` only when `isPolarChart` is `true`
-- Middleware: `mouseClickMiddleware`, `mouseMoveMiddleware`, `keyboardEventsMiddleware`, `externalEventsMiddleware` (plain `Middleware`, NOT `createListenerMiddleware` — must run synchronously within the dispatch call stack so `e.currentTarget` is still valid; `createListenerMiddleware` defers to a microtask at which point the browser clears `currentTarget`, breaking coordinate-based handlers like DraggablePie), `touchEventMiddleware`; `serializableCheck: false`, `immutableCheck: false`
+### Redux
+- One store per chart; graphical items register via `useSetupGraphicalItem`
+- `getItemColor`: Bar → `fill`; Area/Line/Radar → `getLegendItemColor(stroke, fill)` (stroke-preferring)
+- Middleware must be plain `Middleware` (synchronous) — `createListenerMiddleware` defers to microtask, breaking `e.currentTarget`
 
-### Hook Composition
-- Each graphical component has a dedicated hook (e.g., `useArea`, `useBar`, `useScatter`) returning render-ready data
-- `useSetupGraphicalItem` uses `getItemColor(type, stroke, fill)`: Bar → `fill`; Area/Line → `getLegendItemColor(stroke, fill)` (stroke-preferring)
-
-### Testing Patterns
-- Use `isAnimationActive={false}` on graphical items for deterministic rendering
-- Use `mockGetBoundingClientRect({ width, height })` in `beforeEach` to simulate container dimensions
-- Test helpers in `@/test/helper`: `getBarRectangles`, `getBarRects`, `expectAreaCurve`, `assertNotNull`
-- Tooltip interaction: `fireEvent.mouseEnter(bars[0])` then check `.v-charts-tooltip-content`
-- Context provider tests: `defineComponent` child with spy → render via template string
-
-### SVG Layer Teleport Pattern
-`chart/Surface.vue` provides three-tier z-ordering via `Teleport`:
-- **Tier 1** cursor layer (`CursorLayerContext`) → **Tier 2** graphical layer (`GraphicalLayerContext`) → **Tier 3** label layer (`LabelLayerContext`)
-- Each context: `[useXxxLayerRef, provideXxxLayerRef]` via `createContext<Ref<SVGGElement | null>>`; fallback: inline rendering
+### SVG Layers (Teleport)
+Three-tier z-ordering: cursor → graphical → label (via `Surface.vue`)
 
 ### Animation Chase Pattern
-- **Bar / Scatter**: `previousData` + incrementing `animationId` as `Animate` key; `previousData` updated at `t > 0` so rapid data changes interpolate from current visual position (not stale target); new items animate from zero
-- **Radar**: `prevPoints` + `prevBaseLinePoints` + incrementing `animationId` as `Animate` key; both updated at `t > 0`; `prevPointsDiffFactor = prevPts.length / points.length` handles different-length arrays; new points (no previous) animate from chart center using `cx`/`cy` on `RadarPoint`; `isAnimationActive=false` bypasses animation and sets points directly
-- **Line (`StaticLine`)**: dual strategy gated by `isFirstRender` flag (local `let`): first render uses pathLength reveal (`strokeDashRatio` ref 1→0, applied as `pathLength=1 stroke-dasharray=1 stroke-dashoffset=ratio` on `<Curve>`); subsequent updates use point interpolation (`prevPoints` + `prevPointsDiffFactor`); `prevPoints` updated in `onComplete` so rapid changes chase the current visual position; `animationTarget` tracks the destination of the in-flight animation — duplicate guard compares against target (not start) so new points matching the animation START correctly interrupt it; `revealAnimationRunning` flag — new points arriving during the initial reveal just update `currentPoints` + `animationTarget` without interrupting the reveal; `currentAnimation` ref + `stopCurrentAnimation()` cancels in-flight animation on re-trigger; `onBeforeUnmount` cleans up any in-flight animation; `isAnimationActive=false` bypasses all animation and sets points directly; **clipRect reveal exception**: pathLength animation cannot be used when `shapeSlot` is present (arbitrary JSX, not a single `<path>`) OR when a custom `stroke-dasharray` attr is set (pathLength would override it) — in both cases a `<clipPath>` rect (`width={(1-dashRatio)*100}%`) reveals the content from left (`needClipAnim = (shapeSlot || hasCustomDashArray) && dashRatio > 0`)
+All animated components (Bar, Line, Scatter, Radar, RadialBar) use: `previousData` + incrementing `animationId` as `Animate` key; previous state updated at `t > 0` so rapid changes interpolate from current visual position.
 
-### Mouse Coordinate Mapping (`utils/getRelativeCoordinate.ts`)
-- `getRelativeCoordinate(event: MousePointer): RelativePointer` converts screen-space mouse coords to SVG coordinate space; returns `{ relativeX, relativeY }` (both `Math.round`-ed)
-- `MousePointer` = `{ clientX, clientY, currentTarget: Element | HTMLElement }`; `RelativePointer` = `{ relativeX: number, relativeY: number }`
-- **3-tier strategy** (in priority order):
-  1. `currentTarget` is an `SVGGraphicsElement` (has `getBBox`) → find `ownerSVGElement` → use `svg.getScreenCTM().inverse()` + `createSVGPoint().matrixTransform()`; fallback to `getBBox` vs `getBoundingClientRect` scale if no CTM
-  2. `currentTarget` is an `HTMLElement` → find child `<svg>` via `querySelector('svg')` → use same CTM approach
-  3. No SVG found → derive scale from `el.style.width/height` (if set) or `offsetWidth/offsetHeight` vs `getBoundingClientRect`
-- CTM-based mapping is the canonical SVG approach: correctly handles `viewBox` mapping, `preserveAspectRatio` letterboxing, and CSS transforms in one shot — no manual scale math required
+### Vue + D3
+- Always `toRaw(entry)` before passing to D3 scale functions (Vue Proxy breaks D3)
 
-### Vue Reactivity + D3 Integration
-- Always call `toRaw(entry)` before passing reactive data to D3 scale functions; Vue Proxy objects cause incorrect D3 behavior
+### Slots (not VNode props)
+Customization uses **named slots**: `shape`, `dot`, `activeDot`, `label`, `content`, `cursor`, `tick`. Example: `<Bar>{{ shape: (props) => <Custom {...props} /> }}</Bar>`
 
-### Key Component Gotchas
-- `XAxis.dataKey`/`YAxis.dataKey` default to `undefined` (not `''`); `YAxis.unit` defaults to `undefined`
-- `XAxis.interval`/`YAxis.interval` prop typed as `AxisInterval` (`number | 'preserveStart' | 'preserveEnd' | 'preserveStartEnd' | 'equidistantPreserveStart' | 'equidistantPreserveEnd'`); default applied in dispatcher: `interval ?? 'preserveEnd'`
-- `selectHasBar(state)` uses `cartesianItems.some(item => item.type === 'bar')` (not `countOfBars`)
-- `Rectangle` renders `<path>` (not `<rect>`) with `getRectanglePath()` for rounded corner support
-- `Symbols` is a functional component (not `defineComponent`); renders D3-based `<path>` with class `.v-charts-symbols`
-- `Bar` `fill` defaults to `undefined` — callers must supply fill explicitly
-- `Bar` `shape` uses **named slot** (not prop): `<Bar>{{ shape: (props) => <Custom {...props} /> }}</Bar>`
-- `Line` `shape` uses **named slot** (same pattern as `Bar`): `<Line>{{ shape: (payload: CurveProps) => <MyShape {...payload} /> }}</Line>`; slot receives `{ ...curveAttrs, points, connectNulls, type, layout, class: 'v-charts-line-curve' }`; replaces default `<Curve>` render; passed via context (`shapeSlot`) to `StaticLine` which is context-driven (no props)
-- `ErrorBar` as child slot of `Bar`: data via `provideErrorBarContext`/`useErrorBarContext`; supports `[low, high]` tuples
-- `LabelList` suppressed during animation (`!isAnimating`); slot-based children receive data via `CartesianLabelListContext`; supports named slot `label` for fully custom label rendering: `<LabelList>{{ label: (props) => <CustomLabel {...props} /> }}</LabelList>` — slot receives `{ ...others, ...attrs, ...viewBox, value, index }`; teleports to `labelLayerRef` when available (SVG z-ordering tier 3)
-- `Tooltip` cursor only renders when `tooltipEventType === 'axis'`; custom cursor via `cursor` **slot**
-- `Brush` `Panorama` uses `cloneVNode` + `compact=true`; `useIsPanorama()` for detection; `BrushText` uses `<Text value={...} />` (value prop, not children)
-- `Scatter` `isAnimationActive` defaults to `true`; `transition` prop for custom `AnimationOptions`; always hosted inside `ComposedChart` (no standalone `ScatterChart`); accepts per-component `data` prop OR inherits chart-level `data`; `Scatter data={[]}` renders an empty chart (axes still render with custom `ticks`/`domain`/`tickFormatter`)
-- `ZAxis` is data-only (renders `null`); pairs with `Scatter` for symbol sizing; `range={[60, 400]}` for variable bubble size, `range={[200, 200]}` for fixed size
-- `Line` `dot` prop: plain object `{ stroke, 'stroke-width', r, clipDot }` for custom dot styling — SVG attribute names use kebab-case in Vue JSX plain objects (`'stroke-width'` not `strokeWidth`); `clipDot` boolean controls clipping to chart area; `hide` prop to conditionally show/hide series; `legendType="none"` + `tooltipType="none"` exclude a Line from legend/tooltip (trailing icon pattern); `connectNulls` bridges gaps over null values; `label` prop: plain object `{ fill, dy?, ... }` for inline data labels (`dy` offsets label vertically, e.g. `label={{ fill: 'red', dy: -25 }}` positions above point); `dot={false}` hides all dots; `dot` also accepts a **named slot**: `<Line>{{ dot: (props) => <CustomDot {...props} /> }}</Line>` — slot receives `{ fill, stroke, stroke-width, cx, cy, index, value, payload, ...attrs }` per point; implemented via `dotSlot` in `LineContext`; default dot `r=3`; `label` also accepts a **named slot**: `<Line>{{ label: (props) => <CustomLabel {...props} /> }}</Line>` — slot receives `{ ...labelProps, ...attrs, ...viewBox, value, index }` per point; implemented via `labelSlot` in `LineContext`; passed to `LabelList` as named `label` slot; suppressed during animation; `data` prop on `Line` directly provides component-level data (overrides chart-level `data`); `onMouseEnter={undefined}` / `onMouseLeave={undefined}` are safe to pass (no-ops)
-- `Legend` CSS classes: `v-charts-legend-wrapper` (outer div via Teleport), `v-charts-default-legend` (ul), `v-charts-legend-item` (li), `v-charts-legend-item-text` (span); `content` **named slot** for fully custom legend: `<Legend>{{ content: (props) => <MyLegend {...props} /> }}</Legend>` — slot receives `{ ...legendProps, payload: LegendPayload[] }`; props: `layout` (`'horizontal'|'vertical'`), `align` (`'left'|'center'|'right'`), `verticalAlign` (`'top'|'middle'|'bottom'`), `iconSize` (default `14`), `iconType` (`LegendType`), `wrapperStyle`, `itemStyle`, `formatter`, `onClick`, `onMouseEnter`, `onMouseLeave`, `payloadUniqBy`, `itemSorter` (default `'value'`; accepts `'value'|'dataKey'|function`), `portal` (custom DOM target); `onClick` receives `(data: LegendPayload, index: number)` where `LegendPayload` has `{ dataKey, value, color, type, inactive }`; entries with `type === 'none'` are **entirely skipped** in default rendering (no `<li>` rendered — use `legendType="none"` on a series to exclude it from the legend list completely); `inactive` entries (not `'none'`) are rendered but dimmed with `color: '#ccc'`; renders via `Teleport` to `legendPortal` (from context or `portal` prop); `payloadUniqBy` deduplicates payload entries; payload sourced from Redux `selectLegendPayload`; bounding box synced to store via `setLegendSize`
-- `LegendSymbol` (`components/legend/LegendSymbol.tsx`) renders the SVG icon for each legend entry; `SIZE=32` is the canvas constant; switch on `type`: `'none'` → null; `'line'` → `<path>` curved line with loops (stroke, no fill); `'plainline'` → `<line>` with optional `strokeDasharray` from `data.payload`; `'rect'` → filled rectangle `<path>`; default (circle, cross, diamond, square, star, triangle, wye, etc.) → `<Symbols fill cx cy size={SIZE} sizeType="diameter" type>` using D3-based shapes (NOT a plain `<rect>`)
-- `CartesianAxis` is the base axis renderer (used by `XAxis`/`YAxis`); `label` prop: string/number → `<Label value={label} viewBox={axisViewBox} />`; object → `<Label {...label} viewBox={axisViewBox} />` (supports `value`, `position`, `offset`, `angle`, `style`); `tick` **named slot** for custom tick rendering: `slots.tick({ ...tickProps, value })`; CSS classes: `v-charts-cartesian-axis` (Layer), `v-charts-cartesian-axis-line` (axis line), `v-charts-cartesian-axis-ticks` (tick group), `v-charts-cartesian-axis-tick` (tick Layer), `v-charts-cartesian-axis-tick-value` (tick Text), `v-charts-cartesian-axis-tick-line` (tick line)
-- `Label` component (`components/label/Label.tsx`) wraps `<Text>` for chart labels; `angle` prop is forwarded to `<Text>` (required for rotated axis labels); `content` **named slot**: `slots.content(props)` for fully custom content; gets `viewBox` from `useViewBox()` context when not passed as prop; CSS class: `v-charts-label`; `LabelPosition` covers 20+ named positions plus `{ x?, y? }` offset object
-- `ReferenceLine` props: `x` or `y` (value on axis), `xAxisId`/`yAxisId` (default `0`), `stroke` (default `'#ccc'`), `strokeWidth`, `fill`, `label` (string/number → `<Label value>`, object → spread as `<Label>` props), `ifOverflow` (`'discard'` hides out-of-range, `'hidden'` clips via `clip-path`); registers with Redux via `addLine`/`removeLine` from `referenceElementsSlice`; CSS classes: `v-charts-reference-line` (Layer), `v-charts-reference-line-line` (line element)
-- `ScaleType` (`types/scale.ts`) includes `'symlog'` — use `<YAxis scale="symlog" />` for logarithmic axes with negative-value support; explicit `ticks` array required for meaningful tick placement
-- `Text` component (`components/Text.vue`) is a Vue SFC (not `defineComponent` + JSX); props: `x, y, dx, dy, lineHeight, capHeight, scaleToFit, textAnchor, verticalAnchor, fill, angle, style, breakAll, maxLines, width, value`; `dx`/`dy` are numeric offset props added to `x`/`y` position; `style` applied as CSS inline (`:style="props.style"`) — do NOT use `v-bind="props.style"` (would spread as SVG attributes); supports word-wrap + `<tspan>` per line, `maxLines` truncation with ellipsis, `scaleToFit`; CSS class `v-charts-text`
-- `combineActiveTooltipIndex` (`state/selectors/combiners/combineActiveTooltipIndex.ts`) is domain-aware: accepts optional `axisDataKey` + `domain` args; returns `null` when the active entry's value falls outside the number domain — this drives `ActiveDotExcludedFromDomain` story behavior (`XAxis type="number" domain={[1.01, 1.15]} allowDataOverflow` hides the active dot for out-of-range points)
-- Storybook shared data (`@/storybook/data`): exports `pageData` (7 pages, `{ name, uv, pv, amt }`), `logData` (11 entries, `{ year, performance }`, 1970–2020 exponential), `numberData`, `subjectData`, `pageDataWithFillColor`, `pageDataWithNegativeNumbers`, `rangeData`
-- `PieChart` uses `generateCategoricalChart` with `layout: 'centric'`, `defaultTooltipEventType: 'item'`, `validateTooltipEventTypes: ['item']`; no CartesianAxis children; hosted in `chart/PieChart.ts`
-- `Pie` `dataKey` is required; `nameKey` default `'name'`; `cx`/`cy` default to `'50%'`; `outerRadius` default `'80%'`; `innerRadius` default `0` (solid pie); `startAngle`/`endAngle` default `0`/`360`; `paddingAngle`/`minAngle` default `0`; `fill` default `'#808080'`; `stroke` default `'#fff'`; `legendType` default `'rect'`; data-item `fill` overrides component `fill`; registers polar graphical item via `SetPolarGraphicalItem`; dispatches legend payload via `SetLegendPayload(computed(() => selectPieLegend(state, pieSettings)))` — `selectPieLegend` maps each `displayedData` entry to `LegendPayload`: `value` from `nameKey`, `color` from per-entry `fill` or fallback to `pieSettings.fill`; registers tooltip entry settings via `SetTooltipEntrySettings` (positions mapped from `sectors.value.map(s => s.tooltipPosition)`); hover over sector dispatches `setActiveMouseOverItemIndex({ activeIndex: String(i), activeDataKey, activeCoordinate: sector.tooltipPosition })` and `mouseLeaveItem()` on leave — enables `<Tooltip />` to show per-sector data; `selectSynchronisedPieSettings` gates on a matching polar item with same `dataKey` — sectors return `undefined` until `SetPolarGraphicalItem` has dispatched; `parseCoordinateOfPie` offset math: `cx = offset.left + getPercentValue(cx%, offset.width, width/2)`; `label={true}` renders a `<g>` per sector containing: a `<line>` from `outerRadius` edge to label position (stroke=`sector.fill`, fill=none) + a `<text>` at `outerRadius + 20` (`LABEL_OFFSET=20`) via `polarToCartesian(cx, cy, outerRadius+20, midAngle)`; text-anchor: `'start'` if `pos.x > cx`, `'end'` if `pos.x < cx`, `'middle'` otherwise; label text is `String(sector.value)` colored with `sector.fill`; no hardcoded `font-size` (inherits CSS, matches Recharts default); CSS class: `v-charts-pie` (Layer); `shape` **named slot** for custom sector rendering: `<Pie>{{ shape: (props) => <MySector {...props} /> }}</Pie>` — slot receives `PieSectorDataItem & { isActive: boolean }`; wraps each sector in a `<g>` with `onMouseenter`/`onMouseleave` to set `activeIndex` and dispatch tooltip actions; `isActive` is `true` for the hovered sector, enabling the active-shape expand pattern (see `CustomActiveShapePieChart` story); `activeIndex` prop (default `-1`) initializes the active sector — set to `0` to replicate Recharts `Tooltip defaultIndex={0}` behavior; when `slots.shape` is absent, default `<Sector>` is rendered with hover handlers directly; entrance animation uses `<Animate from={0} to={1} transition={{ duration: 1.5 }}>` with Recharts chain-sweep: `curAngle` accumulates across all sectors so the entire pie sweeps as one continuous arc (`deltaAngle = (sector.endAngle - sector.startAngle) * progress`, `animatedEndAngle = curAngle + deltaAngle + paddingAngle`); labels rendered only after `progress >= 1`; label slot not yet implemented; **per-sector fill via `shape` slot**: add `fill` field to each data item and read `(payload as DataItem).fill` inside the slot — overrides the component-level `fill` prop on a per-sector basis; `computePieSectors` key types in `state/selectors/pieSelectors.ts`: `ResolvedPieSettings` (input settings), `PieCoordinate` (`{ cx, cy, innerRadius, outerRadius, maxRadius }`), `PieSectorDataItem` (`ResolvedPieSettings & PieCoordinate & { percent, value, name, startAngle, endAngle, midAngle, middleRadius, paddingAngle, payload, fill, tooltipPosition, dataKey }`); `outerRadius` in `ResolvedPieSettings` accepts a function callback `(dataPoint) => number` for per-sector variable radius; `selectPieSectors` is a Redux selector wrapping `computePieSectors` for external consumers — `Pie.tsx` itself calls `computePieSectors` directly
-- `Sector` (`shape/Sector.tsx`) is a `defineComponent` (not functional); CSS class `v-charts-sector`; returns `null` when `outerRadius <= 0 || startAngle === endAngle`; renders SVG arc `<path>` via `getSectorPath`; donut path has 2 `A` arc commands (`innerRadius > 0`), solid pie has 1 `A` + `L cx,cy Z`
-- `generateCategoricalChart` polar layout detection: `isPolarChart = layout === 'centric' || layout === 'radial'`; when `isPolarChart` is true, `<ReportPolarOptions>` is rendered in both the `compact` and normal render paths to dispatch `cx`, `cy`, `startAngle`, `endAngle`, `innerRadius`, `outerRadius` to Redux; polar props on `CategoricalProps`: `cx`, `cy` (`number|string`), `startAngle`, `endAngle` (`number`), `innerRadius`, `outerRadius` (`number|string`); defaults applied with fallback chain `props.cx ?? '50%'`, `startAngle ?? defaultProps.startAngle ?? 90`, `endAngle ?? defaultProps.endAngle ?? -270`
-- `RadarChart` uses `generateCategoricalChart` with `layout: 'centric'`, `startAngle: 90`, `endAngle: -270`, `defaultTooltipEventType: 'axis'`, `validateTooltipEventTypes: ['axis']`, `tooltipPayloadSearcher: arrayTooltipSearcher`; hosted in `chart/RadarChart.ts`
-- `Radar` props: `dataKey` (required), `name`, `angleAxisId` (default `0`), `radiusAxisId` (default `0`), `fill` (default `'#808080'`), `stroke`, `fillOpacity` (default `0.6`), `strokeWidth`, `strokeDasharray`, `dot` (default `false`), `hide`, `legendType` (default `'rect'`), `tooltipType`, `connectNulls`, `isAnimationActive` (default `true`), `activeDot` (default `true`); registers polar item via `SetPolarGraphicalItem(type: 'radar')`; dispatches legend via `SetLegendPayload`; tooltip via `SetTooltipEntrySettings` with `dataDefinedOnItem: undefined` (axis tooltip mode); reads `selectRadarPoints(state, radiusAxisId, angleAxisId, isPanorama, dataKey)` returning `{ points, baseLinePoints, isRange }`; renders SVG `<path>` polygon; for range data (`isRange`) renders filled area + two stroke paths (outer + baseline); `dot={true}` renders `<Dot r=3>` at each point, teleported to `graphicalLayerRef`; `activeDot` renders `<ActivePoints>` (same component as `Line`) at active tooltip index, teleported to `graphicalLayerRef`; stroke defaults to `fill` when `stroke` is not set; CSS classes: `v-charts-radar` (Layer), `v-charts-radar-polygon` (g), `v-charts-radar-dots` (g); `getLegendItemColor(stroke, fill)` is stroke-preferring (same as Area/Line)
-- `PolarGrid` props: `angleAxisId` (default `0`), `radiusAxisId` (default `0`), `gridType` (`'polygon'|'circle'`, default `'polygon'`), `radialLines` (default `true`), `stroke` (default `'#ccc'`); reads `selectPolarViewBox`, `selectPolarGridAngles(state, angleAxisId)`, `selectPolarGridRadii(state, radiusAxisId)`; renders concentric polygons or circles + radial lines; CSS class `v-charts-polar-grid`
-- `PolarAngleAxis` props: `angleAxisId` (default `0`), `dataKey`, `tick` (default `true`), `tickLine` (default `true`), `tickSize` (default `8`), `axisLine` (default `true`), `axisLineType` (`'polygon'|'circle'`, default `'polygon'`), `orientation` (`'inner'|'outer'`, default `'outer'`), `type` (default `'category'`), `stroke` (default `'#666'`); dispatches `addAngleAxis`/`removeAngleAxis`; reads `selectPolarViewBox`, `selectPolarAxisTicks(state, 'angleAxis', angleAxisId, false)`; renders polygon/circle axis line + tick labels around circumference; text-anchor derived from `cos(angle)`, vertical-anchor from `sin(angle)`; CSS class `v-charts-polar-angle-axis`
-- `PolarRadiusAxis` props: `radiusAxisId` (default `0`), `angle` (default `0`), `tick` (default `true`), `axisLine` (default `true`), `domain`, `tickCount` (default `5`), `type` (default `'number'`); dispatches `addRadiusAxis`/`removeRadiusAxis`; when `tick={false} axisLine={false}`: renders nothing (use to set domain without visual output); CSS class `v-charts-polar-radius-axis`
-- `selectRadarPoints` in `state/selectors/radarSelectors.ts`: calls `computeRadarPoints({ radiusAxis, angleAxis, displayedData, dataKey, bandSize })`; uses `angleAxis.scale(name)` + `angleBandSize` for angle, `radiusAxis.scale(value)` for radius; `isNullish` check for null values; range data (`value` is array): `isRange = true`, builds `baseLinePoints` from `value[0]`; `RADIAN = Math.PI / 180` from `@/utils/polar` used for angle-to-cartesian conversion (no `degreeToRadian` utility — use `angle * RADIAN`)
-- Vue JSX in polar components uses kebab-case SVG attributes: `fill-opacity`, `stroke-width`, `stroke-dasharray` (same rule as cartesian components)
+### Testing
+- `isAnimationActive={false}` for deterministic rendering
+- `mockGetBoundingClientRect({ width, height })` in `beforeEach`
+- Helpers: `@/test/helper` (`getBarRectangles`, `expectAreaCurve`, etc.)
 
-### Storybook Patterns
-- Wrap interactive stories in `defineComponent` + `ref` for reactive state
-- When story args contain arrays, construct derived data inside `render` to avoid Vue proxy invariant errors
-- Clone array data in render (`data.map(d => ({ ...d, arr: [...d.arr] }))`) for the same reason
-- Legend `onClick` handler receives `{ dataKey }` payload; use reactive array (`activeSeries`) to toggle series visibility via `Line hide={activeSeries.includes(dataKey)}`
-- Storybook canvas (`.storybook/global.css`): `#storybook-root:not([hidden='true'])` is full-viewport (`100vw`/`100vh`) column flex; direct children use `flex-shrink: 0`; stories that use `height: 100vh` (e.g., `WithAbsolutePositionAndFlexboxParents`) rely on this layout
-<!-- END AUTO-MANAGED -->
+### Storybook
+- Interactive stories: wrap in `defineComponent` + `ref`
+- Clone array data in `render` to avoid Vue proxy errors
+- Story titles must match Recharts conventions
+- Shared data: `@/storybook/data` (`pageData`, `logData`, `subjectData`, etc.)
 
-<!-- AUTO-MANAGED: git-insights -->
-## Git Insights
-
-### Active Development Areas
-- Scatter animation (current branch `feat/zaxis-scatter`)
-- Bar component (shape slot, ErrorBar, LabelList, animation)
-- Brush component (Panorama, drag handling, keyboard support)
-- Tooltip (cursor rendering, custom cursor slot, chart synchronization)
-- ComposedChart + BoxPlot story (Scatter + ZAxis integration)
-- **Line chart** (`cartesian/line/`): `computeLinePoints({ layout, xAxis, yAxis, xAxisTicks, yAxisTicks, dataKey, bandSize, displayedData })` in `line/utils.ts` returns `ReadonlyArray<LinePointItem>`; uses `getValueByDataKey` from `@/utils/chart`; horizontal layout: `x` from `getCateCoordinateOfLine`, `y` from `yAxis.scale(value)` (null when value is nullish); vertical layout: `x` from `xAxis.scale(value)` (null when nullish), `y` from `getCateCoordinateOfLine`; `ActivePoints` renders highlighted dot at active tooltip index (`selectActiveTooltipIndex`): `activeDot === false` → nothing; plain object → SVG overrides on default dot; `slots.activeDot` → fully custom; default `<Dot cx cy r=4 fill=mainColor stroke-width=2 stroke="#fff" />` in `<Layer class="v-charts-active-dot">`; `StaticLine` is context-driven (no props) — reads all state via `useLineContext()` including `shapeSlot`; `Dots` (class `LineDots`) uses `fill: '#fff'` + `stroke: props.stroke`; `LabelList` suppressed while `isAnimating`; see Animation Chase Pattern for dual animation strategy; `shape` named slot supported (see Key Component Gotchas); story: `chart/__stories__/CustomLineShapeChart.stories.tsx` (`title: 'Examples/LineChart/CustomLineShapeChart'`) demonstrates custom shape slot with tick marks along line segments
-- **Storybook EquidistantPreserveEnd** (`chart/__stories__/EquidistantPreserveEnd.stories.tsx`, `title: 'Examples/EquidistantPreserveEnd'`): `PreserveEndInterval` story — wraps `LineChart` in `ResponsiveContainer width="100%" height={300}` with 10 data points (Page A–J); uses `<XAxis dataKey="name" interval="equidistantPreserveEnd" />` to demonstrate equidistant tick spacing that preserves the last tick; `Line type="monotone" dataKey="uv" isAnimationActive={false}`; `'equidistantPreserveEnd'` is now part of `AxisInterval` type in `types/axis.ts`; handling in `get-ticks.ts` may still be pending if not yet implemented alongside `'equidistantPreserveStart'`
-- **LineChart test suite** (`chart/__tests__/LineChart.spec.tsx`): in progress — parallel to `AreaChart.spec.tsx` and `BarChart.spec.tsx`
-- **LineChart stories** (`cartesian/line/__stories__/LineChart.stories.tsx`, `title: 'examples/LineChart'`): exports `Simple`, `Dashed`, `Vertical`, `BiAxial`, `VerticalWithSpecifiedDomain`, `ConnectNulls`, `WithXAxisPadding`, `LineChartHasMultiSeries`, `LineChartAxisInterval`, `WithBrush`, `HideOnLegendClick`, `LineTrailingIcon`, `ReversedXAxis`, `ChangingDataKey`, `ToggleBetweenDataKeys`, `LogarithmicYAxis`, `WithReferenceLines`, `WithCustomizedDot`, `ClipDot`, `NegativeValuesWithReferenceLines`, `UndefinedEventHandlers`, `ActiveDotExcludedFromDomain`, `WithCustomizedLabel`, `HighlightAndZoom`, `ToggleChildrenComponentsExceptCartesianGrid`; `LineChartAxisInterval` demonstrates all `interval` variants (`preserveEnd`, `preserveStart`, `preserveStartEnd`, `0`); `BiAxial` uses two `YAxis` with `yAxisId`; `LineTrailingIcon` uses a second `Line` with `legendType="none"` `tooltipType="none"` for trailing icon effect; `LogarithmicYAxis` uses `YAxis scale="symlog"` with explicit `ticks` array (powers of 10 from 0 to 10^10) and `logData` dataset (`{ year, performance }` — 1970–2020 exponential values); `Line unit=" KFLOPS"` demonstrates axis unit labeling; `WithReferenceLines` uses `<ReferenceLine x="Page C" label="Anything" />` and `<ReferenceLine y={1600} label="Something" />`; `WithCustomizedDot` uses `dot` named slot for custom SVG icons per point; `ClipDot` demonstrates `clipDot` prop on the `dot` object (`dot={{ clipDot: bool, r, ... }}`); `NegativeValuesWithReferenceLines` uses `Line data={...}` (component-level data, not chart-level), `dot={false}`, conditional `ReferenceLine` at x=0/y=0, and `YAxis`/`XAxis` `label` object (`{ value, style, angle, position, offset }`); `ActiveDotExcludedFromDomain` uses `XAxis type="number" domain={[1.01, 1.15]} allowDataOverflow` to test active dot clipping at axis boundaries; `WithCustomizedLabel` demonstrates `XAxis` `tick` named slot (`<XAxis height={60}>{{ tick: (tickProps) => <CustomTick {...tickProps} /> }}</XAxis>`) for rotated custom ticks, and `Line` `label` named slot for inline data labels; `HighlightAndZoom` demonstrates drag-to-zoom using `onMouseDown`/`onMouseMove`/`onMouseUp` chart events + `ReferenceArea` to highlight selection region + dual `YAxis` (`yAxisId="1"`/`"2"`) + `Line transition={{ duration: 0.3 }}` for smooth zoom animation; `ToggleChildrenComponentsExceptCartesianGrid` wraps `ToggleChildrenWrapper` which conditionally mounts/unmounts all chart children except `CartesianGrid` (tests slot reactivity); uses `allowDuplicatedCategory={false}`, custom `ticks` array on `XAxis`, dual `YAxis` with `yAxisId`, `dot={false}` — `Legend` must be placed **inside** `LineChart` (not as a sibling after `</LineChart>`)
-- **ScatterChart stories** (`cartesian/scatter/__stories__/ScatterChart.stories.tsx`, `title: 'examples/ScatterChart'`): exports `ChangingDataKey`, `SimpleScatter`, `EmptyChart`; all use `ComposedChart` (no standalone `ScatterChart`); `SimpleScatter` pairs `XAxis type="number" dataKey="x"` + `YAxis type="number" dataKey="y"` + `ZAxis dataKey="z" range={[60, 400]}`; `EmptyChart` uses `Scatter data={[]}` with timestamp-based `XAxis` (`ticks`, `domain`, `tickFormatter`) to render an empty chart with full axis configuration
-- **RadarChart + polar components** (`polar/radar/`, `chart/RadarChart.ts`, `state/selectors/radarSelectors.ts`): `RadarChart` is the first polar chart with `layout: 'centric'` + `defaultTooltipEventType: 'axis'` (axis tooltip, not item); polar components `PolarGrid`, `PolarAngleAxis`, `PolarRadiusAxis` registered/unregistered via Redux `polarAxisSlice` (`addAngleAxis`/`removeAngleAxis`, `addRadiusAxis`/`removeRadiusAxis`); `Radar` uses axis tooltip mode (`arrayTooltipSearcher`); `Radar` animation added (`isAnimationActive` prop, chase pattern with `prevPoints` + `animationId`, new points animate from center — see Animation Chase Pattern); `Radar` `activeDot` prop (default `true`) renders `<ActivePoints>` at the active tooltip index, teleported to `graphicalLayerRef` for correct z-ordering; `dot={true}` elements also teleported to `graphicalLayerRef`; `getSinglePolygonPath` repeats first point before closing for correct range-fill SVG paths; `getRangePath` = outer polygon + reversed inner polygon joined; **Stories**: `chart/__stories__/RadarChart.stories.tsx` (`title: 'Examples/RadarChart'`) exports `RangedRadarChart` (uses `rangeData` temperature tuples with `PolarGrid + PolarAngleAxis(dataKey="day") + Radar(dataKey="temperature" fill="orange" stroke="blue" fillOpacity=0.5) + Legend + Tooltip`) and `RadarWithChangingDataKey` (inline `{ name, key1, key2 }` data, reactive `dataKey` via radio buttons with "Hidden" option, `PolarGrid + PolarAngleAxis(dataKey="name") + PolarRadiusAxis(domain=[0,20] tick=false axisLine=false) + Radar(dataKey={reactive} strokeDasharray="3 3" dot=true hide={hidden})`; uses direct `width={360} height={360}` props, not `ResponsiveContainer`)
-- **PieChart + Pie** (`polar/pie/`, `shape/Sector.tsx`, `chart/PieChart.ts`, `state/selectors/pieSelectors.ts`): `computePieSectors` pure function in `pieSelectors.ts` (exports `PieSectorDataItem`, `ResolvedPieSettings`, `PieCoordinate`, `selectPieSectors`, `selectPieLegend`, `selectDisplayedData`, `selectSynchronisedPieSettings`); `SetPolarGraphicalItem` in `state/SetGraphicalItem.ts` + `replacePolarGraphicalItem` reducer in `graphicalItemsSlice.ts`; legend payload dispatched from `Pie` via `SetLegendPayload` — fixed in `b64e0b5`; chain-sweep animation (all sectors sweep as one continuous arc) — fixed in `88ad67e`; tooltip hover integration via `SetTooltipEntrySettings` + `setActiveMouseOverItemIndex`/`mouseLeaveItem` dispatch on sector enter/leave — fixed in `9312338`; label `font-size` no longer hardcoded (inherits CSS) — fixed in `a4f643e`; `getRelativeCoordinate` utility for mouse-relative coords (see Mouse Coordinate Mapping pattern); draggable `<circle>` placed after `<Pie>` in SVG slot (paint-order z-ordering); label slot not yet implemented; **Stories**: `DraggablePie` (`chart/__stories__/DraggablePie.stories.tsx`, `title: 'Examples/Pie/DraggablePie'`) — drag-to-resize via `PieChart` mouse events + `computeAngle` (`-Math.atan2(dy,dx)*(180/PI)` clamped `[0,360)`); **CustomActiveShapePieChart** (`chart/__stories__/CustomActiveShapePieChart.stories.tsx`, `title: 'Examples/Pie/CustomActiveShapePieChart'`) — `shape` slot with `isActive` check: expanded sector + outer ring + polyline label vs plain `<Sector>`; **PieColorSync** (`chart/__stories__/PieColorSync.stories.tsx`, `title: 'Examples/Pie/PieColorSync'`) — per-sector data-driven fill via `(payload as DataItem).fill` in `shape` slot; includes `<Legend />` + `<Tooltip />`; `nameKey="name"` required for correct labeling; **PieWithLegend** (`chart/__stories__/PieWithLegend.stories.tsx`, `title: 'Examples/Pie/PieWithLegend'`) — donut ring (`innerRadius={60}` `outerRadius={80}`) with `label={true}` (built-in radial labels) and `<Legend />`; data shape `{ value (nameKey), percent (dataKey) }`; wrapped in `ResponsiveContainer width="100%" height={500}`; **PieWithStep** (`chart/__stories__/PieWithStep.stories.tsx`, `title: 'Examples/Pie/PieWithStep'`) — variable `outerRadius` per sector via function callback `outerRadius={(element) => element.customRadius}`; data shape `{ value (nameKey), percent (dataKey), customRadius }`; demonstrates `outerRadius: number | string | ((element) => number)` prop type
+### PolarRadiusAxis
+- Props: `radiusAxisId` (default `0`), `dataKey` (DataKey, default `undefined` — passed through to Redux store), `angle` (default `0`), `tick` (default `true`), `axisLine` (default `true`), `orientation` (`'left'|'right'|'middle'`, default `'right'` — controls textAnchor), `tickFormatter`, `stroke` (default `'#ccc'`), `allowDecimals` (default `false`), `domain`, `tickCount` (default `5`), `type` (default `'number'`)
+- Dispatches `addRadiusAxis`/`removeRadiusAxis`; when both `tick={false}` and `axisLine={false}`: renders `null` (use to set domain without visual output)
+- Tick label rotation uses `angle={90 - angle}` prop on `<Text>` (not CSS `transform`)
+- CSS classes: `v-charts-polar-radius-axis` (g), `v-charts-polar-radius-axis-line` (axis line), `v-charts-polar-radius-axis-ticks` (tick group g), `v-charts-polar-radius-axis-tick-value` (tick Text)
 <!-- END AUTO-MANAGED -->
 
 ## Dependencies
@@ -310,9 +167,8 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 | `@reduxjs/toolkit` + `@reduxjs/vue-redux` | Chart state management |
 | `motion-v` | SVG animations |
 | `victory-vendor` | D3 math/scale utilities |
-| `lodash-es` | Utility functions |
+| `lodash-es` / `es-toolkit` | Utility functions |
 | `@vueuse/core` | Vue composition utilities |
-| `es-toolkit` | Modern JS utilities |
 
 <!-- MANUAL -->
 ## Custom Notes

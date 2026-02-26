@@ -828,19 +828,12 @@ export const selectAxisDomain: (
   combineAxisDomain,
 )
 
-export function combineRealScaleType(axisConfig: BaseCartesianAxis | undefined, layout: LayoutType, hasBar: boolean, chartType: string, axisType: XorYorZType): string | undefined {
+export function combineRealScaleType(axisConfig: BaseCartesianAxis | undefined, hasBar: boolean, chartType: string): string | undefined {
   if (axisConfig == null) {
     return undefined
   }
   const { scale, type } = axisConfig
   if (scale === 'auto') {
-    if (layout === 'radial' && axisType === 'radiusAxis') {
-      return 'band'
-    }
-    if (layout === 'radial' && axisType === 'angleAxis') {
-      return 'linear'
-    }
-
     if (
       type === 'category'
       && chartType
@@ -869,7 +862,7 @@ export const selectRealScaleType: (
   axisType: XorYorZType,
   axisId: AxisId,
 ) => string | undefined = createSelector(
-  [selectBaseAxis, selectChartLayout, selectHasBar, selectChartName, pickAxisType],
+  [selectBaseAxis, selectHasBar, selectChartName],
   combineRealScaleType,
 )
 

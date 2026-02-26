@@ -4,8 +4,9 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { addAngleAxis, removeAngleAxis } from '@/state/polarAxisSlice'
 import { selectPolarAxisTicks } from '@/state/selectors/polarScaleSelectors'
 import { selectPolarViewBox } from '@/state/selectors/polarAxisSelectors'
-import { polarToCartesian, RADIAN } from '@/utils/polar'
+import { RADIAN, polarToCartesian } from '@/utils/polar'
 import type { DataKey } from '@/types'
+import type { AxisDomain } from '@/types/axis'
 import type { AxisTick } from '@/types/tick'
 import Text from '@/components/Text.vue'
 
@@ -14,8 +15,10 @@ const COS_45 = Math.cos(45 * RADIAN)
 
 function getTickTextAnchor(coordinate: number, orientation: 'inner' | 'outer'): string {
   const cos = Math.cos(-coordinate * RADIAN)
-  if (cos > eps) return orientation === 'outer' ? 'start' : 'end'
-  if (cos < -eps) return orientation === 'outer' ? 'end' : 'start'
+  if (cos > eps)
+    return orientation === 'outer' ? 'start' : 'end'
+  if (cos < -eps)
+    return orientation === 'outer' ? 'end' : 'start'
   return 'middle'
 }
 
@@ -43,6 +46,8 @@ export const PolarAngleAxis = defineComponent({
     ticks: { type: Array as PropType<ReadonlyArray<AxisTick>>, default: undefined },
     stroke: { type: String, default: undefined },
     type: { type: String as PropType<'category' | 'number'>, default: 'category' },
+    domain: { type: Array as PropType<AxisDomain>, default: undefined },
+    tickCount: { type: Number, default: undefined },
   },
   setup(props) {
     const dispatch = useAppDispatch()
@@ -58,11 +63,11 @@ export const PolarAngleAxis = defineComponent({
         allowDataOverflow: false,
         reversed: false,
         includeHidden: false,
-        domain: undefined,
+        domain: props.domain,
         unit: undefined,
         name: undefined,
         allowDecimals: false,
-        tickCount: undefined as any,
+        tickCount: props.tickCount,
         ticks: props.ticks,
         tick: props.tick,
       }
@@ -88,8 +93,15 @@ export const PolarAngleAxis = defineComponent({
         return null
       }
 
-      const { cx, cy, outerRadius: radius } = viewBox
+      const { cx, cy, outerRadius: radius, startAngle: vbStart, endAngle: vbEnd } = viewBox
       const { orientation, tickSize, axisLine, axisLineType, tickLine, tick, tickFormatter, stroke } = props
+
+      // On a full-circle axis, the last tick overlaps the first (e.g. 360° = 0°). Remove it.
+      const isFullCircle = Math.abs((vbEnd ?? 0) - (vbStart ?? 0)) === 360
+      const filteredTicks = isFullCircle && tickItems.length > 1
+        && Math.abs(tickItems[tickItems.length - 1].coordinate - tickItems[0].coordinate) % 360 === 0
+        ? tickItems.slice(0, -1)
+        : tickItems
 
       return (
         <g class="v-charts-polar-angle-axis">
@@ -98,19 +110,19 @@ export const PolarAngleAxis = defineComponent({
             axisLineType === 'circle'
               ? <circle cx={cx} cy={cy} r={radius} fill="none" stroke={stroke} />
               : (
-                <polygon
-                  points={tickItems.map(t => {
-                    const p = polarToCartesian(cx, cy, radius, t.coordinate)
-                    return `${p.x},${p.y}`
-                  }).join(' ')}
-                  fill="none"
-                  stroke={stroke}
-                />
-              )
+                  <polygon
+                    points={filteredTicks.map((t) => {
+                      const p = polarToCartesian(cx, cy, radius, t.coordinate)
+                      return `${p.x},${p.y}`
+                    }).join(' ')}
+                    fill="none"
+                    stroke={stroke}
+                  />
+                )
           )}
           {/* Ticks */}
           <g class="v-charts-polar-angle-axis-ticks">
-            {tickItems.map((entry, i) => {
+            {filteredTicks.map((entry, i) => {
               const p1 = polarToCartesian(cx, cy, radius, entry.coordinate)
               const p2 = polarToCartesian(cx, cy, radius + (orientation === 'inner' ? -1 : 1) * tickSize, entry.coordinate)
               const textAnchor = getTickTextAnchor(entry.coordinate, orientation)

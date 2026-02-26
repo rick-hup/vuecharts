@@ -168,8 +168,8 @@ const RadialBarChartWithMultipleAxesWrapper = defineComponent({
         />
         <PolarRadiusAxis radiusAxisId="axis-name" dataKey="name" type="category" stroke="green" />
         <PolarRadiusAxis radiusAxisId="axis-amt" dataKey="amt" type="number" angle={180} stroke="black" />
-        <PolarGrid stroke="red" strokeOpacity={0.5} angleAxisId="axis-pv" radiusAxisId="axis-name" />
-        <PolarGrid stroke="blue" strokeOpacity={0.5} angleAxisId="axis-uv" radiusAxisId="axis-amt" />
+        <PolarGrid stroke="red" stroke-opacity={0.5} angleAxisId="axis-pv" radiusAxisId="axis-name" />
+        <PolarGrid stroke="blue" stroke-opacity={0.5} angleAxisId="axis-uv" radiusAxisId="axis-amt" />
       </RadialBarChart>
     )
   },

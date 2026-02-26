@@ -33,10 +33,13 @@ export const LabelList = defineComponent({
               return slots.label({ ...others, ...attrs, ...viewBox, value, index, key: `label-${index}` })
             }
 
+            const entryFill = entry.fill != null && !('fill' in others) && !('fill' in attrs) ? entry.fill : undefined
+
             return (
               <Label
                 {...others}
                 {...attrs}
+                {...(entryFill != null ? { fill: entryFill } : {})}
                 id={idProps!}
                 parentViewBox={entry.parentViewBox}
                 value={value}

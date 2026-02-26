@@ -80,13 +80,17 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
     const isAnimating = ref(props.isAnimationActive)
 
     provideCartesianLabelListData(computed(() => {
-      if (props.isAnimationActive && isAnimating.value) return undefined
+      if (props.isAnimationActive && isAnimating.value)
+        return undefined
       const data = sectors.value
-      if (!data) return undefined
+      if (!data)
+        return undefined
+      const defaultFill = props.fill
       return data.map(sector => ({
         value: sector.value ?? '',
         payload: sector.payload,
         parentViewBox: undefined,
+        fill: (sector as any).fill ?? defaultFill,
         cx: sector.cx,
         cy: sector.cy,
         innerRadius: sector.innerRadius,
@@ -110,7 +114,8 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
       return (
         <Layer class="v-charts-radial-bar">
           {showBackground && sectorData.map((sector, i) => {
-            if (!sector.background) return null
+            if (!sector.background)
+              return null
             const bg = sector.background
             return (
               <Sector
@@ -155,10 +160,12 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
     }
 
     return () => {
-      if (props.hide) return null
+      if (props.hide)
+        return null
 
       const data = sectors.value
-      if (data == null || data.length === 0) return null
+      if (data == null || data.length === 0)
+        return null
 
       const sectorData = data as RadialBarDataItem[]
 
@@ -194,37 +201,37 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
               const stepSectors: RadialBarDataItem[] = t === 1
                 ? sectorData
                 : sectorData.map((sector, i) => {
-                  const prev = prevSects && prevSects[i]
-                  if (!prev) {
+                    const prev = prevSects && prevSects[i]
+                    if (!prev) {
                     // New sector: animate from zero angle/radius
+                      return {
+                        ...sector,
+                        startAngle: sector.startAngle != null
+                          ? interpolate(sector.startAngle, sector.startAngle, t)
+                          : sector.startAngle,
+                        endAngle: interpolate(sector.startAngle ?? 0, sector.endAngle, t),
+                        innerRadius: sector.innerRadius != null
+                          ? interpolate(sector.innerRadius, sector.innerRadius, t)
+                          : sector.innerRadius,
+                        outerRadius: sector.outerRadius != null
+                          ? interpolate(sector.innerRadius ?? 0, sector.outerRadius, t)
+                          : sector.outerRadius,
+                      }
+                    }
                     return {
                       ...sector,
-                      startAngle: sector.startAngle != null
-                        ? interpolate(sector.startAngle, sector.startAngle, t)
+                      startAngle: prev.startAngle != null && sector.startAngle != null
+                        ? interpolate(prev.startAngle, sector.startAngle, t)
                         : sector.startAngle,
-                      endAngle: interpolate(sector.startAngle ?? 0, sector.endAngle, t),
-                      innerRadius: sector.innerRadius != null
-                        ? interpolate(sector.innerRadius, sector.innerRadius, t)
+                      endAngle: interpolate(prev.endAngle ?? 0, sector.endAngle, t),
+                      innerRadius: prev.innerRadius != null && sector.innerRadius != null
+                        ? interpolate(prev.innerRadius, sector.innerRadius, t)
                         : sector.innerRadius,
-                      outerRadius: sector.outerRadius != null
-                        ? interpolate(sector.innerRadius ?? 0, sector.outerRadius, t)
+                      outerRadius: prev.outerRadius != null && sector.outerRadius != null
+                        ? interpolate(prev.outerRadius, sector.outerRadius, t)
                         : sector.outerRadius,
                     }
-                  }
-                  return {
-                    ...sector,
-                    startAngle: prev.startAngle != null && sector.startAngle != null
-                      ? interpolate(prev.startAngle, sector.startAngle, t)
-                      : sector.startAngle,
-                    endAngle: interpolate(prev.endAngle ?? 0, sector.endAngle, t),
-                    innerRadius: prev.innerRadius != null && sector.innerRadius != null
-                      ? interpolate(prev.innerRadius, sector.innerRadius, t)
-                      : sector.innerRadius,
-                    outerRadius: prev.outerRadius != null && sector.outerRadius != null
-                      ? interpolate(prev.outerRadius, sector.outerRadius, t)
-                      : sector.outerRadius,
-                  }
-                })
+                  })
 
               if (t > 0) {
                 prevSectors = stepSectors

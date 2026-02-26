@@ -204,7 +204,7 @@ export function selectTooltipAxis(state: RechartsRootState): AxisWithTicksSettin
 }
 
 export const selectTooltipAxisRealScaleType = createSelector(
-  [selectTooltipAxis, selectChartLayout, selectHasBar, selectChartName, selectTooltipAxisType],
+  [selectTooltipAxis, selectHasBar, selectChartName],
   combineRealScaleType,
 )
 
