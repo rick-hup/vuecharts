@@ -1,5 +1,6 @@
 import { Fragment, computed, defineComponent, ref } from 'vue'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { mouseLeaveItem, setActiveMouseOverItemIndex } from '@/state/tooltipSlice'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
 import { SetLegendPayload } from '@/state/SetLegendPayload'
 import { SetTooltipEntrySettings } from '@/state/SetTooltipEntrySettings'
@@ -23,6 +24,8 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
   props: RadialBarVueProps,
   inheritAttrs: false,
   setup(props) {
+    const dispatch = useAppDispatch()
+
     const radialBarSettings = computed<RadialBarSettings>(() => ({
       dataKey: props.dataKey,
       minPointSize: props.minPointSize,
@@ -49,6 +52,15 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
     )
     SetLegendPayload(computed(() => legendPayload.value ?? []))
 
+    const sectors = useAppSelector(state =>
+      selectRadialBarSectors(
+        state,
+        props.radiusAxisId,
+        props.angleAxisId,
+        radialBarSettings.value,
+      ),
+    )
+
     SetTooltipEntrySettings({
       fn: v => v,
       args: computed(() => ({
@@ -67,15 +79,6 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
         },
       })),
     })
-
-    const sectors = useAppSelector(state =>
-      selectRadialBarSectors(
-        state,
-        props.radiusAxisId,
-        props.angleAxisId,
-        radialBarSettings.value,
-      ),
-    )
 
     const isAnimating = ref(props.isAnimationActive)
 
@@ -138,6 +141,15 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
               return null
             }
             const sectorFill = (sector as any).fill ?? defaultFill
+            const onMouseenter = () => {
+              dispatch(setActiveMouseOverItemIndex({
+                activeIndex: String(i),
+                activeDataKey: props.dataKey,
+              }))
+            }
+            const onMouseleave = () => {
+              dispatch(mouseLeaveItem())
+            }
             return (
               <Sector
                 key={`sector-${i}`}
@@ -152,6 +164,8 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
                 stroke={defaultStroke ?? sectorFill}
                 stroke-width={props.strokeWidth}
                 stroke-dasharray={props.strokeDasharray}
+                onMouseenter={onMouseenter}
+                onMouseleave={onMouseleave}
               />
             )
           })}

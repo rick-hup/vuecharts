@@ -127,7 +127,7 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 
 ### Redux
 - One store per chart; graphical items register via `useSetupGraphicalItem`
-- `getItemColor`: Bar → `fill`; Area/Line/Radar → `getLegendItemColor(stroke, fill)` (stroke-preferring)
+- `getItemColor`: Bar/RadialBar → `fill`; Area/Line/Radar → `getLegendItemColor(stroke, fill)` (stroke-preferring)
 - Middleware must be plain `Middleware` (synchronous) — `createListenerMiddleware` defers to microtask, breaking `e.currentTarget`
 
 ### SVG Layers (Teleport)
@@ -155,7 +155,9 @@ Customization uses **named slots**: `shape`, `dot`, `activeDot`, `label`, `conte
 - `timeData`: 7-entry daily dataset `{ x: Date, y: number, z: number }` (2019-07-04 → 2019-07-10), exported from `@/storybook/data`
 - Synchronised charts: add `syncId="<id>"` to chart containers to link tooltip/hover; use `syncMethod="index"` to sync by data index rather than x-value
 - Item-level data: series data can be passed to the graphical item directly (`<Line data={s.data}>`) instead of the chart container; mix both styles in the same chart
-- `Tooltip cursor` as object: pass `cursor={{ stroke: 'red' }}` for stroke-only customization — this is NOT a VNode, just a style config object
+- `Tooltip cursor` prop: `cursor={false}` disables cursor entirely; `cursor={{ stroke: 'red' }}` for stroke-only styling — object form is NOT a VNode, just a style config
+- `Tooltip content` prop: accepts a **component reference** (e.g. `content={MyComponent}`) — not a VNode and not a slot; the component receives `active` + `payload` props
+- Tooltip key props: `defaultIndex` (pre-select index), `trigger="click"` (click activation), `shared={false}` (item-level mode), `includeHidden` (show hidden series), `offset` (pixel offset from cursor)
 
 ### TimeSeries / Date Axis
 - `XAxis` with Date dataKey: use `domain={['auto', 'auto']}` for automatic date domain inference
@@ -169,6 +171,23 @@ Customization uses **named slots**: `shape`, `dot`, `activeDot`, `label`, `conte
 - Tick label rotation uses `angle={90 - angle}` prop on `<Text>` (not CSS `transform`)
 - CSS classes: `v-charts-polar-radius-axis` (g), `v-charts-polar-radius-axis-line` (axis line), `v-charts-polar-radius-axis-ticks` (tick group g), `v-charts-polar-radius-axis-tick-value` (tick Text)
 - **Scale type in radial layout**: `combineRealScaleType` (`state/selectors/axisSelectors.ts`) does NOT override scale for polar axes based on layout — polar axes use their `type` prop just like cartesian axes (`type='number'` → `'linear'`, `type='category'` + bar → `'band'`); there are no special `layout === 'radial'` overrides for `radiusAxis`/`angleAxis` scale type selection
+
+### RadialBar
+- Props: `dataKey` (required), `angleAxisId`/`radiusAxisId` (default `0`), `background` (Boolean|Object, default `false`), `label` (Boolean|Object, default `false`), `isAnimationActive` (default `true`), `minPointSize` (default `0`), `maxBarSize`, `barSize`, `stackId`, `fill`, `stroke`, `fillOpacity`, `strokeWidth`, `strokeDasharray`, `legendType` (default `'rect'`), `tooltipType`, `hide`, `name`
+- Two layout modes: `'centric'` (radius axis numeric — innerRadius/outerRadius from radius scale, startAngle/endAngle from angle ticks) and `'radial'` (angle axis numeric — startAngle/endAngle from angle scale, innerRadius/outerRadius from radius ticks)
+- Registers via `SetPolarGraphicalItem` (type: `'radialBar'`), `SetLegendPayload`, and `SetTooltipEntrySettings` directly (does NOT use `useSetupGraphicalItem`)
+- `getLegendItemColor` returns `fill` only (not stroke-preferring, unlike Line/Area/Radar)
+- Animation chase pattern: `prevSectors` + incrementing `animationId` as `<Animate key>`; interpolates `startAngle`, `endAngle`, `innerRadius`, `outerRadius`; new sectors animate from zero (endAngle from startAngle, outerRadius from innerRadius); existing sectors interpolate from previous values
+- `background` prop: renders background `<Sector>` elements behind each data sector with `fill="#eee"` `fill-opacity=0.5`; pass object to override background sector props
+- `label` prop: renders `<LabelList>` outside the animation block (always shows at final data position); hidden while `isAnimating`
+- `provideCartesianLabelListData`: passes `fill` from per-entry sector data (`sector.fill ?? props.fill`) so each label inherits entry color
+- Sector fill: `sector.fill ?? props.fill`; stroke: `props.stroke ?? sectorFill`
+- `minPointSize`: enforces minimum angular span (radial layout) or radial thickness (centric layout) via `mathSign` delta correction
+- Stacking: reuses `combineStackGroups` + `combineStackedData` from `barSelectors`; bar positioning reuses `combineAllBarPositions` + `combineBarSizeList`
+- `RadialBarDataItem`: `{ cx, cy, innerRadius, outerRadius, startAngle, endAngle, value?, payload?, background?: SectorProps, [key]: any }`
+- `selectRadialBarLegendPayload`: maps `chartData` entries to `{ type, value: entry.name, color: entry.fill, payload }` (legend color from `entry.fill`)
+- Mouse events: `onMouseenter` → `setActiveMouseOverItemIndex`; `onMouseleave` → `mouseLeaveItem`
+- CSS class: `v-charts-radial-bar` (outer Layer)
 
 ### Scatter
 - Props: `line` (Boolean|Object, default `false`), `lineType` (`'joint'|'fitting'`, default `'joint'`), `lineJointType` (CurveType, default `'linear'`), `label` (Boolean|Object, default `false`)
