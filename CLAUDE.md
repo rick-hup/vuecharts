@@ -29,7 +29,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Recharts source:** `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts`
 - When porting, refer to React source for behavior parity
-- Monorepo: `vccs` (library) + `play` (Nuxt playground), managed by pnpm workspaces
+- Monorepo: `vccs` (library) + `play` (Nuxt playground) + `docs` (Nuxt docs site), managed by pnpm workspaces
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: build-commands -->
@@ -43,6 +43,7 @@ pnpm test:coverage        # Tests with coverage
 pnpm --filter vccs build  # Build library
 pnpm storybook            # Storybook
 pnpm play                 # Playground
+pnpm docs                 # Docs site (Nuxt 3, port 3001)
 pnpm pub:release          # Publish
 
 # Run specific test
@@ -69,7 +70,24 @@ packages/vue/src/           # Main library source (vccs)
 ├── types/                  # Shared type definitions
 ├── utils/                  # Utility functions
 └── index.ts                # Public API
+
+docs/                       # Documentation site (Nuxt 3, standalone)
+├── app/
+│   ├── charts/             # Live chart demos ({area,bar,line}-charts/*.vue)
+│   ├── components/docs/    # ChartContainer, ChartDisplay, ChartSection, DocsHeader, DocsSidebar, LanguageToggle, ThemeToggle
+│   ├── composables/        # useLocale (zh/en i18n via provide/inject, persisted to localStorage)
+│   ├── constants/          # sidebar-options.ts (bilingual SidebarGroup[])
+│   ├── i18n/               # en.ts / zh.ts message maps
+│   └── pages/              # Nuxt file-based routing (/docs, /docs/*)
+└── nuxt.config.ts          # Nuxt 3 (compatibilityVersion 4), Tailwind CSS v4, shadcn-nuxt
 ```
+
+**Docs site stack**: Nuxt 3, Tailwind CSS v4 (`@tailwindcss/vite`), shadcn-nuxt, `shiki` (syntax highlighting), `vccs` (`workspace:*`)
+
+**Docs key components**:
+- `ChartContainer`: wraps `<ResponsiveContainer>` + applies vccs SVG theme CSS selectors
+- `ChartDisplay`: Card with Preview/Code tabs, `shiki` highlighting, copy button
+- `ChartSection`: section heading + grid of chart cards
 
 ### Key Decisions
 

@@ -17,7 +17,8 @@
     "play": "pnpm --filter play dev",
     "build-storybook": "storybook build",
     "prepare": "simple-git-hooks",
-    "pub:release": "pnpm --filter vccs pub:release"
+    "pub:release": "pnpm --filter vccs pub:release",
+    "docs": "pnpm --filter docs dev"
   },
   "dependencies": {
     "@vueuse/core": "^13.1.0",
