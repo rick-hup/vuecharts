@@ -84,5 +84,11 @@
     "extends": [
       "plugin:storybook/recommended"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "vue": "3.5.18",
+      "typescript": "5.9.3"
+    }
   }
 }

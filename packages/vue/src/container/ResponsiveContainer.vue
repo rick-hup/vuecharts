@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties, VNode } from 'vue'
-import { cloneVNode, computed, defineOptions, defineSlots, onMounted, onUnmounted, ref, toRef } from 'vue'
+import { Fragment, cloneVNode, computed, defineOptions, defineSlots, onMounted, onUnmounted, ref, toRef } from 'vue'
 import { useThrottleFn } from '@vueuse/core'
 import { isPercent } from '../utils/validate'
 import { normalizeStyle } from '@/utils/style'
@@ -127,11 +127,33 @@ const isReady = computed(() => {
   return containerWidth >= 0 && containerHeight >= 0
 })
 
-function cloneChildren() {
+function flattenSlotChildren(vnodes: VNode[]): VNode[] {
+  const result: VNode[] = []
+  for (const vnode of vnodes) {
+    if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+      result.push(...flattenSlotChildren(vnode.children as VNode[]))
+    }
+    else {
+      result.push(vnode)
+    }
+  }
+  return result
+}
+
+function renderChildren() {
+  if (!isReady.value) {
+    return undefined
+  }
+
   const calculatedWidthValue = finalCalculatedWidth.value
   const calculatedHeightValue = calculatedHeight.value
+  const rawChildren = slots.default?.()
+  if (!rawChildren)
+    return undefined
 
-  return slots.default?.().map((child, index) => {
+  const children = flattenSlotChildren(rawChildren)
+
+  return children.map((child, index) => {
     return cloneVNode(child, {
       width: calculatedWidthValue,
       height: calculatedHeightValue,
@@ -148,6 +170,17 @@ function cloneChildren() {
     })
   })
 }
+
+const containerStyle = computed(() => ({
+  ...props.style,
+  ...normalizeStyle({
+    width: props.width,
+    height: props.height,
+    minWidth: props.minWidth,
+    minHeight: props.minHeight,
+    maxHeight: props.maxHeight,
+  }),
+}))
 </script>
 
 <template>
@@ -156,23 +189,8 @@ function cloneChildren() {
     ref="containerRef"
     class="vcharts-responsive-container"
     :class="[props.class]"
-    :style="{
-      ...style,
-      ...normalizeStyle({
-        width,
-        height,
-        minWidth,
-        minHeight,
-        maxHeight,
-      }),
-    }"
+    :style="containerStyle"
   >
-    <template v-if="isReady">
-      <component
-        :is="child"
-        v-for="child in cloneChildren()"
-        :key="child.key"
-      />
-    </template>
+    <component :is="() => renderChildren()" />
   </div>
 </template>
