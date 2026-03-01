@@ -73,21 +73,41 @@ packages/vue/src/           # Main library source (vccs)
 
 docs/                       # Documentation site (Nuxt 3, standalone)
 ├── app/
-│   ├── charts/             # Live chart demos ({area,bar,line}-charts/*.vue)
-│   ├── components/docs/    # ChartContainer, ChartDisplay, ChartSection, DocsHeader, DocsSidebar, LanguageToggle, ThemeToggle
-│   ├── composables/        # useLocale (zh/en i18n via provide/inject, persisted to localStorage)
-│   ├── constants/          # sidebar-options.ts (bilingual SidebarGroup[])
-│   ├── i18n/               # en.ts / zh.ts message maps
-│   └── pages/              # Nuxt file-based routing (/docs, /docs/*)
-└── nuxt.config.ts          # Nuxt 3 (compatibilityVersion 4), Tailwind CSS v4, shadcn-nuxt
+│   ├── charts/             # Live chart demos (area-charts/, bar-charts/, line-charts/*.vue) — use ChartContainer
+│   ├── components/
+│   │   ├── content/        # ProseCode (code block + copy, filename/language header), CodeGroup (Tabs for multi-file blocks), ChartDemo (Card+Tabs: preview/code, loads ~/charts/${src}.vue), Callout (info/warning/danger/tip), PropsTable (placeholder)
+│   │   └── docs/           # ChartContainer, DocsHeader, DocsSearch, DocsSidebar, DocsPagination, DocsToc, LanguageToggle, ThemeToggle
+│   ├── composables/        # useLocale (zh/en via useLocalStorage; returns msg, toggle, collectionName), useSearch (Cmd+K dialog state), useToc (TOC activeId via IntersectionObserver)
+│   ├── layouts/            # default.vue (minimal), docs.vue (SidebarProvider, DocsSidebar, DocsHeader)
+│   └── pages/              # index.vue (home), docs/[...slug].vue (catch-all, ContentRenderer)
+├── content/                # Nuxt Content markdown (en/, zh/ with _dir.yml)
+│   ├── en/docs/            # content_en (include: en/**, prefix: /docs)
+│   │   ├── 1.getting-started/   # 1.introduction.md, 2.installation.md; _dir.yml (title, icon)
+│   │   └── 2.charts/           # Chart docs; _dir.yml
+│   └── zh/docs/            # content_zh (include: zh/**, prefix: /zh/docs) — add zh content when needed
+├── content.config.ts       # defineContentConfig: content_en (en/**, prefix /docs), content_zh (zh/**, prefix /zh/docs)
+└── nuxt.config.ts          # Nuxt 3 (compatibilityVersion 4), @nuxt/content, Tailwind v4 (@tailwindcss/vite), shadcn-nuxt
 ```
 
-**Docs site stack**: Nuxt 3, Tailwind CSS v4 (`@tailwindcss/vite`), shadcn-nuxt, `shiki` (syntax highlighting), `vccs` (`workspace:*`)
+**Docs site stack**: Nuxt 3, Nuxt Content v3 (`@nuxt/content`), Tailwind CSS v4 (`@tailwindcss/vite`), tw-animate-css, shadcn-nuxt (style: `new-york`, baseColor: `zinc`, icons: `lucide`), `vccs` (`workspace:*`). `app/assets/css/tailwind.css`: @import tailwindcss + tw-animate-css, `@custom-variant dark (&:is(.dark *))` (class-based dark mode), @theme inline (shadcn vars, chart-1..5, sidebar), `:root`/`.dark` (oklch colors), `.prose` (h1–h4, p, a, strong, ul, ol, li, blockquote, hr, table, th/td, code/pre, img) for ContentRenderer markdown. Shiki dual-theme: `--shiki-light`/`--shiki-dark` CSS vars on `code span` control light/dark syntax colors.
+
+**Docs migration**: Old page-based docs (getting-started.vue, area-charts.vue, etc.), i18n (en.ts, zh.ts), ChartDisplay, ChartSection, sidebar-options removed. Replaced by content-driven `[...slug].vue` + markdown in `content/`; UI strings inlined in `useLocale.UI_MESSAGES` (docs, search, searchShortcut, noResults, onThisPage, previous, next, getStarted, heroTitle, heroDescription, footer, copyCode, copied, preview, code); DocsSidebar nav from `queryCollectionNavigation(collectionName)`.
 
 **Docs key components**:
-- `ChartContainer`: wraps `<ResponsiveContainer>` + applies vccs SVG theme CSS selectors
-- `ChartDisplay`: Card with Preview/Code tabs, `shiki` highlighting, copy button
-- `ChartSection`: section heading + grid of chart cards
+- `ProseCode`: code block wrapper with copy button; props `code`, `language`, `filename`, `highlights`, `meta`; used by Nuxt Content Prose
+- `CodeGroup`: Tabs for multi-file code blocks; reads slot children's `filename`/`language` props
+- `ChartDemo`: Card with Tabs (preview/code); props `name`, `description`, `src`; dynamically loads `~/charts/${src}.vue`; uses `msg.preview`, `msg.code`
+- `Callout`: info/warning/danger/tip callout; props `type`; uses lucide-vue-next icons
+- `PropsTable`: placeholder for props table; props `items` (JSON); renders slot
+- `ChartContainer`: wraps `<ResponsiveContainer>` + applies vccs SVG theme CSS selectors; used by live demos in `charts/`
+- `DocsHeader`: Breadcrumb (shadcn, links to /docs/getting-started/introduction) + SidebarTrigger + search button (opens DocsSearch via useSearch) + LanguageToggle + ThemeToggle + GitHub; breadcrumbs from `route.path` segments
+- `DocsSearch`: Dialog-based search; uses `queryCollectionSearchSections(collectionName)`; filters by `title`, `description`, `titles[]` (section headings array); shows up to 10 results; `msg.search`, `msg.noResults`; takes `open` prop + emits `update:open`; DocsHeader binds `useSearch().isOpen` to the `open` prop
+- `DocsPagination`: prev/next links from flattened navigation; props `prev`, `next` (`{ path, title }`); uses `msg.previous`, `msg.next`
+- `DocsToc`: sticky TOC sidebar; props `links` (TocLink[] from `page.body.toc.links`); active heading via `useToc().activeId` (IntersectionObserver on `.prose h2[id], .prose h3[id]` with `rootMargin: '-80px 0px -80% 0px'`)
+- `docs/[...slug].vue`: catch-all `layout: docs`, `queryCollection(collectionName).path(slug).first()`, fallback to `content_en` when zh content missing; slug `/docs/<path>` from `route.params.slug` (path = `params.slug` joined by `/`); `useAsyncData` with `watch: [locale, slug]`; TOC from `page.body.toc.links`, prev/next from flattened `queryCollectionNavigation`; renders `ContentRenderer` + `DocsPagination` + `DocsToc`
+- `useLocale`: returns `locale`, `msg` (UI_MESSAGES: docs, search, searchShortcut, noResults, onThisPage, previous, next, getStarted, heroTitle, heroDescription, footer, copyCode, copied, preview, code), `toggle`, `collectionName`; `useLocalStorage('docs-locale')`; used by content query + LanguageToggle + DocsHeader/DocsPagination/DocsToc/DocsSearch
+- `useSearch`: returns `isOpen`, `open`, `close`, `toggle`; Cmd+K / Ctrl+K opens, Escape closes; used by DocsHeader to trigger DocsSearch
+- `useToc`: returns `activeId` (ref); IntersectionObserver on `.prose h2[id], .prose h3[id]` with `rootMargin: '-80px 0px -80% 0px'`; used by DocsToc for active heading highlight
 
 ### Key Decisions
 

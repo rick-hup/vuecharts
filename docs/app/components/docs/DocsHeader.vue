@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Github } from 'lucide-vue-next'
+import { Github, Search } from 'lucide-vue-next'
 import { Separator } from '~/components/ui/separator'
 import { SidebarTrigger } from '~/components/ui/sidebar'
 import {
@@ -13,24 +13,22 @@ import {
 import { Button } from '~/components/ui/button'
 import ThemeToggle from './ThemeToggle.vue'
 import LanguageToggle from './LanguageToggle.vue'
-import { useLocale } from '~/composables/useLocale'
+import DocsSearch from './DocsSearch.vue'
 
 const { msg } = useLocale()
+const { isOpen: searchOpen, open: openSearch } = useSearch()
 const route = useRoute()
 
-const pageTitle = computed(() => {
+const breadcrumbs = computed(() => {
   const path = route.path
-  if (path === '/docs')
-    return msg.value.introTitle
-  if (path === '/docs/getting-started')
-    return msg.value.gettingStartedTitle
-  if (path === '/docs/bar-charts')
-    return msg.value.barChartsTitle
-  if (path === '/docs/area-charts')
-    return msg.value.areaChartsTitle
-  if (path === '/docs/line-charts')
-    return msg.value.lineChartsTitle
-  return msg.value.docs
+  const segments = path.replace(/^\/docs\/?/, '').split('/').filter(Boolean)
+  return segments.map((seg) => {
+    const label = seg
+      .replace(/^\d+\./, '')
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase())
+    return { label }
+  })
 })
 </script>
 
@@ -45,18 +43,43 @@ const pageTitle = computed(() => {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink as-child>
-            <NuxtLink to="/docs">
+            <NuxtLink to="/docs/getting-started/introduction">
               {{ msg.docs }}
             </NuxtLink>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator v-if="route.path !== '/docs'" />
-        <BreadcrumbItem v-if="route.path !== '/docs'">
-          <BreadcrumbPage>{{ pageTitle }}</BreadcrumbPage>
-        </BreadcrumbItem>
+        <template
+          v-for="(crumb, i) in breadcrumbs"
+          :key="i"
+        >
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{{ crumb.label }}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </template>
       </BreadcrumbList>
     </Breadcrumb>
     <div class="ml-auto flex items-center gap-1">
+      <Button
+        variant="outline"
+        size="sm"
+        class="hidden gap-2 text-xs text-muted-foreground sm:flex"
+        @click="openSearch"
+      >
+        <Search class="size-3.5" />
+        <span>{{ msg.search }}</span>
+        <kbd class="pointer-events-none rounded border bg-muted px-1.5 font-mono text-[10px]">
+          {{ msg.searchShortcut }}
+        </kbd>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="sm:hidden"
+        @click="openSearch"
+      >
+        <Search class="size-4" />
+      </Button>
       <LanguageToggle />
       <ThemeToggle />
       <Button
@@ -74,5 +97,6 @@ const pageTitle = computed(() => {
         </a>
       </Button>
     </div>
+    <DocsSearch v-model:open="searchOpen" />
   </header>
 </template>

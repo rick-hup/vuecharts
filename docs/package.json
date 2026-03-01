@@ -10,15 +10,16 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/content": "^3.5.1",
     "@tailwindcss/vite": "^4.1.11",
     "@vueuse/core": "^13.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.536.0",
-    "nuxt": "^3.17.4",
+    "motion-v": "^1.4.0",
+    "nuxt": "^3.19.0",
     "reka-ui": "^2.4.1",
     "shadcn-nuxt": "2.2.0",
-    "shiki": "^3.2.1",
     "tailwind-merge": "^3.3.1",
     "tw-animate-css": "^1.3.6",
     "vccs": "workspace:*",
@@ -26,6 +27,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "better-sqlite3": "^11.0.0",
     "tailwindcss": "^4.1.11"
   }
 }

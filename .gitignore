@@ -14,3 +14,8 @@ dist
 
 # Claude Code auto-memory
 .claude/auto-memory/dirty-files
+
+# Ignore Nuxt 3 build output directory for docs site
+docs/.nuxt
+
+

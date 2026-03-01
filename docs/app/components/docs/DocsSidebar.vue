@@ -11,11 +11,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '~/components/ui/sidebar'
-import { sidebarOptions } from '~/constants/sidebar-options'
-import { useLocale } from '~/composables/useLocale'
 
-const { t } = useLocale()
 const route = useRoute()
+const { collectionName } = useLocale()
+
+const { data: navigation } = await useAsyncData(
+  `nav-${collectionName.value}`,
+  () => queryCollectionNavigation(collectionName.value),
+  { watch: [collectionName] },
+)
 </script>
 
 <template>
@@ -30,29 +34,57 @@ const route = useRoute()
       </NuxtLink>
     </SidebarHeader>
     <SidebarContent>
-      <SidebarGroup
-        v-for="group in sidebarOptions"
-        :key="group.label.en"
-      >
-        <SidebarGroupLabel>{{ t(group.label) }}</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem
-              v-for="item in group.items"
-              :key="item.url"
-            >
-              <SidebarMenuButton
-                as-child
-                :is-active="route.path === item.url"
+      <template v-if="navigation">
+        <SidebarGroup
+          v-for="group in navigation"
+          :key="group.path"
+        >
+          <SidebarGroupLabel>{{ group.title }}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <template
+                v-for="item in group.children"
+                :key="item.path"
               >
-                <NuxtLink :to="item.url">
-                  {{ t(item.title) }}
-                </NuxtLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+                <!-- Group with children -->
+                <SidebarGroup v-if="item.children?.length">
+                  <SidebarGroupLabel class="text-xs">
+                    {{ item.title }}
+                  </SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem
+                        v-for="child in item.children"
+                        :key="child.path"
+                      >
+                        <SidebarMenuButton
+                          as-child
+                          :is-active="route.path === child.path"
+                        >
+                          <NuxtLink :to="child.path">
+                            {{ child.title }}
+                          </NuxtLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+                <!-- Leaf item -->
+                <SidebarMenuItem v-else>
+                  <SidebarMenuButton
+                    as-child
+                    :is-active="route.path === item.path"
+                  >
+                    <NuxtLink :to="item.path">
+                      {{ item.title }}
+                    </NuxtLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </template>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </template>
     </SidebarContent>
   </Sidebar>
 </template>

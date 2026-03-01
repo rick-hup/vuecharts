@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Languages } from 'lucide-vue-next'
 import { Button } from '~/components/ui/button'
-import { useLocale } from '~/composables/useLocale'
 
 const { locale, toggle } = useLocale()
 </script>

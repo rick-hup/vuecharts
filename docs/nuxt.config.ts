@@ -14,12 +14,29 @@ export default defineNuxtConfig({
     plugins: [
       tailwindcss() as any,
     ],
+    resolve: {
+      dedupe: ['vue', '@vue/runtime-dom', '@vue/runtime-core', '@vue/reactivity', '@vue/shared'],
+    },
   },
 
-  modules: ['shadcn-nuxt'],
+  modules: ['shadcn-nuxt', '@nuxt/content'],
 
   shadcn: {
     prefix: '',
     componentDir: './app/components/ui',
+  },
+
+  content: {
+    build: {
+      markdown: {
+        highlight: {
+          theme: {
+            default: 'github-light',
+            dark: 'github-dark',
+          },
+          langs: ['vue', 'vue-html', 'typescript', 'javascript', 'bash', 'json', 'css', 'html'],
+        },
+      },
+    },
   },
 })
