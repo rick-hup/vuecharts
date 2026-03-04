@@ -18,4 +18,5 @@ dist
 # Docs site generated files
 docs/.nuxt
 docs/.data
+docs/.output
 docs/test-results

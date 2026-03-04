@@ -1,4 +1,4 @@
-import { defineCollection, defineContentConfig } from '@nuxt/content'
+import { defineCollection, defineContentConfig, z } from '@nuxt/content'
 
 export default defineContentConfig({
   collections: {
@@ -8,13 +8,9 @@ export default defineContentConfig({
         include: 'en/docs/**',
         prefix: '/docs',
       },
-    }),
-    content_zh: defineCollection({
-      type: 'page',
-      source: {
-        include: 'zh/docs/**',
-        prefix: '/zh/docs',
-      },
+      schema: z.object({
+        icon: z.string().optional(),
+      }),
     }),
   },
 })
