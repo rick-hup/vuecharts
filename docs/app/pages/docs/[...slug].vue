@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import type { Collections } from '@nuxt/content'
 import DocsToc from '~/components/docs/DocsToc.vue'
 import DocsPagination from '~/components/docs/DocsPagination.vue'
 
 definePageMeta({ layout: 'docs' })
 
 const route = useRoute()
-const { locale, collectionName } = useLocale()
+const { collectionName } = useLocale()
 
 const slug = computed(() => {
   const parts = route.params.slug
@@ -15,29 +14,23 @@ const slug = computed(() => {
 })
 
 const { data: page } = await useAsyncData(
-  `docs-${slug.value}-${locale.value}`,
-  async () => {
-    const collection = collectionName.value as keyof Collections
-    const content = await queryCollection(collection).path(slug.value).first()
-    if (!content && locale.value !== 'en') {
-      return await queryCollection('content_en').path(slug.value).first()
-    }
-    return content
-  },
-  { watch: [locale, slug] },
+  `docs-${slug.value}`,
+  () => queryCollection(collectionName).path(slug.value).first(),
+  { watch: [slug] },
 )
 
 // Flatten navigation for prev/next
 const { data: navigation } = await useAsyncData(
-  `nav-flat-${collectionName.value}`,
-  () => queryCollectionNavigation(collectionName.value),
-  { watch: [collectionName] },
+  `nav-flat`,
+  () => queryCollectionNavigation(collectionName),
 )
 
 const flatPages = computed(() => {
   const pages: { path: string, title: string }[] = []
   function walk(items: any[]) {
     for (const item of items) {
+      if (item.path?.endsWith('/_dir'))
+        continue
       if (item.children?.length) {
         walk(item.children)
       }

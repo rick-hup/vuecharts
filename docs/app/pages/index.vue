@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ChevronRight, Github, Quote } from 'lucide-vue-next'
 import { Button } from '~/components/ui/button'
-import ThemeToggle from '~/components/docs/ThemeToggle.vue'
-import LanguageToggle from '~/components/docs/LanguageToggle.vue'
 
 import SimpleBarChart from '~/charts/bar-charts/simple-bar-chart.vue'
 import StackedBarChart from '~/charts/bar-charts/stacked-bar-chart.vue'
@@ -105,9 +103,9 @@ const gridOffset = computed(() => {
 
         <!-- Logo -->
         <div class="flex items-center gap-2">
-          <span class="text-4xl font-black tracking-tighter">
+          <span class="doto text-4xl font-black tracking-tighter">
             vccs
-            <span class="text-sm font-mono text-muted-foreground/50 font-light ml-1.5">v0.1</span>
+            <span class="text-sm jetbrains text-muted-foreground/50 font-light ml-1.5">v0.1</span>
           </span>
         </div>
 
@@ -157,7 +155,7 @@ const gridOffset = computed(() => {
               class="size-4 transition-transform duration-200"
               :class="selectedCategory !== cat && 'group-hover:-translate-x-2'"
             />
-            <span class="font-black">{{ cat }}</span>
+            <span class="doto font-black">{{ cat }}</span>
           </div>
         </div>
       </div>
@@ -214,8 +212,6 @@ const gridOffset = computed(() => {
 
     <!-- Top-right controls -->
     <div class="absolute top-4 right-4 z-40 flex items-center gap-1">
-      <LanguageToggle />
-      <ThemeToggle />
       <Button
         variant="ghost"
         size="icon"

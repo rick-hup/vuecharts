@@ -19,7 +19,19 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['shadcn-nuxt', '@nuxt/content'],
+  modules: ['shadcn-nuxt', '@nuxt/content', '@nuxtjs/color-mode', '@nuxt/fonts'],
+
+  fonts: {
+    families: [
+      { name: 'Doto', provider: 'google', weights: [100, 200, 300, 400, 500, 600, 700, 800, 900] },
+      { name: 'JetBrains Mono', provider: 'google', weights: [100, 200, 300, 400, 500, 600, 700, 800] },
+      { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600, 700] },
+    ],
+  },
+
+  colorMode: {
+    classSuffix: '',
+  },
 
   shadcn: {
     prefix: '',

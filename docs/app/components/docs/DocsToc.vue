@@ -12,7 +12,7 @@ const { activeId } = useToc()
 <template>
   <aside
     v-if="links.length"
-    class="hidden xl:block w-56 shrink-0 border-l"
+    class="hidden xl:block w-44 shrink-0 border-l"
   >
     <nav class="sticky top-14 overflow-auto p-4">
       <p class="mb-3 text-sm font-medium">

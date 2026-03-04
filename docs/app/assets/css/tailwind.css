@@ -113,12 +113,17 @@
   --sidebar-ring: oklch(0.442 0.017 285.786);
 }
 
+/* Font utility classes */
+.doto { font-family: 'Doto', sans-serif; }
+.jetbrains { font-family: 'JetBrains Mono', monospace; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground overscroll-none antialiased;
+    font-family: 'Instrument Sans', sans-serif;
   }
 }
 
@@ -145,7 +150,7 @@ pre {
 }
 
 code {
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace);
+  font-family: 'JetBrains Mono', var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace);
 }
 
 code span {

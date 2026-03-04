@@ -6,7 +6,6 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
-import type { Collections } from '@nuxt/content'
 
 const props = defineProps<{
   open: boolean
@@ -22,8 +21,7 @@ const query = ref('')
 
 const { data: searchResults } = await useAsyncData(
   'search-sections',
-  () => queryCollectionSearchSections(collectionName.value as keyof Collections),
-  { watch: [collectionName] },
+  () => queryCollectionSearchSections(collectionName),
 )
 
 const filteredResults = computed(() => {

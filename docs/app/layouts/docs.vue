@@ -11,7 +11,7 @@ import DocsHeader from '~/components/docs/DocsHeader.vue'
       <DocsHeader />
       <div class="flex flex-1 overflow-hidden">
         <main class="flex-1 overflow-auto p-6">
-          <div class="mx-auto max-w-3xl">
+          <div class="mx-auto max-w-4xl">
             <slot />
           </div>
         </main>
