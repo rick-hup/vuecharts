@@ -81,7 +81,7 @@ function handleLinkClick() {
       >
         <span class="doto text-2xl font-black tracking-tighter">
           vccs
-          <span class="text-xs jetbrains text-muted-foreground/50 font-light ml-1.5">v0.1</span>
+          <span class="text-xs jetbrains text-muted-foreground/60 font-light ml-1.5">v0.1</span>
         </span>
       </NuxtLink>
     </SidebarHeader>
@@ -91,7 +91,7 @@ function handleLinkClick() {
         v-for="group in groups"
         :key="group.path"
       >
-        <SidebarGroupLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+        <SidebarGroupLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
           <component
             :is="iconMap[getGroupIcon(group)]"
             v-if="getGroupIcon(group) && iconMap[getGroupIcon(group)]"

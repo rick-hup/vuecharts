@@ -81,37 +81,35 @@ useHead({
 </script>
 
 <template>
-  <div class="flex">
-    <div class="flex-1 min-w-0">
-      <div
-        v-if="page"
-        class="prose prose-neutral dark:prose-invert max-w-none"
-      >
-        <ContentRenderer :value="page" />
-      </div>
-      <div
-        v-else
-        class="py-20 text-center"
-      >
-        <h1 class="text-2xl font-bold">
-          Page not found
-        </h1>
-        <p class="mt-2 text-muted-foreground">
-          This page doesn't exist yet.
-        </p>
-        <NuxtLink
-          to="/docs/getting-started/introduction"
-          class="mt-4 inline-block text-primary underline"
-        >
-          Go to Introduction
-        </NuxtLink>
-      </div>
-      <DocsPagination
-        v-if="page"
-        :prev="prevPage"
-        :next="nextPage"
-      />
+  <div>
+    <div
+      v-if="page"
+      class="prose prose-neutral dark:prose-invert max-w-none"
+    >
+      <ContentRenderer :value="page" />
     </div>
-    <DocsToc :links="tocLinks" />
+    <div
+      v-else
+      class="py-20 text-center"
+    >
+      <h1 class="text-2xl font-bold">
+        Page not found
+      </h1>
+      <p class="mt-2 text-muted-foreground">
+        This page doesn't exist yet.
+      </p>
+      <NuxtLink
+        to="/docs/getting-started/introduction"
+        class="mt-4 inline-block text-primary underline"
+      >
+        Go to Introduction
+      </NuxtLink>
+    </div>
+    <DocsPagination
+      v-if="page"
+      :prev="prevPage"
+      :next="nextPage"
+    />
   </div>
+  <DocsToc :links="tocLinks" />
 </template>

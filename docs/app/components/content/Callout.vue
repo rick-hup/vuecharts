@@ -8,13 +8,13 @@ const props = defineProps<{
 const config = computed(() => {
   switch (props.type) {
     case 'warning':
-      return { icon: TriangleAlert, border: 'border-yellow-500/50', bg: 'bg-yellow-50 dark:bg-yellow-950/20', text: 'text-yellow-700 dark:text-yellow-400' }
+      return { icon: TriangleAlert, border: 'border-callout-warning/50', bg: 'bg-callout-warning/10', text: 'text-callout-warning' }
     case 'danger':
-      return { icon: AlertCircle, border: 'border-red-500/50', bg: 'bg-red-50 dark:bg-red-950/20', text: 'text-red-700 dark:text-red-400' }
+      return { icon: AlertCircle, border: 'border-callout-danger/50', bg: 'bg-callout-danger/10', text: 'text-callout-danger' }
     case 'tip':
-      return { icon: Lightbulb, border: 'border-green-500/50', bg: 'bg-green-50 dark:bg-green-950/20', text: 'text-green-700 dark:text-green-400' }
+      return { icon: Lightbulb, border: 'border-callout-tip/50', bg: 'bg-callout-tip/10', text: 'text-callout-tip' }
     default:
-      return { icon: Info, border: 'border-blue-500/50', bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-700 dark:text-blue-400' }
+      return { icon: Info, border: 'border-callout-info/50', bg: 'bg-callout-info/10', text: 'text-callout-info' }
   }
 })
 </script>

@@ -11,9 +11,19 @@ const props = defineProps<{
 
 const { msg } = useLocale()
 
-// Dynamically load the chart demo component
+// Use import.meta.glob to enumerate all chart files at build time,
+// then look up by src at runtime. Vite's dynamic import() with variables
+// only supports one directory level deep, but src contains subdirectories
+// like "area-charts/simple-area-chart".
+const chartModules = import.meta.glob('~/charts/**/*.vue')
+
 const chartComponent = defineAsyncComponent(() => {
-  return import(`~/charts/${props.src}.vue`)
+  const key = `/charts/${props.src}.vue`
+  const matched = Object.entries(chartModules).find(([k]) => k.endsWith(key))
+  if (!matched) {
+    return Promise.reject(new Error(`Chart not found: ${props.src}`))
+  }
+  return matched[1]() as Promise<any>
 })
 </script>
 

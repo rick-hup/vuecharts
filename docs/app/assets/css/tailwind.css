@@ -40,6 +40,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-callout-info: var(--callout-info);
+  --color-callout-warning: var(--callout-warning);
+  --color-callout-danger: var(--callout-danger);
+  --color-callout-tip: var(--callout-tip);
 }
 
 :root {
@@ -76,6 +80,10 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --callout-info: oklch(0.488 0.243 264.376);
+  --callout-warning: oklch(0.554 0.135 66.442);
+  --callout-danger: oklch(0.577 0.245 27.325);
+  --callout-tip: oklch(0.517 0.176 155.215);
 }
 
 .dark {
@@ -111,6 +119,10 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.274 0.006 286.033);
   --sidebar-ring: oklch(0.442 0.017 285.786);
+  --callout-info: oklch(0.62 0.214 259.815);
+  --callout-warning: oklch(0.68 0.15 75.834);
+  --callout-danger: oklch(0.637 0.237 25.331);
+  --callout-tip: oklch(0.62 0.17 155.215);
 }
 
 /* Font utility classes */

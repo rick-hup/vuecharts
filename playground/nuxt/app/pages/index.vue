@@ -1,74 +1,49 @@
 <script setup lang="ts">
+import { AreaChart as AreaChartIcon, BarChart3 } from 'lucide-vue-next'
+
 const routes = [
   {
     path: '/area',
     name: 'Area Chart',
     description: 'Area chart demo with various configurations',
+    icon: AreaChartIcon,
   },
-  // 可以继续添加更多路由
+  {
+    path: '/bar-charts',
+    name: 'Bar Chart',
+    description: 'Bar chart demos: basic, horizontal, stacked, labels, interactive and more',
+    icon: BarChart3,
+  },
 ]
 </script>
 
 <template>
-  <div class="container">
-    <h1>Vue Charts Demo</h1>
-    <div class="nav-grid">
+  <div class="mx-auto max-w-4xl p-8">
+    <h1 class="mb-8 text-center text-3xl font-bold tracking-tight">
+      Vue Charts Playground
+    </h1>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
         v-for="route in routes"
         :key="route.path"
         :to="route.path"
-        class="nav-card"
+        class="group"
       >
-        <h2>{{ route.name }}</h2>
-        <p>{{ route.description }}</p>
+        <Card class="transition-shadow hover:shadow-lg">
+          <CardHeader>
+            <div class="flex items-center gap-2">
+              <component
+                :is="route.icon"
+                class="size-5 text-muted-foreground"
+              />
+              <CardTitle class="text-base">
+                {{ route.name }}
+              </CardTitle>
+            </div>
+            <CardDescription>{{ route.description }}</CardDescription>
+          </CardHeader>
+        </Card>
       </NuxtLink>
     </div>
   </div>
 </template>
-
-<style scoped>
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 3rem;
-  font-size: 2.5rem;
-  color: #2c3e50;
-}
-
-.nav-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.nav-card {
-  padding: 1.5rem;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.nav-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.nav-card h2 {
-  margin: 0 0 0.5rem;
-  color: #42b883;
-}
-
-.nav-card p {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
-}
-</style>
