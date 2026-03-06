@@ -12,11 +12,12 @@ dist
 
 .env
 
-# Claude Code auto-memory
-.claude/auto-memory/dirty-files
+.claude/*
+.agents/*
 
 # Docs site generated files
 docs/.nuxt
 docs/.data
 docs/.output
 docs/test-results
+
