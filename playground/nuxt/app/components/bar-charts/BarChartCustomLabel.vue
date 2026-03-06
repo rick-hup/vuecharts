@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
+import type { ChartConfig } from '~/components/ui/chart/types'
+import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
 const data = [
   { month: 'January', desktop: 186, mobile: 80 },
@@ -10,6 +13,22 @@ const data = [
   { month: 'May', desktop: 209, mobile: 130 },
   { month: 'June', desktop: 214, mobile: 140 },
 ]
+
+const chartConfig: ChartConfig = {
+  desktop: {
+    label: 'Desktop',
+    color: 'var(--chart-2)',
+  },
+  mobile: {
+    label: 'Mobile',
+    color: 'var(--chart-2)',
+  },
+  label: {
+    color: 'var(--background)',
+  },
+}
+
+const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, indicator: 'line' })
 </script>
 
 <template>
@@ -19,7 +38,10 @@ const data = [
       <CardDescription>January - June 2024</CardDescription>
     </CardHeader>
     <CardContent>
-      <ChartContainer class="aspect-auto h-[250px] w-full">
+      <ChartContainer
+        :config="chartConfig"
+        class="aspect-auto h-[250px] w-full"
+      >
         <BarChart
           :data="data"
           layout="vertical"
@@ -40,10 +62,13 @@ const data = [
             type="number"
             :hide="true"
           />
-          <Tooltip :cursor="false" />
+          <Tooltip
+            :cursor="false"
+            :content="tooltipContent"
+          />
           <Bar
             data-key="desktop"
-            fill="var(--chart-2)"
+            fill="var(--color-desktop)"
             :radius="4"
             :label="{ dataKey: 'month', position: 'insideLeft', offset: 8, fill: 'white', fontSize: 12 }"
           />

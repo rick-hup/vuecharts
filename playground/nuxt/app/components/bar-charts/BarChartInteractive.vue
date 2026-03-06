@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
+import type { ChartConfig } from '~/components/ui/chart/types'
+import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
 const data = [
   { date: '2024-04-01', desktop: 222, mobile: 150 },
@@ -96,6 +98,20 @@ const data = [
   { date: '2024-06-30', desktop: 446, mobile: 400 },
 ]
 
+const chartConfig: ChartConfig = {
+  views: {
+    label: 'Page Views',
+  },
+  desktop: {
+    label: 'Desktop',
+    color: 'var(--chart-2)',
+  },
+  mobile: {
+    label: 'Mobile',
+    color: 'var(--chart-1)',
+  },
+}
+
 const activeChart = ref<'desktop' | 'mobile'>('desktop')
 
 const total = computed(() => ({
@@ -103,9 +119,15 @@ const total = computed(() => ({
   mobile: data.reduce((acc, cur) => acc + cur.mobile, 0),
 }))
 
-const chartLabels: Record<string, string> = {
-  desktop: 'Desktop',
-  mobile: 'Mobile',
+function tooltipContent(props: any) {
+  return h(ChartTooltipContent, {
+    ...props,
+    nameKey: 'views',
+    className: 'w-[150px]',
+    labelFormatter: (value: string | number) => {
+      return new Date(String(value)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    },
+  })
 }
 </script>
 
@@ -126,7 +148,7 @@ const chartLabels: Record<string, string> = {
           class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
           @click="activeChart = key"
         >
-          <span class="text-xs text-muted-foreground">{{ chartLabels[key] }}</span>
+          <span class="text-xs text-muted-foreground">{{ chartConfig[key]?.label }}</span>
           <span class="text-lg font-bold leading-none sm:text-3xl">
             {{ total[key].toLocaleString() }}
           </span>
@@ -134,7 +156,10 @@ const chartLabels: Record<string, string> = {
       </div>
     </CardHeader>
     <CardContent class="px-2 sm:p-6">
-      <ChartContainer class="aspect-auto h-[250px] w-full">
+      <ChartContainer
+        :config="chartConfig"
+        class="aspect-auto h-[250px] w-full"
+      >
         <BarChart
           :data="data"
           :margin="{ left: 12, right: 12 }"
@@ -151,14 +176,10 @@ const chartLabels: Record<string, string> = {
               return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             }"
           />
-          <Tooltip
-            :label-formatter="(value: string) => {
-              return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            }"
-          />
+          <Tooltip :content="tooltipContent" />
           <Bar
             :data-key="activeChart"
-            :fill="activeChart === 'desktop' ? 'var(--chart-2)' : 'var(--chart-1)'"
+            :fill="`var(--color-${activeChart})`"
           />
         </BarChart>
       </ChartContainer>

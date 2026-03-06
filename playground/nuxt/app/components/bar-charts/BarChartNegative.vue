@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip } from 'vccs'
+import type { ChartConfig } from '~/components/ui/chart/types'
+import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
 const data = [
   { month: 'January', visitors: 186 },
@@ -10,6 +13,14 @@ const data = [
   { month: 'May', visitors: -209 },
   { month: 'June', visitors: 214 },
 ]
+
+const chartConfig: ChartConfig = {
+  visitors: {
+    label: 'Visitors',
+  },
+}
+
+const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLabel: true, hideIndicator: true })
 </script>
 
 <template>
@@ -19,10 +30,16 @@ const data = [
       <CardDescription>January - June 2024</CardDescription>
     </CardHeader>
     <CardContent>
-      <ChartContainer class="aspect-auto h-[250px] w-full">
+      <ChartContainer
+        :config="chartConfig"
+        class="aspect-auto h-[250px] w-full"
+      >
         <BarChart :data="data">
           <CartesianGrid :vertical="false" />
-          <Tooltip :cursor="false" />
+          <Tooltip
+            :cursor="false"
+            :content="tooltipContent"
+          />
           <Bar
             data-key="visitors"
             fill="var(--chart-1)"

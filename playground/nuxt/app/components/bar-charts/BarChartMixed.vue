@@ -1,22 +1,45 @@
 <script setup lang="ts">
+import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, Tooltip, XAxis, YAxis } from 'vccs'
-
-const labelMap: Record<string, string> = {
-  chrome: 'Chrome',
-  safari: 'Safari',
-  firefox: 'Firefox',
-  edge: 'Edge',
-  other: 'Other',
-}
+import type { ChartConfig } from '~/components/ui/chart/types'
+import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
 const data = [
-  { browser: 'chrome', visitors: 275, fill: 'var(--chart-1)' },
-  { browser: 'safari', visitors: 200, fill: 'var(--chart-2)' },
-  { browser: 'firefox', visitors: 187, fill: 'var(--chart-3)' },
-  { browser: 'edge', visitors: 173, fill: 'var(--chart-4)' },
-  { browser: 'other', visitors: 90, fill: 'var(--chart-5)' },
+  { browser: 'chrome', visitors: 275, fill: 'var(--color-chrome)' },
+  { browser: 'safari', visitors: 200, fill: 'var(--color-safari)' },
+  { browser: 'firefox', visitors: 187, fill: 'var(--color-firefox)' },
+  { browser: 'edge', visitors: 173, fill: 'var(--color-edge)' },
+  { browser: 'other', visitors: 90, fill: 'var(--color-other)' },
 ]
+
+const chartConfig: ChartConfig = {
+  visitors: {
+    label: 'Visitors',
+  },
+  chrome: {
+    label: 'Chrome',
+    color: 'var(--chart-1)',
+  },
+  safari: {
+    label: 'Safari',
+    color: 'var(--chart-2)',
+  },
+  firefox: {
+    label: 'Firefox',
+    color: 'var(--chart-3)',
+  },
+  edge: {
+    label: 'Edge',
+    color: 'var(--chart-4)',
+  },
+  other: {
+    label: 'Other',
+    color: 'var(--chart-5)',
+  },
+}
+
+const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLabel: true })
 </script>
 
 <template>
@@ -26,7 +49,10 @@ const data = [
       <CardDescription>January - June 2024</CardDescription>
     </CardHeader>
     <CardContent>
-      <ChartContainer class="aspect-auto h-[250px] w-full">
+      <ChartContainer
+        :config="chartConfig"
+        class="aspect-auto h-[250px] w-full"
+      >
         <BarChart
           :data="data"
           layout="vertical"
@@ -38,18 +64,32 @@ const data = [
             :tick-line="false"
             :tick-margin="10"
             :axis-line="false"
-            :tick-formatter="(value: string) => labelMap[value] ?? value"
+            :tick-formatter="(value: string) => chartConfig[value]?.label ?? value"
           />
           <XAxis
             data-key="visitors"
             type="number"
             :hide="true"
           />
-          <Tooltip :cursor="false" />
+          <Tooltip
+            :cursor="false"
+            :content="tooltipContent"
+          />
           <Bar
             data-key="visitors"
             :radius="5"
-          />
+          >
+            <template #shape="props">
+              <rect
+                :x="props.x"
+                :y="props.y"
+                :width="props.width"
+                :height="props.height"
+                :rx="5"
+                :fill="props.payload?.fill ?? 'var(--chart-1)'"
+              />
+            </template>
+          </Bar>
         </BarChart>
       </ChartContainer>
     </CardContent>
