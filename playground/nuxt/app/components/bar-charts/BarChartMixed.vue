@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { TrendingUp } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
+import { Bar, BarChart, Tooltip, XAxis, YAxis } from 'vccs'
+
+const labelMap: Record<string, string> = {
+  chrome: 'Chrome',
+  safari: 'Safari',
+  firefox: 'Firefox',
+  edge: 'Edge',
+  other: 'Other',
+}
 
 const data = [
-  { browser: 'Chrome', visitors: 275, fill: 'var(--chart-1)' },
-  { browser: 'Safari', visitors: 200, fill: 'var(--chart-2)' },
-  { browser: 'Firefox', visitors: 187, fill: 'var(--chart-3)' },
-  { browser: 'Edge', visitors: 173, fill: 'var(--chart-4)' },
-  { browser: 'Other', visitors: 90, fill: 'var(--chart-5)' },
+  { browser: 'chrome', visitors: 275, fill: 'var(--chart-1)' },
+  { browser: 'safari', visitors: 200, fill: 'var(--chart-2)' },
+  { browser: 'firefox', visitors: 187, fill: 'var(--chart-3)' },
+  { browser: 'edge', visitors: 173, fill: 'var(--chart-4)' },
+  { browser: 'other', visitors: 90, fill: 'var(--chart-5)' },
 ]
 </script>
 
@@ -24,19 +32,20 @@ const data = [
           layout="vertical"
           :margin="{ left: 0 }"
         >
-          <CartesianGrid :horizontal="false" />
-          <XAxis
-            type="number"
-            :hide="true"
-          />
           <YAxis
             data-key="browser"
             type="category"
             :tick-line="false"
             :tick-margin="10"
             :axis-line="false"
+            :tick-formatter="(value: string) => labelMap[value] ?? value"
           />
-          <Tooltip />
+          <XAxis
+            data-key="visitors"
+            type="number"
+            :hide="true"
+          />
+          <Tooltip :cursor="false" />
           <Bar
             data-key="visitors"
             :radius="5"

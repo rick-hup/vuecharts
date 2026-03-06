@@ -3,12 +3,12 @@ import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
 
 const data = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
+  { month: 'January', desktop: 186 },
+  { month: 'February', desktop: 305 },
+  { month: 'March', desktop: 237 },
+  { month: 'April', desktop: 73 },
+  { month: 'May', desktop: 209 },
+  { month: 'June', desktop: 214 },
 ]
 </script>
 
@@ -29,7 +29,7 @@ const data = [
             :axis-line="false"
             :tick-formatter="(value: string) => value.slice(0, 3)"
           />
-          <Tooltip />
+          <Tooltip :cursor="false" />
           <Bar
             data-key="desktop"
             fill="var(--chart-1)"

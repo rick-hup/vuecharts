@@ -102,12 +102,17 @@ const total = computed(() => ({
   desktop: data.reduce((acc, cur) => acc + cur.desktop, 0),
   mobile: data.reduce((acc, cur) => acc + cur.mobile, 0),
 }))
+
+const chartLabels: Record<string, string> = {
+  desktop: 'Desktop',
+  mobile: 'Mobile',
+}
 </script>
 
 <template>
-  <Card class="pt-0">
-    <CardHeader class="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
-      <div class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
+  <Card class="py-0">
+    <CardHeader class="flex flex-col items-stretch border-b !p-0 sm:flex-row">
+      <div class="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
         <CardTitle>Bar Chart - Interactive</CardTitle>
         <CardDescription>
           Showing total visitors for the last 3 months
@@ -117,20 +122,23 @@ const total = computed(() => ({
         <button
           v-for="key in (['desktop', 'mobile'] as const)"
           :key="key"
-          class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
-          :class="{ 'bg-muted/50': activeChart === key }"
+          :data-active="activeChart === key"
+          class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
           @click="activeChart = key"
         >
-          <span class="text-xs text-muted-foreground capitalize">{{ key }}</span>
+          <span class="text-xs text-muted-foreground">{{ chartLabels[key] }}</span>
           <span class="text-lg font-bold leading-none sm:text-3xl">
             {{ total[key].toLocaleString() }}
           </span>
         </button>
       </div>
     </CardHeader>
-    <CardContent class="px-2 pt-4 sm:px-6 sm:pt-6">
+    <CardContent class="px-2 sm:p-6">
       <ChartContainer class="aspect-auto h-[250px] w-full">
-        <BarChart :data="data">
+        <BarChart
+          :data="data"
+          :margin="{ left: 12, right: 12 }"
+        >
           <CartesianGrid :vertical="false" />
           <XAxis
             data-key="date"
@@ -150,7 +158,7 @@ const total = computed(() => ({
           />
           <Bar
             :data-key="activeChart"
-            :fill="activeChart === 'desktop' ? 'var(--chart-1)' : 'var(--chart-2)'"
+            :fill="activeChart === 'desktop' ? 'var(--chart-2)' : 'var(--chart-1)'"
           />
         </BarChart>
       </ChartContainer>

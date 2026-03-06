@@ -29,7 +29,7 @@ const data = [
             :axis-line="false"
             :tick-formatter="(value: string) => value.slice(0, 3)"
           />
-          <Tooltip />
+          <Tooltip :cursor="false" />
           <Bar
             data-key="desktop"
             fill="var(--chart-1)"

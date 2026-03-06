@@ -2,13 +2,20 @@
 import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
 
+const labelMap: Record<string, string> = {
+  chrome: 'Chrome',
+  safari: 'Safari',
+  firefox: 'Firefox',
+  edge: 'Edge',
+  other: 'Other',
+}
+
 const data = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
+  { browser: 'chrome', visitors: 187, fill: 'var(--chart-1)' },
+  { browser: 'safari', visitors: 200, fill: 'var(--chart-2)' },
+  { browser: 'firefox', visitors: 275, fill: 'var(--chart-3)' },
+  { browser: 'edge', visitors: 173, fill: 'var(--chart-4)' },
+  { browser: 'other', visitors: 90, fill: 'var(--chart-5)' },
 ]
 </script>
 
@@ -23,19 +30,19 @@ const data = [
         <BarChart :data="data">
           <CartesianGrid :vertical="false" />
           <XAxis
-            data-key="month"
+            data-key="browser"
             :tick-line="false"
             :tick-margin="10"
             :axis-line="false"
-            :tick-formatter="(value: string) => value.slice(0, 3)"
+            :tick-formatter="(value: string) => labelMap[value] ?? value"
           />
-          <Tooltip />
+          <Tooltip :cursor="false" />
           <Bar
-            data-key="desktop"
-            fill="var(--chart-1)"
+            data-key="visitors"
+            :stroke-width="2"
             :radius="8"
-            fill-opacity="0.6"
-            active-fill-opacity="0.9"
+            fill-opacity="0.8"
+            active-fill-opacity="1"
           />
         </BarChart>
       </ChartContainer>

@@ -3,12 +3,12 @@ import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
 
 const data = [
-  { month: 'January', desktop: 186 },
-  { month: 'February', desktop: 305 },
-  { month: 'March', desktop: 237 },
-  { month: 'April', desktop: 73 },
-  { month: 'May', desktop: 209 },
-  { month: 'June', desktop: 214 },
+  { month: 'January', desktop: 186, mobile: 80 },
+  { month: 'February', desktop: 305, mobile: 200 },
+  { month: 'March', desktop: 237, mobile: 120 },
+  { month: 'April', desktop: 73, mobile: 190 },
+  { month: 'May', desktop: 209, mobile: 130 },
+  { month: 'June', desktop: 214, mobile: 140 },
 ]
 </script>
 
@@ -26,24 +26,26 @@ const data = [
           :margin="{ right: 16 }"
         >
           <CartesianGrid :horizontal="false" />
-          <XAxis
-            type="number"
-            :hide="true"
-          />
           <YAxis
             data-key="month"
             type="category"
             :tick-line="false"
-            :axis-line="false"
             :tick-margin="10"
+            :axis-line="false"
+            :tick-formatter="(value: string) => value.slice(0, 3)"
             :hide="true"
           />
-          <Tooltip />
+          <XAxis
+            data-key="desktop"
+            type="number"
+            :hide="true"
+          />
+          <Tooltip :cursor="false" />
           <Bar
             data-key="desktop"
-            fill="var(--chart-1)"
-            :radius="5"
-            :label="{ position: 'insideLeft', offset: 8, fill: 'white', fontSize: 12 }"
+            fill="var(--chart-2)"
+            :radius="4"
+            :label="{ dataKey: 'month', position: 'insideLeft', offset: 8, fill: 'white', fontSize: 12 }"
           />
         </BarChart>
       </ChartContainer>

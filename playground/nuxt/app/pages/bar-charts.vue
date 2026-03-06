@@ -1,26 +1,18 @@
 <template>
-  <div class="mx-auto max-w-4xl space-y-8 p-8">
-    <div class="flex items-center gap-4">
-      <NuxtLink
-        to="/"
-        class="text-sm text-muted-foreground hover:text-foreground"
-      >
-        &larr; Back
-      </NuxtLink>
-      <h1 class="text-2xl font-bold tracking-tight">
-        Bar Charts
-      </h1>
+  <div class="container pb-6">
+    <div class="grid flex-1 scroll-mt-20 items-stretch gap-10 md:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:gap-10">
+      <div class="md:col-span-2 lg:col-span-3">
+        <BarChartsBarChartInteractive />
+      </div>
+      <BarChartsBarChartBasic />
+      <BarChartsBarChartHorizontal />
+      <BarChartsBarChartMultiple />
+      <BarChartsBarChartStacked />
+      <BarChartsBarChartLabel />
+      <BarChartsBarChartCustomLabel />
+      <BarChartsBarChartMixed />
+      <BarChartsBarChartActive />
+      <BarChartsBarChartNegative />
     </div>
-
-    <BarChartsBarChartBasic />
-    <BarChartsBarChartHorizontal />
-    <BarChartsBarChartMultiple />
-    <BarChartsBarChartStacked />
-    <BarChartsBarChartLabel />
-    <BarChartsBarChartCustomLabel />
-    <BarChartsBarChartMixed />
-    <BarChartsBarChartActive />
-    <BarChartsBarChartNegative />
-    <BarChartsBarChartInteractive />
   </div>
 </template>

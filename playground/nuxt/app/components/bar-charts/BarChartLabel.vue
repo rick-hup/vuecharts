@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TrendingUp } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
 
 const data = [
   { month: 'January', desktop: 186 },
@@ -22,28 +22,22 @@ const data = [
       <ChartContainer class="aspect-auto h-[250px] w-full">
         <BarChart
           :data="data"
-          layout="vertical"
-          :margin="{ right: 16 }"
+          :margin="{ top: 20 }"
         >
-          <CartesianGrid :horizontal="false" />
+          <CartesianGrid :vertical="false" />
           <XAxis
-            type="number"
-            :hide="true"
-          />
-          <YAxis
             data-key="month"
-            type="category"
             :tick-line="false"
-            :axis-line="false"
             :tick-margin="10"
+            :axis-line="false"
             :tick-formatter="(value: string) => value.slice(0, 3)"
           />
-          <Tooltip />
+          <Tooltip :cursor="false" />
           <Bar
             data-key="desktop"
             fill="var(--chart-1)"
-            :radius="5"
-            :label="{ position: 'right' }"
+            :radius="8"
+            :label="{ position: 'top', offset: 12, fontSize: 12 }"
           />
         </BarChart>
       </ChartContainer>

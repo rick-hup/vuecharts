@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { TrendingDown } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
+import { TrendingUp } from 'lucide-vue-next'
+import { Bar, BarChart, CartesianGrid, Tooltip } from 'vccs'
 
 const data = [
   { month: 'January', visitors: 186 },
-  { month: 'February', visitors: 305 },
-  { month: 'March', visitors: -237 },
-  { month: 'April', visitors: 73 },
+  { month: 'February', visitors: 205 },
+  { month: 'March', visitors: -207 },
+  { month: 'April', visitors: 173 },
   { month: 'May', visitors: -209 },
   { month: 'June', visitors: 214 },
 ]
@@ -22,26 +22,20 @@ const data = [
       <ChartContainer class="aspect-auto h-[250px] w-full">
         <BarChart :data="data">
           <CartesianGrid :vertical="false" />
-          <XAxis
-            data-key="month"
-            :tick-line="false"
-            :tick-margin="10"
-            :axis-line="false"
-            :tick-formatter="(value: string) => value.slice(0, 3)"
-          />
-          <Tooltip />
+          <Tooltip :cursor="false" />
           <Bar
             data-key="visitors"
             fill="var(--chart-1)"
+            :label="{ dataKey: 'month', position: 'top' }"
           >
             <template #shape="props">
               <rect
                 :x="props.x"
-                :y="props.y"
-                :width="props.width"
-                :height="props.height"
+                :y="props.height < 0 ? props.y + props.height : props.y"
+                :width="Math.abs(props.width || 0)"
+                :height="Math.abs(props.height || 0)"
                 :rx="4"
-                :fill="props.value >= 0 ? 'var(--chart-1)' : 'var(--chart-2)'"
+                :fill="(props.value ?? 0) > 0 ? 'var(--chart-1)' : 'var(--chart-2)'"
               />
             </template>
           </Bar>
@@ -50,8 +44,8 @@ const data = [
     </CardContent>
     <CardFooter class="flex-col items-start gap-2 text-sm">
       <div class="flex gap-2 font-medium leading-none">
-        Trending down by 3.1% this month
-        <TrendingDown class="size-4" />
+        Trending up by 5.2% this month
+        <TrendingUp class="size-4" />
       </div>
       <div class="leading-none text-muted-foreground">
         Showing total visitors for the last 6 months
