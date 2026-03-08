@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
 
 const config = inject<ComputedRef<ChartConfig>>('chart-config', computed(() => ({})))
 
-function getPayloadConfig(item: Record<string, any>): { label?: string, color?: string } {
+function getPayloadConfig(item: Record<string, any>): { label?: string, color?: string, icon?: any } {
   const cfg = config.value
   const dataKey = item.dataKey as string
   const nameKeyVal = props.nameKey
@@ -28,20 +28,20 @@ function getPayloadConfig(item: Record<string, any>): { label?: string, color?: 
   if (nameKeyVal) {
     const itemCfg = cfg[nameKeyVal] || cfg[payloadItem[nameKeyVal]]
     if (itemCfg) {
-      return { label: itemCfg.label, color: itemCfg.color || item.color }
+      return { label: itemCfg.label, color: itemCfg.color || item.color, icon: itemCfg.icon }
     }
   }
 
   // Try dataKey in config
   if (cfg[dataKey]) {
-    return { label: cfg[dataKey].label, color: cfg[dataKey].color || item.color }
+    return { label: cfg[dataKey].label, color: cfg[dataKey].color || item.color, icon: cfg[dataKey].icon }
   }
 
   // Try payload value for the nameKey
   if (nameKeyVal && payloadItem[nameKeyVal]) {
     const c = cfg[payloadItem[nameKeyVal]]
     if (c) {
-      return { label: c.label, color: c.color || item.color }
+      return { label: c.label, color: c.color || item.color, icon: c.icon }
     }
   }
 
@@ -87,9 +87,13 @@ const nestLabel = computed(() => {
         :key="item.dataKey ?? index"
         class="flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground"
       >
-        <!-- indicator -->
+        <!-- indicator: icon or colored shape -->
+        <component
+          :is="getPayloadConfig(item).icon"
+          v-if="!hideIndicator && getPayloadConfig(item).icon"
+        />
         <div
-          v-if="!hideIndicator"
+          v-else-if="!hideIndicator"
           class="shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)"
           :class="{
             'h-2.5 w-2.5': indicator === 'dot',
