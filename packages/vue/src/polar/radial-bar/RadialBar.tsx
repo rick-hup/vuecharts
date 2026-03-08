@@ -217,19 +217,10 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
                 : sectorData.map((sector, i) => {
                     const prev = prevSects && prevSects[i]
                     if (!prev) {
-                    // New sector: animate from zero angle/radius
+                    // New sector: animate arc sweep only, keep radius constant
                       return {
                         ...sector,
-                        startAngle: sector.startAngle != null
-                          ? interpolate(sector.startAngle, sector.startAngle, t)
-                          : sector.startAngle,
                         endAngle: interpolate(sector.startAngle ?? 0, sector.endAngle, t),
-                        innerRadius: sector.innerRadius != null
-                          ? interpolate(sector.innerRadius, sector.innerRadius, t)
-                          : sector.innerRadius,
-                        outerRadius: sector.outerRadius != null
-                          ? interpolate(sector.innerRadius ?? 0, sector.outerRadius, t)
-                          : sector.outerRadius,
                       }
                     }
                     return {
@@ -238,12 +229,6 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
                         ? interpolate(prev.startAngle, sector.startAngle, t)
                         : sector.startAngle,
                       endAngle: interpolate(prev.endAngle ?? 0, sector.endAngle, t),
-                      innerRadius: prev.innerRadius != null && sector.innerRadius != null
-                        ? interpolate(prev.innerRadius, sector.innerRadius, t)
-                        : sector.innerRadius,
-                      outerRadius: prev.outerRadius != null && sector.outerRadius != null
-                        ? interpolate(prev.outerRadius, sector.outerRadius, t)
-                        : sector.outerRadius,
                     }
                   })
 

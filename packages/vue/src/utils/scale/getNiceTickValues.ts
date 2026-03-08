@@ -166,6 +166,10 @@ export function calculateStep(min: number, max: number, tickCount: number, allow
  * @return {Array}   ticks
  */
 function getNiceTickValuesFn([min, max]: [number, number], tickCount = 6, allowDecimals = true) {
+  // Guard against invalid domain values (e.g. undefined/NaN from incomplete chart state)
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return []
+  }
   // More than two ticks should be return
   const count = Math.max(tickCount, 2)
   const [cormin, cormax] = getValidInterval([min, max])
@@ -201,6 +205,10 @@ function getNiceTickValuesFn([min, max]: [number, number], tickCount = 6, allowD
  * @return {Array}   ticks
  */
 function getTickValuesFixedDomainFn([min, max]: readonly [number, number], tickCount: number, allowDecimals = true) {
+  // Guard against invalid domain values (e.g. undefined/NaN from incomplete chart state)
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return []
+  }
   // More than two ticks should be return
   const [cormin, cormax] = getValidInterval([min, max])
 

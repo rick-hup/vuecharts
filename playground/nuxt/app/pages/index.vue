@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, LineChart as LineChartIcon, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -36,6 +36,13 @@ const routes = [
     description: 'Default, dots, multiple, grid variations, custom label, legend, radius and more.',
     icon: RadarIcon,
     count: 11,
+  },
+  {
+    path: '/radial-charts',
+    name: 'Radial Charts',
+    description: 'Simple, grid, label, shape, stacked, text and more.',
+    icon: CircleDot,
+    count: 6,
   },
 ]
 </script>
