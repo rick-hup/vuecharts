@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, h, ref } from 'vue'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
+import { h, ref } from 'vue'
+import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
+import ChartLegendContent from '~/components/ui/chart/ChartLegendContent.vue'
 
-const data = [
+const chartData = [
   { date: '2024-04-01', desktop: 222, mobile: 150 },
   { date: '2024-04-02', desktop: 97, mobile: 180 },
   { date: '2024-04-03', desktop: 167, mobile: 120 },
@@ -99,31 +100,41 @@ const data = [
 ]
 
 const chartConfig: ChartConfig = {
-  views: {
-    label: 'Page Views',
+  visitors: {
+    label: 'Visitors',
   },
   desktop: {
     label: 'Desktop',
-    color: 'var(--chart-2)',
+    color: 'var(--chart-1)',
   },
   mobile: {
     label: 'Mobile',
-    color: 'var(--chart-1)',
+    color: 'var(--chart-2)',
   },
 }
 
-const activeChart = ref<'desktop' | 'mobile'>('desktop')
+const timeRange = ref('90d')
 
-const total = computed(() => ({
-  desktop: data.reduce((acc, cur) => acc + cur.desktop, 0),
-  mobile: data.reduce((acc, cur) => acc + cur.mobile, 0),
-}))
+const filteredData = computed(() => {
+  return chartData.filter((item) => {
+    const date = new Date(item.date)
+    const referenceDate = new Date('2024-06-30')
+    let daysToSubtract = 90
+    if (timeRange.value === '30d') {
+      daysToSubtract = 30
+    }
+    else if (timeRange.value === '7d') {
+      daysToSubtract = 7
+    }
+    const startDate = new Date(referenceDate)
+    startDate.setDate(startDate.getDate() - daysToSubtract)
+    return date >= startDate
+  })
+})
 
 function tooltipContent(props: any) {
   return h(ChartTooltipContent, {
     ...props,
-    nameKey: 'views',
-    className: 'w-[150px]',
     labelFormatter: (value: string | number) => {
       return new Date(String(value)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     },
@@ -132,58 +143,135 @@ function tooltipContent(props: any) {
 </script>
 
 <template>
-  <Card class="py-0">
-    <CardHeader class="flex flex-col items-stretch border-b !p-0 sm:flex-row">
-      <div class="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
-        <CardTitle>Bar Chart - Interactive</CardTitle>
-        <CardDescription>
-          Showing total visitors for the last 3 months
-        </CardDescription>
-      </div>
-      <div class="flex">
-        <button
-          v-for="key in (['desktop', 'mobile'] as const)"
-          :key="key"
-          :data-active="activeChart === key"
-          class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-8 sm:py-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-          @click="activeChart = key"
+  <div class="container py-10">
+    <div class="mb-10 space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight">
+        Area Charts
+      </h1>
+      <p class="text-muted-foreground">
+        Interactive area chart with time-range filtering.
+      </p>
+    </div>
+
+    <Card class="py-0">
+      <CardHeader class="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+        <div class="grid flex-1 gap-1">
+          <CardTitle>Area Chart - Interactive</CardTitle>
+          <CardDescription>
+            Showing total visitors for the last 3 months
+          </CardDescription>
+        </div>
+        <Select v-model="timeRange">
+          <SelectTrigger
+            class="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
+            aria-label="Select a value"
+          >
+            <SelectValue placeholder="Last 3 months" />
+          </SelectTrigger>
+          <SelectContent class="rounded-xl">
+            <SelectItem
+              value="90d"
+              class="rounded-lg"
+            >
+              Last 3 months
+            </SelectItem>
+            <SelectItem
+              value="30d"
+              class="rounded-lg"
+            >
+              Last 30 days
+            </SelectItem>
+            <SelectItem
+              value="7d"
+              class="rounded-lg"
+            >
+              Last 7 days
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </CardHeader>
+      <CardContent class="px-2 pt-4 sm:px-6 sm:pt-6">
+        <ChartContainer
+          :config="chartConfig"
+          class="aspect-auto h-[250px] w-full"
         >
-          <span class="text-xs text-muted-foreground">{{ chartConfig[key]?.label }}</span>
-          <span class="text-lg font-bold leading-none sm:text-3xl">
-            {{ total[key].toLocaleString() }}
-          </span>
-        </button>
-      </div>
-    </CardHeader>
-    <CardContent class="px-2 sm:p-6">
-      <ChartContainer
-        :config="chartConfig"
-        class="aspect-auto h-[250px] w-full"
-      >
-        <BarChart
-          accessibility-layer
-          :data="data"
-          :margin="{ left: 12, right: 12 }"
-        >
-          <CartesianGrid :vertical="false" />
-          <XAxis
-            data-key="date"
-            :tick-line="false"
-            :axis-line="false"
-            :tick-margin="8"
-            :min-tick-gap="32"
-            :tick-formatter="(value: string) => {
-              const date = new Date(value)
-              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            }"
-          />
-          <Tooltip :content="tooltipContent" />
-          <Bar
-            :data-key="activeChart"
-            :fill="`var(--color-${activeChart})`"
-          />
-        </BarChart>
-      </ChartContainer>
-    </CardContent>
-  </Card>
+          <AreaChart :data="filteredData">
+            <defs>
+              <linearGradient
+                id="fillDesktop"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stop-color="var(--color-desktop)"
+                  stop-opacity="0.8"
+                />
+                <stop
+                  offset="95%"
+                  stop-color="var(--color-desktop)"
+                  stop-opacity="0.1"
+                />
+              </linearGradient>
+              <linearGradient
+                id="fillMobile"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stop-color="var(--color-mobile)"
+                  stop-opacity="0.8"
+                />
+                <stop
+                  offset="95%"
+                  stop-color="var(--color-mobile)"
+                  stop-opacity="0.1"
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid :vertical="false" />
+            <XAxis
+              data-key="date"
+              :tick-line="false"
+              :axis-line="false"
+              :tick-margin="8"
+              :min-tick-gap="32"
+              :tick-formatter="(value: string) => {
+                const date = new Date(value)
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              }"
+            />
+            <Tooltip
+              :cursor="false"
+              :content="tooltipContent"
+            />
+            <Area
+              data-key="mobile"
+              type="natural"
+              fill="url(#fillMobile)"
+              stroke="var(--color-mobile)"
+              stack-id="a"
+            />
+            <Area
+              data-key="desktop"
+              type="natural"
+              fill="url(#fillDesktop)"
+              stroke="var(--color-desktop)"
+              stack-id="a"
+            />
+            <Legend>
+              <template #content="legendProps">
+                <ChartLegendContent v-bind="legendProps" />
+              </template>
+            </Legend>
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  </div>
 </template>

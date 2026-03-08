@@ -17,7 +17,7 @@ const data = [
 const chartConfig: ChartConfig = {
   desktop: {
     label: 'Desktop',
-    color: 'var(--chart-2)',
+    color: 'var(--chart-1)',
   },
   mobile: {
     label: 'Mobile',
@@ -70,7 +70,7 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, indica
             data-key="desktop"
             fill="var(--color-desktop)"
             :radius="4"
-            :label="{ dataKey: 'month', position: 'insideLeft', offset: 8, fill: 'white', fontSize: 12 }"
+            :label="{ dataKey: 'month', position: 'insideLeft', offset: 8, fill: 'var(--color-label)', fontSize: 12 }"
           />
         </BarChart>
       </ChartContainer>

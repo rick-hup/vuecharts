@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { h } from 'vue'
-import { TrendingUp } from 'lucide-vue-next'
+import { TrendingDown } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
@@ -43,7 +43,6 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
           <Bar
             data-key="visitors"
             fill="var(--chart-1)"
-            :label="{ dataKey: 'month', position: 'top' }"
           >
             <template #shape="props">
               <rect
@@ -61,8 +60,8 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
     </CardContent>
     <CardFooter class="flex-col items-start gap-2 text-sm">
       <div class="flex gap-2 font-medium leading-none">
-        Trending up by 5.2% this month
-        <TrendingUp class="size-4" />
+        Trending down by 3.1% this month
+        <TrendingDown class="size-4" />
       </div>
       <div class="leading-none text-muted-foreground">
         Showing total visitors for the last 6 months

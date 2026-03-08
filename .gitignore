@@ -21,3 +21,5 @@ docs/.data
 docs/.output
 docs/test-results
 
+# Playwright MCP
+.playwright-mcp
