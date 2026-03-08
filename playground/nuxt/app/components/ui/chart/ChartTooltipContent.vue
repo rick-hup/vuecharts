@@ -75,7 +75,7 @@ const nestLabel = computed(() => {
     ]"
   >
     <div
-      v-if="!hideLabel && formattedLabel"
+      v-if="!hideLabel && formattedLabel && indicator !== 'line'"
       class="font-medium"
     >
       {{ formattedLabel }}

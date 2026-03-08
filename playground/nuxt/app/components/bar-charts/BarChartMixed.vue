@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, Tooltip, XAxis, YAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
@@ -38,8 +37,6 @@ const chartConfig: ChartConfig = {
     color: 'var(--chart-5)',
   },
 }
-
-const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLabel: true })
 </script>
 
 <template>
@@ -73,8 +70,17 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
           />
           <Tooltip
             :cursor="false"
-            :content="tooltipContent"
-          />
+          >
+            <template #content="{ active, payload, label }">
+              <ChartTooltipContent
+                :active="active"
+                :payload="payload"
+                :label="label"
+                hide-label
+                name-key="browser"
+              />
+            </template>
+          </Tooltip>
           <Bar
             data-key="visitors"
             :radius="5"

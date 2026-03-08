@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
+import { Bar, BarChart, CartesianGrid, LabelList, Tooltip, XAxis, YAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
@@ -27,8 +26,6 @@ const chartConfig: ChartConfig = {
     color: 'var(--background)',
   },
 }
-
-const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, indicator: 'line' })
 </script>
 
 <template>
@@ -39,6 +36,7 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, indica
     </CardHeader>
     <CardContent>
       <ChartContainer
+        accessibility-layer
         :config="chartConfig"
         class="aspect-auto h-[250px] w-full"
       >
@@ -64,14 +62,38 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, indica
           />
           <Tooltip
             :cursor="false"
-            :content="tooltipContent"
-          />
+          >
+            <template #content="{ active, payload, label }">
+              <ChartTooltipContent
+                :active="active"
+                :payload="payload"
+                :label="label"
+                name-key="views"
+                class="w-[150px]"
+                indicator="line"
+              />
+            </template>
+          </Tooltip>
           <Bar
             data-key="desktop"
             fill="var(--color-desktop)"
             :radius="4"
-            :label="{ dataKey: 'month', position: 'insideLeft', offset: 8, fill: 'var(--color-label)', fontSize: 12 }"
-          />
+          >
+            <LabelList
+              data-key="month"
+              position="insideLeft"
+              :offset="8"
+              class="fill-(--color-label)"
+              :font-size="12"
+            />
+            <LabelList
+              data-key="desktop"
+              position="right"
+              :offset="8"
+              class="fill-foreground"
+              :font-size="12"
+            />
+          </Bar>
         </BarChart>
       </ChartContainer>
     </CardContent>

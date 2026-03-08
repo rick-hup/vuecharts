@@ -1,5 +1,5 @@
 import type { Ref, SVGAttributes, ShallowRef } from 'vue'
-import { computed, ref, useAttrs } from 'vue'
+import { computed, ref, shallowRef, useAttrs } from 'vue'
 import { createContext } from 'motion-v'
 import type { BarProps } from '../type'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
@@ -20,10 +20,12 @@ export interface BarContext {
   data: Readonly<ShallowRef<readonly BarRectangleItem[]>>
   isAnimating: Ref<boolean>
   shapeSlot?: (props: any) => any
+  activeBarSlot?: (props: any) => any
+  cellProps: ShallowRef<Record<string, any>[]>
 }
 export const [useBarContext, provideBarContext] = createContext<BarContext>('BarContext')
 
-export function useBar(props: BarProps, shapeSlot?: (props: any) => any) {
+export function useBar(props: BarProps, shapeSlot?: (props: any) => any, activeBarSlot?: (props: any) => any) {
   const isPanorama = useIsPanorama()
   const attrs = useAttrs() as SVGAttributes
   const layout = useChartLayout()
@@ -44,6 +46,7 @@ export function useBar(props: BarProps, shapeSlot?: (props: any) => any) {
 
   const clipPathId = uniqueId('v-charts-bar-')
   const isAnimating = ref(false)
+  const cellPropsRef = shallowRef<Record<string, any>[]>([])
 
   provideBarContext({
     clipPathId,
@@ -53,6 +56,8 @@ export function useBar(props: BarProps, shapeSlot?: (props: any) => any) {
     data: rects,
     isAnimating,
     shapeSlot,
+    activeBarSlot,
+    cellProps: cellPropsRef,
   })
 
   return {
@@ -61,5 +66,6 @@ export function useBar(props: BarProps, shapeSlot?: (props: any) => any) {
     clipPathId,
     barData: rects,
     isAnimating,
+    cellProps: cellPropsRef,
   }
 }

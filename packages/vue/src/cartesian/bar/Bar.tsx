@@ -1,5 +1,5 @@
-import type { SVGAttributes, SlotsType } from 'vue'
-import { Teleport, computed, defineComponent } from 'vue'
+import type { SVGAttributes, SlotsType, VNode } from 'vue'
+import { Fragment, Teleport, computed, defineComponent } from 'vue'
 import type { BarProps, BarPropsWithSVG } from './type'
 import { BarVueProps } from './type'
 import { useBar } from '@/cartesian/bar/hooks/useBar'
@@ -17,6 +17,7 @@ import type { BarRectangleItem } from '@/types/bar'
 import { getValueByDataKey } from '@/utils/chart'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
+import { Cell } from '@/components/Cell'
 
 const errorBarDataPointFormatter: ErrorBarDataPointFormatter<BarRectangleItem> = (
   dataPoint,
@@ -39,12 +40,13 @@ export const Bar = defineComponent<BarPropsWithSVG>({
     default?: () => any
     activeDot?: (props: any) => any
     shape?: (props: any) => any
+    activeBar?: (props: any) => any
   }>,
   setup(props: BarProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     const errorBarRegistry = createErrorBarRegistry()
     provideErrorBarRegistry(errorBarRegistry)
     useSetupGraphicalItem(props, 'bar', { errorBars: errorBarRegistry.errorBars })
-    const { shouldRender, clipPathId, barData, isAnimating } = useBar(props, slots.shape)
+    const { shouldRender, clipPathId, barData, isAnimating, cellProps: cellPropsRef } = useBar(props, slots.shape, slots.activeBar)
     const { needClip } = useNeedsClip(props.xAxisId, props.yAxisId)
     const layout = useChartLayout()
 
@@ -64,24 +66,59 @@ export const Bar = defineComponent<BarPropsWithSVG>({
 
     const labelListData = computed(() => {
       if (isAnimating.value || !barData.value) return undefined
-      return barData.value.map(entry => ({
-        x: entry.x,
-        y: entry.y,
-        width: entry.width,
-        height: entry.height,
-        value: entry.value,
-        payload: entry.payload,
-        parentViewBox: entry.parentViewBox,
-      }))
+      return barData.value.map((entry, i) => {
+        const fill = cellPropsRef.value?.[i]?.fill ?? entry.payload?.fill ?? props.fill
+        return {
+          x: entry.x,
+          y: entry.y,
+          width: entry.width,
+          height: entry.height,
+          value: entry.value,
+          payload: entry.payload,
+          parentViewBox: entry.parentViewBox,
+          ...(fill != null ? { fill } : {}),
+        }
+      })
     })
     provideCartesianLabelListData(labelListData)
 
     const graphicalLayerRef = useGraphicalLayerRef(null)
 
+    // Extract Cell VNode props from a VNode tree (handles Fragment wrapping from v-for)
+    const extractCellProps = (vnodes: VNode[]): Record<string, any>[] => {
+      const result: Record<string, any>[] = []
+      for (const vnode of vnodes) {
+        if (vnode.type === Cell) {
+          result.push(vnode.props ?? {})
+        }
+        else if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+          result.push(...extractCellProps(vnode.children as VNode[]))
+        }
+      }
+      return result
+    }
+
+    const filterOutCells = (vnodes: VNode[]): VNode[] => {
+      return vnodes.filter((vnode) => {
+        if (vnode.type === Cell) return false
+        if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+          const hasCells = (vnode.children as VNode[]).some(c => c.type === Cell)
+          if (hasCells) return false
+        }
+        return true
+      })
+    }
+
     return () => {
       if (!shouldRender.value) {
         return null
       }
+
+      // Extract Cell props from default slot before rendering
+      const defaultContent = slots.default?.() ?? []
+      const cells = extractCellProps(defaultContent)
+      cellPropsRef.value = cells
+      const nonCellContent = cells.length > 0 ? filterOutCells(defaultContent) : defaultContent
 
       const barContent = (
         <Layer class={['v-charts-bar', attrs.class]}>
@@ -102,7 +139,7 @@ export const Bar = defineComponent<BarPropsWithSVG>({
               data={barData.value}
             />
           )}
-          {slots.default?.()}
+          {nonCellContent}
         </Layer>
       )
 

@@ -31,7 +31,7 @@ export const BarRectangles = defineComponent({
     let animationId = 0
     const domRef = useDomRef()
 
-    const { props, data: barData, layout, isAnimating, shapeSlot } = useBarContext()
+    const { props, data: barData, layout, isAnimating, shapeSlot, activeBarSlot, cellProps } = useBarContext()
 
     const {
       dataKey,
@@ -39,6 +39,7 @@ export const BarRectangles = defineComponent({
       onAnimationStart,
       onAnimationEnd,
       activeBar,
+      activeIndex: activeIndexProp,
     } = props
 
     // 事件处理函数
@@ -86,17 +87,42 @@ export const BarRectangles = defineComponent({
       return (
         <>
           {data.map((entry: BarRectangleItem, i: number) => {
-            const isActive = activeBar !== false && String(i) === activeIndex.value && (activeDataKey.value == null || dataKey === activeDataKey.value)
+            // activeIndex prop takes priority (independent of tooltip hover)
+            // When activeIndex is set or #activeBar slot exists, active is enabled implicitly
+            const activeEnabled = activeBar !== false || activeIndexProp != null || !!activeBarSlot
+            const isActive = activeIndexProp != null
+              ? activeEnabled && i === activeIndexProp
+              : activeEnabled && String(i) === activeIndex.value && (activeDataKey.value == null || dataKey === activeDataKey.value)
 
             const activeBarProps = isActive && typeof activeBar === 'object' ? activeBar : {}
 
+            // Auto-merge payload.fill into props so per-entry fill works
+            // without requiring a #shape slot (matches Recharts behavior)
+            const entryFill = entry.payload?.fill
+            // Cell props override per-index (like Recharts Cell component)
+            const cellPropsForIndex = cellProps.value?.[i]
             const barRectangleProps = {
               ...baseProps,
+              ...(entryFill ? { fill: entryFill } : {}),
               ...entry,
+              ...(cellPropsForIndex ?? {}),
               ...(isActive ? activeBarProps : {}),
               isActive,
               index: i,
               dataKey,
+            }
+
+            // Determine which renderer to use:
+            // 1. If active and activeBar slot exists, use it
+            // 2. Otherwise use shape slot or default Rectangle
+            const renderShape = () => {
+              if (isActive && activeBarSlot) {
+                return activeBarSlot(barRectangleProps)
+              }
+              if (shapeSlot) {
+                return shapeSlot(barRectangleProps)
+              }
+              return <Rectangle {...barRectangleProps} />
             }
 
             return (
@@ -107,9 +133,7 @@ export const BarRectangles = defineComponent({
                 onMouseleave={onMouseLeaveFromContext(entry, i)}
                 onClick={onClickFromContext(entry, i)}
               >
-                {shapeSlot
-                  ? shapeSlot(barRectangleProps)
-                  : <Rectangle {...barRectangleProps} />}
+                {renderShape()}
               </Layer>
             )
           })}

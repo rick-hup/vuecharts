@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { TrendingDown } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip } from 'vccs'
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Tooltip } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
@@ -19,8 +18,6 @@ const chartConfig: ChartConfig = {
     label: 'Visitors',
   },
 }
-
-const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLabel: true, hideIndicator: true })
 </script>
 
 <template>
@@ -34,26 +31,35 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
         :config="chartConfig"
         class="aspect-auto h-[250px] w-full"
       >
-        <BarChart :data="data">
+        <BarChart
+          accessibility-layer
+          :data="data"
+        >
           <CartesianGrid :vertical="false" />
           <Tooltip
             :cursor="false"
-            :content="tooltipContent"
-          />
-          <Bar
-            data-key="visitors"
-            fill="var(--chart-1)"
           >
-            <template #shape="props">
-              <rect
-                :x="props.x"
-                :y="props.height < 0 ? props.y + props.height : props.y"
-                :width="Math.abs(props.width || 0)"
-                :height="Math.abs(props.height || 0)"
-                :rx="4"
-                :fill="(props.value ?? 0) > 0 ? 'var(--chart-1)' : 'var(--chart-2)'"
+            <template #content="{ active, payload, label }">
+              <ChartTooltipContent
+                :active="active"
+                :payload="payload"
+                :label="label"
+                hide-label
+                hide-indicator
               />
             </template>
+          </Tooltip>
+          <Bar data-key="visitors">
+            <Cell
+              v-for="(item, index) in data"
+              :key="index"
+              :fill="item.visitors > 0 ? 'var(--chart-1)' : 'var(--chart-2)'"
+            />
+            <LabelList
+              position="top"
+              data-key="month"
+              :fill-opacity="1"
+            />
           </Bar>
         </BarChart>
       </ChartContainer>

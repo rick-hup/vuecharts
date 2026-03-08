@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
+import { Bar, BarChart, CartesianGrid, Rectangle, Tooltip, XAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
@@ -38,8 +37,6 @@ const chartConfig: ChartConfig = {
     color: 'var(--chart-5)',
   },
 }
-
-const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLabel: true })
 </script>
 
 <template>
@@ -53,7 +50,10 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
         :config="chartConfig"
         class="aspect-auto h-[250px] w-full"
       >
-        <BarChart :data="data">
+        <BarChart
+          accessibility-layer
+          :data="data"
+        >
           <CartesianGrid :vertical="false" />
           <XAxis
             data-key="browser"
@@ -62,27 +62,31 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
             :axis-line="false"
             :tick-formatter="(value: string) => chartConfig[value]?.label ?? value"
           />
-          <Tooltip
-            :cursor="false"
-            :content="tooltipContent"
-          />
+          <Tooltip>
+            <template #content="{ active, payload, label }">
+              <ChartTooltipContent
+                :active="active"
+                :payload="payload"
+                :label="label"
+                hide-label
+                name-key="browser"
+              />
+            </template>
+          </Tooltip>
           <Bar
             data-key="visitors"
             :stroke-width="2"
             :radius="8"
-            fill-opacity="0.8"
-            active-fill-opacity="1"
+            :active-index="2"
           >
-            <template #shape="props">
-              <rect
-                :x="props.x"
-                :y="props.y"
-                :width="props.width"
-                :height="props.height"
-                :rx="8"
-                :fill="props.payload?.fill ?? 'var(--chart-1)'"
-                :fill-opacity="props.isActive ? 1 : 0.8"
-                :stroke-width="props.strokeWidth"
+            <template #activeBar="props">
+              <Rectangle
+                v-bind="props"
+                :fill="props.payload?.fill"
+                :fill-opacity="0.8"
+                :stroke="props.payload?.fill"
+                :stroke-dasharray="4"
+                :stroke-dashoffset="4"
               />
             </template>
           </Bar>

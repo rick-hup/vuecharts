@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
+import { Bar, BarChart, CartesianGrid, LabelList, Tooltip, XAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
@@ -20,8 +19,6 @@ const chartConfig: ChartConfig = {
     color: 'var(--chart-1)',
   },
 }
-
-const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLabel: true })
 </script>
 
 <template>
@@ -49,14 +46,28 @@ const tooltipContent = (props: any) => h(ChartTooltipContent, { ...props, hideLa
           />
           <Tooltip
             :cursor="false"
-            :content="tooltipContent"
-          />
+          >
+            <template #content="{ active, payload, label }">
+              <ChartTooltipContent
+                :active="active"
+                :payload="payload"
+                :label="label"
+                hide-label
+              />
+            </template>
+          </Tooltip>
           <Bar
             data-key="desktop"
             fill="var(--color-desktop)"
             :radius="8"
-            :label="{ position: 'top', offset: 12, fontSize: 12 }"
-          />
+          >
+            <LabelList
+              position="top"
+              :offset="12"
+              class="fill-foreground"
+              :font-size="12"
+            />
+          </Bar>
         </BarChart>
       </ChartContainer>
     </CardContent>
