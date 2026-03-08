@@ -1,5 +1,5 @@
 import { Fragment, Teleport, computed, defineComponent, reactive, ref, watch, watchEffect } from 'vue'
-import type { CSSProperties, PropType, VNode } from 'vue'
+import type { CSSProperties, PropType, SlotsType, VNode } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useChartLayout, useOffsetInternal, useViewBox } from '@/context/chartLayoutContext'
 import { useAccessibilityLayer } from '@/context/accessibilityContext'
@@ -465,6 +465,11 @@ const TooltipVueProps = {
 export const Tooltip = defineComponent({
   name: 'Tooltip',
   props: TooltipVueProps,
+  slots: Object as SlotsType<{
+    content?: (props: TooltipContentProps) => any
+    cursor?: (props: Record<string, any>) => any
+    default?: () => any
+  }>,
   setup(props, { slots }) {
     const dispatch = useAppDispatch()
 
@@ -558,6 +563,8 @@ export const Tooltip = defineComponent({
       accessibilityLayer: accessibilityLayer.value,
     }))
 
+    const hasContentSlot = computed(() => !!slots.content)
+
     useTooltipChartSynchronisation({
       tooltipEventType,
       trigger: props.trigger,
@@ -586,7 +593,10 @@ export const Tooltip = defineComponent({
                 viewBox={viewBox.value}
                 style={props.style}
               >
-                <contentComponent.value {...contentProps.value} />
+                {hasContentSlot.value
+                  ? slots.content!(contentProps.value)
+                  : <contentComponent.value {...contentProps.value} />
+                }
               </TooltipBoundingBox>
             </Teleport>
           </foreignObject>

@@ -90,7 +90,7 @@ const nestLabel = computed(() => {
         <!-- indicator -->
         <div
           v-if="!hideIndicator"
-          class="shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]"
+          class="shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)"
           :class="{
             'h-2.5 w-2.5': indicator === 'dot',
             'w-1': indicator === 'line',

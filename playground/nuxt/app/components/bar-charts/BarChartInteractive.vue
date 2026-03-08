@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
@@ -119,15 +119,8 @@ const total = computed(() => ({
   mobile: data.reduce((acc, cur) => acc + cur.mobile, 0),
 }))
 
-function tooltipContent(props: any) {
-  return h(ChartTooltipContent, {
-    ...props,
-    nameKey: 'views',
-    className: 'w-[150px]',
-    labelFormatter: (value: string | number) => {
-      return new Date(String(value)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    },
-  })
+function labelFormatter(value: string | number) {
+  return new Date(String(value)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 </script>
 
@@ -177,7 +170,16 @@ function tooltipContent(props: any) {
               return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             }"
           />
-          <Tooltip :content="tooltipContent" />
+          <Tooltip>
+            <template #content="tooltipProps">
+              <ChartTooltipContent
+                v-bind="tooltipProps"
+                name-key="views"
+                class="w-[150px]"
+                :label-formatter="labelFormatter"
+              />
+            </template>
+          </Tooltip>
           <Bar
             :data-key="activeChart"
             :fill="`var(--color-${activeChart})`"
