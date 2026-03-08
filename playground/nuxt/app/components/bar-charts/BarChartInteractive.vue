@@ -171,9 +171,11 @@ function labelFormatter(value: string | number) {
             }"
           />
           <Tooltip>
-            <template #content="tooltipProps">
+            <template #content="{ active, payload, label }">
               <ChartTooltipContent
-                v-bind="tooltipProps"
+                :active="active"
+                :payload="payload"
+                :label="label"
                 name-key="views"
                 class="w-[150px]"
                 :label-formatter="labelFormatter"

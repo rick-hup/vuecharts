@@ -3,9 +3,9 @@ import type { ChartConfig } from './types'
 
 const props = withDefaults(defineProps<{
   active?: boolean
-  payload?: Array<Record<string, any>>
+  payload?: ReadonlyArray<Record<string, any>>
   label?: string | number
-  labelFormatter?: (value: string | number, payload: Array<Record<string, any>>) => string
+  labelFormatter?: (value: string | number, payload: ReadonlyArray<Record<string, any>>) => string
   nameKey?: string
   indicator?: 'dot' | 'line' | 'dashed'
   hideLabel?: boolean

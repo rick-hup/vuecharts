@@ -299,7 +299,7 @@ const Cursor = defineComponent({
           fill: 'none',
           ...coord,
           ...off,
-          class: 'recharts-tooltip-cursor',
+          class: 'v-charts-tooltip-cursor',
           style: { pointerEvents: 'none' },
           ...cursorSvgProps,
         }
@@ -317,7 +317,7 @@ const Cursor = defineComponent({
           y: layout.value === 'horizontal' ? off.top + 0.5 : coord.y - halfSize,
           width: layout.value === 'horizontal' ? bandSize : off.width - 1,
           height: layout.value === 'horizontal' ? off.height - 1 : bandSize,
-          class: 'recharts-tooltip-cursor',
+          class: 'v-charts-tooltip-cursor',
           style: { pointerEvents: 'none' },
           ...cursorSvgProps,
         }
@@ -334,7 +334,7 @@ const Cursor = defineComponent({
           outerRadius: radialPoints.radius,
           stroke: '#ccc',
           fill: 'none',
-          class: 'recharts-tooltip-cursor',
+          class: 'v-charts-tooltip-cursor',
           style: { pointerEvents: 'none' },
           ...cursorSvgProps,
         }
@@ -343,7 +343,7 @@ const Cursor = defineComponent({
       else {
         const cursorProps = {
           stroke: '#ccc',
-          class: ['recharts-tooltip-cursor'],
+          class: ['v-charts-tooltip-cursor'],
           layout: layout.value,
           points: points.value as ReadonlyArray<Point>,
           style: { pointerEvents: 'none' },
