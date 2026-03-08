@@ -181,6 +181,19 @@ export const YAxis = defineComponent({
       type: Array as PropType<AxisDomain>,
       default: undefined,
     },
+    axisLine: {
+      type: [Boolean, Object],
+      default: true,
+    },
+    tickLine: {
+      type: [Boolean, Object],
+      default: true,
+    },
+    tickMargin: Number,
+    minTickGap: {
+      type: Number,
+      default: 5,
+    },
   },
   setup(props, { attrs }) {
     return () => <YAxisSettingsDispatcher {...props} {...attrs} />

@@ -7,7 +7,7 @@ const HorizontalGridLines = defineComponent({
   props: {
     x: Number,
     width: Number,
-    horizontal: Boolean,
+    horizontal: [Boolean, Object],
     horizontalPoints: Array,
     xAxisId: {
       type: [String, Number],
@@ -21,7 +21,7 @@ const HorizontalGridLines = defineComponent({
     xAxis: Object,
     yAxis: Object,
   },
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     return () => {
       const { x, width, horizontal = true, horizontalPoints } = props
 
@@ -45,7 +45,7 @@ const HorizontalGridLines = defineComponent({
           key: `line-${i}`,
           index: i,
         }
-        return renderLineItem(horizontal, lineItemProps)
+        return renderLineItem(slots.horizontal, horizontal, lineItemProps)
       })
       return <g class="v-charts-cartesian-grid-horizontal">{items}</g>
     }

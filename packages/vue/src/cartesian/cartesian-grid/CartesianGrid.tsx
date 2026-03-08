@@ -86,6 +86,14 @@ export const CartesianGrid = defineComponent({
       type: Boolean,
       default: undefined,
     },
+    horizontal: {
+      type: [Boolean, Object],
+      default: true,
+    },
+    vertical: {
+      type: [Boolean, Object],
+      default: true,
+    },
     horizontalValues: Array,
     verticalValues: Array,
     fill: String,
@@ -94,7 +102,7 @@ export const CartesianGrid = defineComponent({
     verticalCoordinatesGenerator: Function,
     horizontalCoordinatesGenerator: Function,
   },
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     const chartWidth = useChartWidth()
     const chartHeight = useChartHeight()
     const offset = useOffset()
@@ -210,7 +218,9 @@ export const CartesianGrid = defineComponent({
             horizontalPoints={horizontalPoints}
             xAxis={xAxis.value!}
             yAxis={yAxis.value!}
-          />
+          >
+            {slots.horizontal ? { horizontal: slots.horizontal } : undefined}
+          </HorizontalGridLines>
 
           <VerticalGridLines
             {...propsIncludingDefaults}
@@ -218,7 +228,9 @@ export const CartesianGrid = defineComponent({
             verticalPoints={verticalPoints}
             xAxis={xAxis}
             yAxis={yAxis}
-          />
+          >
+            {slots.vertical ? { vertical: slots.vertical } : undefined}
+          </VerticalGridLines>
         </g>
       )
     }

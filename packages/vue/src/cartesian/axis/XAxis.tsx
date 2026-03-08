@@ -205,7 +205,15 @@ export const XAxis = defineComponent({
     unit: {
       type: String,
     },
+    tickLine: {
+      type: [Boolean, Object],
+      default: true,
+    },
     tickMargin: Number,
+    minTickGap: {
+      type: Number,
+      default: 5,
+    },
     tickFormatter: Function,
   },
   setup(props, { attrs, slots }) {

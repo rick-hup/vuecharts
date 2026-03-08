@@ -15,9 +15,9 @@ const VerticalGridLines = defineComponent({
     offset: Object,
     xAxis: Object,
     yAxis: Object,
-    vertical: Boolean,
+    vertical: [Boolean, Object],
   },
-  setup(props, { attrs }) {
+  setup(props, { attrs, slots }) {
     return () => {
       const { y, height, vertical = true, verticalPoints } = props
 
@@ -38,7 +38,7 @@ const VerticalGridLines = defineComponent({
           index: i,
         }
 
-        return renderLineItem(vertical, lineItemProps)
+        return renderLineItem(slots.vertical, vertical, lineItemProps)
       })
       return <g class="v-charts-cartesian-grid-vertical">{items}</g>
     }

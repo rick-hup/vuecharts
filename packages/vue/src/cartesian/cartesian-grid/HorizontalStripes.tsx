@@ -11,7 +11,7 @@ const HorizontalStripes = defineComponent({
     width: Number,
     height: Number,
     horizontalPoints: Array,
-    horizontal: Boolean,
+    horizontal: [Boolean, Object],
   },
   setup(props) {
     return () => {

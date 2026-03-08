@@ -11,7 +11,7 @@ const VerticalStripes = defineComponent({
     width: Number,
     height: Number,
     verticalPoints: Array,
-    vertical: Boolean,
+    vertical: [Boolean, Object],
   },
   setup(props) {
     return () => {
