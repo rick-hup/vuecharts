@@ -61,7 +61,7 @@ packages/vue/src/           # Main library source (vccs)
 ├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, etc.)
 ├── components/             # Legend, Tooltip, Text, Label, Cell; index.ts exports: Cell, label, legend, Tooltip
 ├── container/              # ResponsiveContainer, Surface, Layer
-├── shape/                  # SVG shapes (Rectangle, Symbols, Curve, Dot, Sector)
+├── shape/                  # SVG shapes: Rectangle, Symbols, Dot, Sector (public exports); Curve, Cross (internal only, not exported from index)
 ├── state/                  # Redux store, slices, middleware, selectors
 ├── animation/              # Animate component, motion-v utilities
 ├── context/                # provide/inject context providers
@@ -260,6 +260,16 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - `selectRadialBarLegendPayload`: maps `chartData` entries to `{ type, value: entry.name, color: entry.fill, payload }` (legend color from `entry.fill`)
 - Mouse events: `onMouseenter` → `setActiveMouseOverItemIndex`; `onMouseleave` → `mouseLeaveItem`
 - CSS class: `v-charts-radial-bar` (outer Layer)
+
+### Pie
+- Props: `dataKey` (required), `nameKey` (default `'name'`), `cx`/`cy` (default `'50%'`), `innerRadius` (default `0`), `outerRadius` (default `'80%'`), `startAngle` (default `0`), `endAngle` (default `360`), `paddingAngle` (default `0`), `minAngle` (default `0`), `fill` (default `'#808080'`), `stroke` (default `'#fff'`), `legendType` (default `'rect'`), `tooltipType`, `hide`, `activeIndex` (default `-1`), `isAnimationActive` (default `true`), `label` (default `false`), `className`
+- Slots: `#shape` — receives `(PieSectorDataItem & { isActive: boolean })`; used to fully replace the default `<Sector>` per slice
+- Registers via `SetPolarGraphicalItem` (type: `'pie'`), `SetLegendPayload`, and `SetTooltipEntrySettings` directly (does NOT use `useSetupGraphicalItem`)
+- Animation: single `<Animate from={0} to={1} transition={{ duration: 1.5 }}>` wrapping all sectors; **chain-sweep pattern** — `curAngle` accumulates across sectors so all slices sweep as one continuous arc from `sectors[0].startAngle`; `deltaAngle = (endAngle - startAngle) * progress`; `paddingAngle` added only for `i > 0` (first sector has no padding offset)
+- `activeIndex` state: local `ref(props.activeIndex)` synced via `watch`; `isControlled = computed(() => props.activeIndex !== -1)` — when controlled, hover does NOT update local activeIndex (only dispatches to Redux); when uncontrolled, `onMouseenter` sets `activeIndex.value = i`, `onMouseleave` resets to `-1`; both cases dispatch `setActiveMouseOverItemIndex` / `mouseLeaveItem()`
+- `label` prop (Boolean): rendered only when `progress >= 1`; uses `polarToCartesian` at `outerRadius + 20` (LABEL_OFFSET) for position; draws a `<line>` from sector edge to label position; `text-anchor` derived from `pos.x` vs `sector.cx`; `fill` matches sector fill
+- `stroke` resolution: `(attrs.stroke as string) ?? props.stroke`
+- CSS class: `v-charts-pie` (outer Layer)
 
 ### Line
 - Slots: `shape`, `dot`, `activeDot`, `label`, `default` — `default` slot content is rendered inside `<Layer class="v-charts-line">`, enabling `<LabelList>` children placed directly inside `<Line>` to render via slot

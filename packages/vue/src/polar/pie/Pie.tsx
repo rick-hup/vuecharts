@@ -1,4 +1,4 @@
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref, watch } from 'vue'
 import type { SlotsType } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
@@ -26,7 +26,11 @@ export const Pie = defineComponent<PiePropsWithSVG>({
   }>,
   setup(props, { attrs, slots }) {
     const dispatch = useAppDispatch()
+    const isControlled = computed(() => props.activeIndex !== -1)
     const activeIndex = ref(props.activeIndex)
+    watch(() => props.activeIndex, (val) => {
+      activeIndex.value = val
+    })
 
     const pieSettings = computed<ResolvedPieSettings>(() => ({
       data: props.data,
@@ -92,8 +96,55 @@ export const Pie = defineComponent<PiePropsWithSVG>({
       })),
     })
 
+    // Hoisted event handlers — stable closures, not recreated per animation frame
+    function handleSectorEnter(sector: PieSectorDataItem, index: number) {
+      if (!isControlled.value) {
+        activeIndex.value = index
+      }
+      dispatch(setActiveMouseOverItemIndex({
+        activeIndex: String(index),
+        activeDataKey: props.dataKey,
+        activeCoordinate: sector.tooltipPosition,
+      }))
+    }
+
+    function handleSectorLeave() {
+      if (!isControlled.value) {
+        activeIndex.value = -1
+      }
+      dispatch(mouseLeaveItem())
+    }
+
+    function renderLabel(sector: PieSectorDataItem, index: number) {
+      const edgePoint = polarToCartesian(sector.cx, sector.cy, sector.outerRadius, sector.midAngle)
+      const pos = polarToCartesian(sector.cx, sector.cy, sector.outerRadius + LABEL_OFFSET, sector.midAngle)
+      const anchor = pos.x > sector.cx ? 'start' : pos.x < sector.cx ? 'end' : 'middle'
+      return (
+        <g key={`label-${index}`}>
+          <line
+            x1={edgePoint.x}
+            y1={edgePoint.y}
+            x2={pos.x}
+            y2={pos.y}
+            stroke={sector.fill}
+            fill="none"
+          />
+          <text
+            x={pos.x}
+            y={pos.y}
+            text-anchor={anchor}
+            dominant-baseline="middle"
+            fill={sector.fill}
+          >
+            {String(sector.value)}
+          </text>
+        </g>
+      )
+    }
+
     return () => {
-      if (!sectors.value || sectors.value.length === 0) {
+      const sectorList = sectors.value
+      if (!sectorList || sectorList.length === 0) {
         return null
       }
       const stroke = (attrs.stroke as string) ?? props.stroke
@@ -101,84 +152,47 @@ export const Pie = defineComponent<PiePropsWithSVG>({
         <Layer class={['v-charts-pie', props.className]}>
           <Animate isActive={props.isAnimationActive} from={0} to={1} transition={{ duration: 1.5 }}>
             {(progress: number) => {
-              // Recharts chain animation: curAngle accumulates so all sectors sweep as one continuous arc
-              let curAngle = sectors.value![0]?.startAngle ?? 0
-              const sectorNodes = sectors.value!.map((sector, i) => {
-                const isActive = activeIndex.value === i
+              // Chain animation: curAngle accumulates so all sectors sweep as one continuous arc
+              let curAngle = sectorList[0]?.startAngle ?? 0
+              const sectorNodes = sectorList.map((sector, i) => {
                 const paddingAngle = i > 0 ? sector.paddingAngle : 0
                 const deltaAngle = (sector.endAngle - sector.startAngle) * progress
                 const animatedStartAngle = curAngle + paddingAngle
                 const animatedEndAngle = curAngle + deltaAngle + paddingAngle
                 curAngle = animatedEndAngle
-                const onEnter = (e: MouseEvent) => {
-                  activeIndex.value = i
-                  dispatch(setActiveMouseOverItemIndex({
-                    activeIndex: String(i),
-                    activeDataKey: props.dataKey,
-                    activeCoordinate: sector.tooltipPosition,
-                  }))
-                }
-                const onLeave = () => {
-                  activeIndex.value = -1
-                  dispatch(mouseLeaveItem())
-                }
-                if (slots.shape) {
-                  return (
-                    <g
-                      key={`sector-${i}`}
-                      onMouseenter={onEnter}
-                      onMouseleave={onLeave}
-                    >
-                      {slots.shape({ ...sector, startAngle: animatedStartAngle, endAngle: animatedEndAngle, stroke, isActive })}
-                    </g>
-                  )
-                }
+
+                const content = slots.shape
+                  ? slots.shape({ ...sector, startAngle: animatedStartAngle, endAngle: animatedEndAngle, stroke, isActive: activeIndex.value === i })
+                  : (
+                      <Sector
+                        {...attrs}
+                        cx={sector.cx}
+                        cy={sector.cy}
+                        innerRadius={sector.innerRadius}
+                        outerRadius={sector.outerRadius}
+                        startAngle={animatedStartAngle}
+                        endAngle={animatedEndAngle}
+                        fill={sector.fill}
+                        stroke={stroke}
+                      />
+                    )
+
                 return (
-                  <Sector
+                  <g
                     key={`sector-${i}`}
-                    {...attrs}
-                    cx={sector.cx}
-                    cy={sector.cy}
-                    innerRadius={sector.innerRadius}
-                    outerRadius={sector.outerRadius}
-                    startAngle={animatedStartAngle}
-                    endAngle={animatedEndAngle}
-                    fill={sector.fill}
-                    stroke={stroke}
-                    onMouseenter={onEnter}
-                    onMouseleave={onLeave}
-                  />
+                    onMouseenter={() => handleSectorEnter(sector, i)}
+                    onMouseleave={handleSectorLeave}
+                  >
+                    {content}
+                  </g>
                 )
               })
-              const labelNodes = progress >= 1 && props.label
-                ? sectors.value!.map((sector, i) => {
-                    const edgePoint = polarToCartesian(sector.cx, sector.cy, sector.outerRadius, sector.midAngle)
-                    const pos = polarToCartesian(sector.cx, sector.cy, sector.outerRadius + LABEL_OFFSET, sector.midAngle)
-                    const anchor = pos.x > sector.cx ? 'start' : pos.x < sector.cx ? 'end' : 'middle'
-                    return (
-                      <g key={`label-${i}`}>
-                        <line
-                          x1={edgePoint.x}
-                          y1={edgePoint.y}
-                          x2={pos.x}
-                          y2={pos.y}
-                          stroke={sector.fill}
-                          fill="none"
-                        />
-                        <text
-                          x={pos.x}
-                          y={pos.y}
-                          text-anchor={anchor}
-                          dominant-baseline="middle"
-                          fill={sector.fill}
-                        >
-                          {String(sector.value)}
-                        </text>
-                      </g>
-                    )
-                  })
-                : []
-              return [...sectorNodes, ...labelNodes]
+
+              if (progress >= 1 && props.label) {
+                sectorNodes.push(...sectorList.map(renderLabel))
+              }
+
+              return sectorNodes
             }}
           </Animate>
         </Layer>

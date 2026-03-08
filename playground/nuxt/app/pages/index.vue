@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, LineChart as LineChartIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -23,6 +23,13 @@ const routes = [
     icon: LineChartIcon,
     count: 10,
   },
+  {
+    path: '/pie-charts',
+    name: 'Pie Charts',
+    description: 'Simple, donut, labels, legend, stacked, interactive and more.',
+    icon: PieChartIcon,
+    count: 10,
+  },
 ]
 </script>
 
@@ -37,7 +44,7 @@ const routes = [
       </p>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <NuxtLink
         v-for="route in routes"
         :key="route.path"

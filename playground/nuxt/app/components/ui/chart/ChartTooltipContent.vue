@@ -23,29 +23,41 @@ function getPayloadConfig(item: Record<string, any>): { label?: string, color?: 
   const dataKey = item.dataKey as string
   const nameKeyVal = props.nameKey
   const payloadItem = item.payload ?? {}
+  // Per-entry fill from data (e.g. pie slices with fill: 'var(--color-chrome)')
+  const entryFill = payloadItem.fill
 
   // Try nameKey from payload first (e.g. for browser-based data)
   if (nameKeyVal) {
     const itemCfg = cfg[nameKeyVal] || cfg[payloadItem[nameKeyVal]]
     if (itemCfg) {
-      return { label: itemCfg.label, color: itemCfg.color || item.color, icon: itemCfg.icon }
+      return { label: itemCfg.label, color: itemCfg.color || entryFill || item.color, icon: itemCfg.icon }
     }
   }
 
   // Try dataKey in config
   if (cfg[dataKey]) {
-    return { label: cfg[dataKey].label, color: cfg[dataKey].color || item.color, icon: cfg[dataKey].icon }
+    const c = cfg[dataKey]
+    return { label: c.label, color: c.color || entryFill || item.color, icon: c.icon }
   }
 
   // Try payload value for the nameKey
   if (nameKeyVal && payloadItem[nameKeyVal]) {
     const c = cfg[payloadItem[nameKeyVal]]
     if (c) {
-      return { label: c.label, color: c.color || item.color, icon: c.icon }
+      return { label: c.label, color: c.color || entryFill || item.color, icon: c.icon }
     }
   }
 
-  return { label: item.name, color: item.color }
+  // Try item.name (e.g. pie chart slices where name comes from nameKey resolution)
+  const itemName = item.name
+  if (itemName) {
+    const c = cfg[itemName] || cfg[String(itemName).toLowerCase()]
+    if (c) {
+      return { label: c.label, color: c.color || entryFill || item.color, icon: c.icon }
+    }
+  }
+
+  return { label: item.name, color: entryFill || item.color }
 }
 
 const formattedLabel = computed(() => {
