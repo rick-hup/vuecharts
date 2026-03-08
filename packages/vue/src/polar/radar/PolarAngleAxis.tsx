@@ -1,5 +1,5 @@
 import { defineComponent, onUnmounted, watchEffect } from 'vue'
-import type { PropType } from 'vue'
+import type { PropType, SlotsType } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { addAngleAxis, removeAngleAxis } from '@/state/polarAxisSlice'
 import { selectPolarAxisTicks } from '@/state/selectors/polarScaleSelectors'
@@ -49,7 +49,10 @@ export const PolarAngleAxis = defineComponent({
     domain: { type: Array as PropType<AxisDomain>, default: undefined },
     tickCount: { type: Number, default: undefined },
   },
-  setup(props) {
+  slots: Object as SlotsType<{
+    tick?: (props: { x: number, y: number, value: any, index: number, textAnchor: string, payload: any, cx: number, cy: number }) => any
+  }>,
+  setup(props, { slots }) {
     const dispatch = useAppDispatch()
 
     let prevSettings: any = null
@@ -143,15 +146,19 @@ export const PolarAngleAxis = defineComponent({
                     />
                   )}
                   {tick && (
-                    <Text
-                      class="v-charts-polar-angle-axis-tick-value"
-                      x={p2.x}
-                      y={p2.y}
-                      textAnchor={textAnchor}
-                      verticalAnchor={verticalAnchor}
-                      fill={stroke}
-                      value={String(value)}
-                    />
+                    slots.tick
+                      ? slots.tick({ x: p2.x, y: p2.y, value, index: i, textAnchor, payload: entry, cx, cy })
+                      : (
+                          <Text
+                            class="v-charts-polar-angle-axis-tick-value"
+                            x={p2.x}
+                            y={p2.y}
+                            textAnchor={textAnchor}
+                            verticalAnchor={verticalAnchor}
+                            fill={stroke}
+                            value={String(value)}
+                          />
+                        )
                   )}
                 </g>
               )

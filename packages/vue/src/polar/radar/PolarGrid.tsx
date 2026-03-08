@@ -23,11 +23,19 @@ export const PolarGrid = defineComponent({
     radialLines: { type: Boolean, default: true },
     stroke: { type: String, default: '#ccc' },
     fill: { type: String, default: 'none' },
+    polarRadius: { type: Array as PropType<number[]>, default: undefined },
+    strokeWidth: { type: Number, default: undefined },
   },
-  setup(props) {
+  inheritAttrs: false,
+  setup(props, { attrs }) {
     const polarViewBox = useAppSelector(state => selectPolarViewBox(state))
     const polarAngles = useAppSelector(state => selectPolarGridAngles(state, props.angleAxisId))
-    const polarRadii = useAppSelector(state => selectPolarGridRadii(state, props.radiusAxisId))
+    const polarRadiiFromRedux = useAppSelector(state => selectPolarGridRadii(state, props.radiusAxisId))
+
+    const polarRadii = computed(() => {
+      if (Array.isArray(props.polarRadius)) return props.polarRadius
+      return polarRadiiFromRedux.value
+    })
 
     return () => {
       const viewBox = polarViewBox.value
@@ -39,36 +47,64 @@ export const PolarGrid = defineComponent({
       }
 
       const { cx, cy, innerRadius } = viewBox
-      const stroke = props.stroke
+      const { stroke, gridType, fill, strokeWidth } = props
+      const shapeClass = attrs.class
+      const renderBackground = fill && fill !== 'none'
 
       return (
         <g class="v-charts-polar-grid">
           {/* Concentric grid shapes */}
           <g class="v-charts-polar-grid-concentric">
-            {radii.map((radius, i) => {
-              if (props.gridType === 'circle') {
-                return (
-                  <circle
-                    key={`circle-${i}`}
-                    class="v-charts-polar-grid-concentric-circle"
-                    cx={cx}
-                    cy={cy}
-                    r={radius}
-                    stroke={stroke}
-                    fill="none"
-                  />
-                )
-              }
-              return (
-                <path
-                  key={`polygon-${i}`}
-                  class="v-charts-polar-grid-concentric-polygon"
-                  d={getPolygonPath(radius, cx, cy, angles)}
-                  stroke={stroke}
-                  fill="none"
-                />
-              )
-            })}
+            {/* Background fill — single shape at max radius, rendered first so rings draw on top */}
+            {renderBackground && (
+              gridType === 'circle'
+                ? (
+                    <circle
+                      class={['v-charts-polar-grid-concentric-circle', shapeClass]}
+                      cx={cx}
+                      cy={cy}
+                      r={Math.max(...radii)}
+                      stroke={stroke}
+                      fill={fill}
+                      stroke-width={strokeWidth}
+                    />
+                  )
+                : (
+                    <path
+                      class={['v-charts-polar-grid-concentric-polygon', shapeClass]}
+                      d={getPolygonPath(Math.max(...radii), cx, cy, angles)}
+                      stroke={stroke}
+                      fill={fill}
+                      stroke-width={strokeWidth}
+                    />
+                  )
+            )}
+            {/* Concentric rings — stroke only */}
+            {radii.map((radius, i) => (
+              gridType === 'circle'
+                ? (
+                    <circle
+                      key={`circle-${i}`}
+                      class={['v-charts-polar-grid-concentric-circle', shapeClass]}
+                      cx={cx}
+                      cy={cy}
+                      r={radius}
+                      stroke={stroke}
+                      fill="none"
+                      stroke-width={strokeWidth}
+                    />
+                  )
+                : (
+                    <path
+                      key={`polygon-${i}`}
+                      class={['v-charts-polar-grid-concentric-polygon', shapeClass]}
+                      d={getPolygonPath(radius, cx, cy, angles)}
+                      stroke={stroke}
+                      fill="none"
+                      stroke-width={strokeWidth}
+                    />
+                  )
+            ))}
           </g>
           {/* Radial lines */}
           {props.radialLines && angles.length > 0 && (

@@ -71,7 +71,7 @@ export const Radar = defineComponent({
     fillOpacity: { type: Number, default: 0.6 },
     strokeWidth: { type: Number, default: undefined },
     strokeDasharray: { type: String, default: undefined },
-    dot: { type: Boolean, default: false },
+    dot: { type: [Boolean, Object] as PropType<boolean | Record<string, any>>, default: false },
     hide: { type: Boolean, default: false },
     legendType: { type: String as PropType<LegendType>, default: 'rect' },
     tooltipType: { type: String as PropType<TooltipType>, default: undefined },
@@ -211,16 +211,20 @@ export const Radar = defineComponent({
           </g>
           {props.dot && (
             <g class="v-charts-radar-dots">
-              {points.map((point, i) => (
-                <Dot
-                  key={`dot-${i}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r={3}
-                  fill={props.fill}
-                  stroke={stroke}
-                />
-              ))}
+              {points.map((point, i) => {
+                const dotProps = typeof props.dot === 'object' ? props.dot : {}
+                return (
+                  <Dot
+                    key={`dot-${i}`}
+                    cx={point.x}
+                    cy={point.y}
+                    r={3}
+                    fill={props.fill}
+                    stroke={stroke}
+                    {...dotProps}
+                  />
+                )
+              })}
             </g>
           )}
         </Layer>
