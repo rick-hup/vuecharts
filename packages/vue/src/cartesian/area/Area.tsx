@@ -1,5 +1,5 @@
 import type { SVGAttributes, SlotsType } from 'vue'
-import { Fragment, computed, defineComponent, provide, ref } from 'vue'
+import { Fragment, Teleport, defineComponent } from 'vue'
 import type { AreaProps, AreaPropsWithSVG } from './type'
 import { AreaVueProps } from './type'
 import { useArea } from '@/cartesian/area/hooks/useArea'
@@ -9,6 +9,7 @@ import { ClipRect } from './ClipRect'
 import { ActivePoints } from '@/cartesian/area/ActivePoints'
 import type { ActivePointsSlots } from './ActivePoints'
 import { useSetupGraphicalItem } from '@/hooks/useSetupGraphicalItem'
+import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 
 export const Area = defineComponent<AreaPropsWithSVG>({
   name: 'Area',
@@ -18,6 +19,7 @@ export const Area = defineComponent<AreaPropsWithSVG>({
   setup(props: AreaProps, { attrs, slots }: { attrs: SVGAttributes, slots: ActivePointsSlots }) {
     useSetupGraphicalItem(props, 'area')
     const { shouldRender, areaData, points, clipPathId, shouldShowAnimation } = useArea(props, attrs)
+    const graphicalLayerRef = useGraphicalLayerRef(null)
 
     return () => {
       if (!shouldRender.value) {
@@ -49,7 +51,7 @@ export const Area = defineComponent<AreaPropsWithSVG>({
         return <StaticArea key="static-area" />
       }
 
-      return (
+      const areaContent = (
         <Fragment>
           <Layer class={['v-charts-area', attrs.class]}>
             {renderAreaContent()}
@@ -64,6 +66,12 @@ export const Area = defineComponent<AreaPropsWithSVG>({
           </ActivePoints>
         </Fragment>
       )
+
+      // Teleport into graphical layer so areas render above cursor
+      if (graphicalLayerRef?.value) {
+        return <Teleport to={graphicalLayerRef.value}>{areaContent}</Teleport>
+      }
+      return areaContent
     }
   },
 })

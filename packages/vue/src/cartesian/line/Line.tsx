@@ -1,5 +1,5 @@
 import type { SVGAttributes, SlotsType } from 'vue'
-import { Fragment, defineComponent } from 'vue'
+import { Fragment, Teleport, computed, defineComponent } from 'vue'
 import type { LineProps, LinePropsWithSVG } from './type'
 import { LineVueProps } from './type'
 import { useLine } from '@/cartesian/line/hooks/useLine'
@@ -9,15 +9,21 @@ import { ActivePoints } from '@/cartesian/line/ActivePoints'
 import type { ActivePointsSlots } from './ActivePoints'
 import { useSetupGraphicalItem } from '@/hooks/useSetupGraphicalItem'
 import { GraphicalItemClipPath } from '@/cartesian/GraphicalItemClipPath'
+import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
+import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
 
 export const Line = defineComponent({
   name: 'Line',
   props: LineVueProps,
   inheritAttrs: false,
-  slots: Object as SlotsType<ActivePointsSlots & { shape?: (props: any) => any, dot?: (props: any) => any, label?: (props: any) => any }>,
+  slots: Object as SlotsType<ActivePointsSlots & { default?: () => any, shape?: (props: any) => any, dot?: (props: any) => any, label?: (props: any) => any }>,
   setup(props: LineProps, { attrs, slots }: { attrs: SVGAttributes, slots: any }) {
     useSetupGraphicalItem(props, 'line')
     const { shouldRender, needClip, clipPathId, lineData, points } = useLine(props, attrs, slots.shape, slots.dot, slots.label)
+    const graphicalLayerRef = useGraphicalLayerRef(null)
+
+    // Provide label list data so LabelList children can consume it via context
+    provideCartesianLabelListData(computed(() => lineData.value as any))
 
     return () => {
       if (!shouldRender.value) {
@@ -31,7 +37,9 @@ export const Line = defineComponent({
         }
       }
 
-      return (
+      const defaultContent = slots.default?.()
+
+      const lineContent = (
         <Fragment>
           <Layer class={['v-charts-line', attrs.class]}>
             {needClip.value && (
@@ -40,6 +48,7 @@ export const Line = defineComponent({
               </defs>
             )}
             <StaticLine />
+            {defaultContent}
           </Layer>
           <ActivePoints
             points={lineData.value ?? []}
@@ -51,6 +60,12 @@ export const Line = defineComponent({
           </ActivePoints>
         </Fragment>
       )
+
+      // Teleport into graphical layer so lines render above cursor
+      if (graphicalLayerRef?.value) {
+        return <Teleport to={graphicalLayerRef.value}>{lineContent}</Teleport>
+      }
+      return lineContent
     }
   },
 })
