@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, BarChart3, Moon, Sun } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, BarChart3, LineChart as LineChartIcon, Moon, Sun } from 'lucide-vue-next'
 
 const colorMode = useColorMode()
 const route = useRoute()
@@ -11,6 +11,7 @@ function toggleColorMode() {
 const navLinks = [
   { path: '/bar-charts', name: 'Bar Charts', icon: BarChart3 },
   { path: '/area', name: 'Area Charts', icon: AreaChartIcon },
+  { path: '/line-charts', name: 'Line Charts', icon: LineChartIcon },
 ]
 </script>
 

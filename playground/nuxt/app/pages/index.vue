@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3 } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, LineChart as LineChartIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -12,9 +12,16 @@ const routes = [
   {
     path: '/area',
     name: 'Area Charts',
-    description: 'Time-range filtering with gradient fills.',
+    description: 'Default, linear, step, stacked, gradient, interactive and more.',
     icon: AreaChartIcon,
-    count: 1,
+    count: 10,
+  },
+  {
+    path: '/line-charts',
+    name: 'Line Charts',
+    description: 'Default, linear, step, dots, labels, legend, interactive and more.',
+    icon: LineChartIcon,
+    count: 10,
   },
 ]
 </script>
@@ -30,7 +37,7 @@ const routes = [
       </p>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
         v-for="route in routes"
         :key="route.path"
