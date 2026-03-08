@@ -1,4 +1,5 @@
 export * from './types'
+export * from './Dot'
 export * from './Rectangle'
 export * from './Symbols'
 export * from './Sector'
