@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, LineChart as LineChartIcon, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, LineChart as LineChartIcon, MessageSquare, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -43,6 +43,13 @@ const routes = [
     description: 'Simple, grid, label, shape, stacked, text and more.',
     icon: CircleDot,
     count: 6,
+  },
+  {
+    path: '/tooltip-charts',
+    name: 'Tooltip Charts',
+    description: 'Default, line indicator, no indicator, custom label, formatter, icons and advanced.',
+    icon: MessageSquare,
+    count: 9,
   },
 ]
 </script>

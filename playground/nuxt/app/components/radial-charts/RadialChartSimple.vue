@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TrendingUp } from 'lucide-vue-next'
+import { AppWindow, Chrome, Compass, Ellipsis, Globe, TrendingUp } from 'lucide-vue-next'
 import { RadialBar, RadialBarChart, Tooltip } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
@@ -14,11 +14,11 @@ const chartData = [
 
 const chartConfig: ChartConfig = {
   visitors: { label: 'Visitors' },
-  chrome: { label: 'Chrome', color: 'var(--chart-1)' },
-  safari: { label: 'Safari', color: 'var(--chart-2)' },
-  firefox: { label: 'Firefox', color: 'var(--chart-3)' },
-  edge: { label: 'Edge', color: 'var(--chart-4)' },
-  other: { label: 'Other', color: 'var(--chart-5)' },
+  chrome: { label: 'Chrome', color: 'var(--chart-1)', icon: Chrome },
+  safari: { label: 'Safari', color: 'var(--chart-2)', icon: Compass },
+  firefox: { label: 'Firefox', color: 'var(--chart-3)', icon: Globe },
+  edge: { label: 'Edge', color: 'var(--chart-4)', icon: AppWindow },
+  other: { label: 'Other', color: 'var(--chart-5)', icon: Ellipsis },
 }
 </script>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TrendingUp } from 'lucide-vue-next'
+import { Monitor, Smartphone, TrendingUp } from 'lucide-vue-next'
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart, Tooltip } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
@@ -7,8 +7,8 @@ import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 const chartData = [{ month: 'january', desktop: 1260, mobile: 570 }]
 
 const chartConfig: ChartConfig = {
-  desktop: { label: 'Desktop', color: 'var(--chart-1)' },
-  mobile: { label: 'Mobile', color: 'var(--chart-2)' },
+  desktop: { label: 'Desktop', color: 'var(--chart-1)', icon: Monitor },
+  mobile: { label: 'Mobile', color: 'var(--chart-2)', icon: Smartphone },
 }
 
 const totalVisitors = chartData[0]?.desktop! + chartData[0]?.mobile!

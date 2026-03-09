@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { TrendingUp } from 'lucide-vue-next'
-import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'vccs'
+import { Compass, TrendingUp } from 'lucide-vue-next'
+import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart, Tooltip } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
+import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 
 const chartData = [{ browser: 'safari', visitors: 200, fill: 'var(--color-safari)' }]
 
 const chartConfig: ChartConfig = {
   visitors: { label: 'Visitors' },
-  safari: { label: 'Safari', color: 'var(--chart-2)' },
+  safari: { label: 'Safari', color: 'var(--chart-2)', icon: Compass },
 }
 </script>
 
@@ -36,6 +37,17 @@ const chartConfig: ChartConfig = {
             class="first:fill-muted last:fill-background"
             :polar-radius="[86, 74]"
           />
+          <Tooltip :cursor="false">
+            <template #content="{ active, payload, label }">
+              <ChartTooltipContent
+                :active="active"
+                :payload="payload"
+                :label="label"
+                hide-label
+                name-key="browser"
+              />
+            </template>
+          </Tooltip>
           <RadialBar
             data-key="visitors"
             :background="true"

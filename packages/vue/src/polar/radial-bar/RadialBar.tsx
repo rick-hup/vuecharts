@@ -23,7 +23,7 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
   name: 'RadialBar',
   props: RadialBarVueProps,
   inheritAttrs: false,
-  setup(props) {
+  setup(props, { slots }) {
     const dispatch = useAppDispatch()
 
     const radialBarSettings = computed<RadialBarSettings>(() => ({
@@ -192,6 +192,7 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
       const labelEl = !isAnimating.value && props.label
         ? <LabelList {...(typeof props.label === 'object' ? props.label : {})} />
         : null
+      const slotChildren = !isAnimating.value ? slots.default?.() : null
 
       if (!props.isAnimationActive) {
         prevSectors = sectorData
@@ -199,6 +200,7 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
           <Fragment>
             {renderSectors(sectorData)}
             {labelEl}
+            {slotChildren}
           </Fragment>
         )
       }
@@ -246,6 +248,7 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
             }}
           </Animate>
           {labelEl}
+          {slotChildren}
         </Fragment>
       )
     }
