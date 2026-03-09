@@ -5,7 +5,7 @@ import { LabelVueProps } from './types'
 import { useViewBox } from '@/context/chartLayoutContext'
 import { usePolarLabelViewBox } from '@/context/polarLabelViewBoxContext'
 import { isNullish } from '@/utils'
-import { getAttrsOfCartesianLabel, getAttrsOfPolarLabel, isPolar } from '@/components/label/utils'
+import { getAttrsOfCartesianLabel, getAttrsOfPolarLabel, isPolar, renderRadialLabel } from '@/components/label/utils'
 import Text from '@/components/Text.vue'
 
 export const Label = defineComponent({
@@ -17,7 +17,7 @@ export const Label = defineComponent({
     const polarLabelViewBox = usePolarLabelViewBox()
 
     return () => {
-      const { viewBox: viewBoxFromProps, value, position, textBreakAll } = props
+      const { viewBox: viewBoxFromProps, value, position, textBreakAll, formatter } = props
       const viewBox = viewBoxFromProps || polarLabelViewBox.value || viewBoxFromContext.value
       if (
         !viewBox
@@ -32,21 +32,33 @@ export const Label = defineComponent({
         return slots.content({ ...props, viewBox })
       }
 
-      // TODO: render radial label
-      if (isPolarLabel && (position === 'insideStart' || position === 'insideEnd' || position === 'end')) {
-        // return renderRadialLabel(props, label, attrs)
+      // Compute label value with optional formatter
+      let label = value
+      if (typeof formatter === 'function') {
+        label = formatter(label)
       }
 
-      const positionAttrs = isPolarLabel ? getAttrsOfPolarLabel(props) : getAttrsOfCartesianLabel(props, viewBox)
+      // Render radial label for polar positions insideStart/insideEnd/end
+      if (isPolarLabel && (position === 'insideStart' || position === 'insideEnd' || position === 'end')) {
+        return renderRadialLabel(props, position, label, attrs, viewBox)
+      }
+
+      const positionAttrs = isPolarLabel ? getAttrsOfPolarLabel(props, viewBox) : getAttrsOfCartesianLabel(props, viewBox)
+
+      // Allow textAnchor from attrs to override computed value
+      const textAnchor = (attrs.textAnchor != null && (attrs.textAnchor === 'start' || attrs.textAnchor === 'middle' || attrs.textAnchor === 'end'))
+        ? attrs.textAnchor
+        : positionAttrs.textAnchor
 
       return (
         <Text
           class={['v-charts-label', props.class]}
           {...attrs}
           {...positionAttrs}
+          textAnchor={textAnchor}
           angle={props.angle}
           breakAll={textBreakAll}
-          value={value}
+          value={label}
         />
       )
     }

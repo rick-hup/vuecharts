@@ -26,7 +26,7 @@ const chartConfig: ChartConfig = {
           :data="chartData"
           :end-angle="100"
           :inner-radius="80"
-          :outer-radius="110"
+          :outer-radius="140"
         >
           <PolarGrid
             grid-type="circle"
@@ -58,7 +58,7 @@ const chartConfig: ChartConfig = {
                     :y="viewBox.cy"
                     class="fill-foreground text-4xl font-bold"
                   >
-                    {{ chartData[0].visitors.toLocaleString() }}
+                    {{ chartData[0]?.visitors?.toLocaleString() ?? 0 }}
                   </tspan>
                   <tspan
                     :x="viewBox.cx"

@@ -24,6 +24,9 @@ export const RadialBarVueProps = {
   maxBarSize: { type: Number, default: undefined },
   barSize: { type: [Number, String] as PropType<number | string>, default: undefined },
   stackId: { type: [String, Number] as PropType<StackId>, default: undefined },
+  cornerRadius: { type: [Number, String] as PropType<number | string>, default: 0 },
+  forceCornerRadius: { type: Boolean, default: false },
+  cornerIsExternal: { type: Boolean, default: false },
 }
 
 export type RadialBarPropsWithSVG = WithSVGProps<VuePropsToType<typeof RadialBarVueProps>>

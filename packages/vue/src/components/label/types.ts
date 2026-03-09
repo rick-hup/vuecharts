@@ -1,18 +1,14 @@
+import type { ViewBox } from '@/cartesian/type'
 import type { DataKey, VuePropsToType } from '@/types'
 import { last } from 'es-toolkit/compat'
 import type { PropType, VNode } from 'vue'
+
+export type { ViewBox }
 
 export interface Data {
   value?: number | string | Array<number | string>
   payload?: any
   parentViewBox?: ViewBox
-}
-export interface ViewBox {
-  x?: number
-  y?: number
-  width?: number
-  height?: number
-  clockWise?: boolean
 }
 
 export type LabelPosition =
@@ -74,6 +70,8 @@ export const LabelListVueProps = {
   },
 }
 
+export type LabelFormatter = (label: string | number | undefined) => string | number | undefined
+
 export const LabelVueProps = {
   id: {
     type: String,
@@ -90,6 +88,9 @@ export const LabelVueProps = {
   },
   value: {
     type: [Number, String],
+  },
+  formatter: {
+    type: Function as PropType<LabelFormatter>,
   },
   offset: {
     type: Number,
@@ -112,5 +113,5 @@ export const LabelVueProps = {
 export type LabelProps = VuePropsToType<typeof LabelVueProps>
 
 export interface LabelSlots {
-  content: (props: LabelProps) => VNode
+  content: (props: LabelProps & { viewBox: ViewBox }) => VNode
 }

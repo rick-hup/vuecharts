@@ -1,8 +1,9 @@
 import type { CartesianViewBox, PolarViewBox, ViewBox } from '@/cartesian/type'
-import type { LabelProps } from '@/components/label/types'
+import type { LabelPosition, LabelProps } from '@/components/label/types'
 import type { Coordinate } from '@/types'
 import { isNumber, isPercent } from '@/utils'
-import { getPercentValue } from '@/utils/data'
+import { getPercentValue, mathSign } from '@/utils/data'
+import { uniqueId } from '@/utils/data-utils'
 
 export function parseViewBox(props: any): ViewBox | undefined {
   const {
@@ -74,9 +75,67 @@ export function polarToCartesian(cx: number, cy: number, radius: number, angle: 
   }
 }
 
-export function getAttrsOfPolarLabel(props: LabelProps) {
-  const { viewBox, offset, position } = props
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle } = viewBox as PolarViewBox
+type PolarLabelPosition = 'insideStart' | 'insideEnd' | 'end'
+
+function getDeltaAngle(startAngle: number, endAngle: number) {
+  const sign = mathSign(endAngle - startAngle)
+  const deltaAngle = Math.min(Math.abs(endAngle - startAngle), 360)
+  return sign * deltaAngle
+}
+
+export function renderRadialLabel(
+  labelProps: LabelProps,
+  position: PolarLabelPosition,
+  label: string | number | undefined,
+  attrs: Record<string, any>,
+  viewBox: PolarViewBox,
+) {
+  const { offset = 5, class: className, id: labelId } = labelProps
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, clockWise } = viewBox
+  const radius = (innerRadius! + outerRadius!) / 2
+  const deltaAngle = getDeltaAngle(startAngle!, endAngle!)
+  const sign = deltaAngle >= 0 ? 1 : -1
+  let labelAngle: number
+  let direction: boolean | undefined
+
+  switch (position) {
+    case 'insideStart':
+      labelAngle = startAngle! + sign * offset
+      direction = clockWise
+      break
+    case 'insideEnd':
+      labelAngle = endAngle! - sign * offset
+      direction = !clockWise
+      break
+    case 'end':
+      labelAngle = endAngle! + sign * offset
+      direction = clockWise
+      break
+    default:
+      throw new Error(`Unsupported position ${position}`)
+  }
+
+  direction = deltaAngle <= 0 ? direction : !direction
+
+  const startPoint = polarToCartesian(cx!, cy!, radius, labelAngle)
+  const endPoint = polarToCartesian(cx!, cy!, radius, labelAngle + (direction ? 1 : -1) * 359)
+  const path = `M${startPoint.x},${startPoint.y} A${radius},${radius},0,1,${direction ? 0 : 1},${endPoint.x},${endPoint.y}`
+  const id = labelId == null ? uniqueId('v-charts-radial-line-') : labelId
+
+  return (
+    <text {...attrs} dominant-baseline="central" class={['v-charts-radial-bar-label', className]}>
+      <defs>
+        <path id={id} d={path} />
+      </defs>
+      <textPath xlinkHref={`#${id}`}>{label}</textPath>
+    </text>
+  )
+}
+
+export function getAttrsOfPolarLabel(props: LabelProps, viewBox?: PolarViewBox) {
+  const { offset, position } = props
+  const vb = viewBox ?? (props.viewBox as PolarViewBox)
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle } = vb
   const midAngle = (startAngle! + endAngle!) / 2
 
   if (position === 'outside') {

@@ -57,7 +57,9 @@ export const PolarRadiusAxis = defineComponent({
         allowDataOverflow: props.domain != null,
         reversed: false,
         includeHidden: false,
-        domain: props.domain,
+        // Recharts v2 defaults domain=[0,'auto'], which creates extra band entries
+        // via parseSpecifiedDomain, making bars thinner. Preserve that behavior.
+        domain: props.domain ?? [0, 'auto'],
         unit: undefined,
         name: undefined,
         allowDecimals: props.allowDecimals,

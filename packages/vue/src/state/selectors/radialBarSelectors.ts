@@ -405,6 +405,13 @@ export function computeRadialBarDataItems({
         entry,
         index,
       })
+      // Recharts v2 PolarRadiusAxis defaults type='number' with a forced scaleBand,
+      // so getCateCoordinateOfBar takes the number path: scale(value) - bandSize/2 + offset.
+      // Our type='category' path returns ticks[index].coordinate + offset (no centering).
+      // Apply -bandSize/2 to match v2's centering behavior.
+      if (innerRadius != null) {
+        innerRadius = innerRadius - bandSize / 2
+      }
       if (innerRadius != null && endAngle != null && startAngle != null) {
         outerRadius = innerRadius + pos.size!
         const deltaAngle = endAngle - startAngle

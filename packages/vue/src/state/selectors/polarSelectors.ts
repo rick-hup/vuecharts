@@ -2,7 +2,7 @@ import { createSelector } from '@reduxjs/toolkit'
 import type { AppliedChartData, ChartData } from '../chartDataSlice'
 import type { RechartsRootState } from '../store'
 import type { AxisId, BaseCartesianAxis } from '../cartesianAxisSlice'
-import { selectChartDataAndAlwaysIgnoreIndexes } from './dataSelectors'
+import { selectChartDataAndAlwaysIgnoreIndexes, selectChartDataWithIndexes } from './dataSelectors'
 import type {
   AppliedChartDataWithErrorDomain,
 } from './axisSelectors'
@@ -11,10 +11,12 @@ import {
   combineAxisDomain,
   combineAxisDomainWithNiceTicks,
   combineDisplayedData,
+  combineDomainOfStackGroups,
   combineGraphicalItemsData,
   combineGraphicalItemsSettings,
   combineNiceTicks,
   combineNumericalDomain,
+  combineStackGroups,
   itemAxisPredicate,
   selectBaseAxis,
   selectDomainDefinition,
@@ -27,6 +29,7 @@ import { selectStackOffsetType } from './rootPropsSelectors'
 import { getValueByDataKey } from '@/utils/chart'
 import type { NumberDomain } from '@/types/axis'
 import type { CategoricalDomain } from '@/types'
+import type { StackId } from '@/types/tick'
 import { selectChartLayout } from '@/state/selectors/common'
 
 export type PolarAxisType = 'angleAxis' | 'radiusAxis'
@@ -111,6 +114,20 @@ export const selectAllPolarAppliedNumericalValues: (
   },
 )
 
+const selectPolarStackGroups: (
+  state: RechartsRootState,
+  axisType: PolarAxisType,
+  axisId: AxisId,
+) => Record<StackId, import('./axisSelectors').StackGroup> | undefined = createSelector(
+  [selectPolarDisplayedData, selectPolarItemsSettings, selectStackOffsetType],
+  combineStackGroups,
+)
+
+const selectPolarDomainOfStackGroups = createSelector(
+  [selectPolarStackGroups, selectChartDataWithIndexes, pickAxisType],
+  combineDomainOfStackGroups,
+)
+
 const unsupportedInPolarChart = (): undefined => undefined
 
 const selectPolarNumericalDomain: (
@@ -121,7 +138,7 @@ const selectPolarNumericalDomain: (
   [
     selectBaseAxis,
     selectDomainDefinition,
-    unsupportedInPolarChart,
+    selectPolarDomainOfStackGroups,
     selectAllPolarAppliedNumericalValues,
     unsupportedInPolarChart,
   ],

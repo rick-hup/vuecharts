@@ -261,12 +261,20 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - CSS classes: `v-charts-polar-radius-axis` (g), `v-charts-polar-radius-axis-line` (axis line), `v-charts-polar-radius-axis-ticks` (tick group g), `v-charts-polar-radius-axis-tick-value` (tick Text)
 - **Scale type in radial layout**: `combineRealScaleType` (`state/selectors/axisSelectors.ts`) does NOT override scale for polar axes based on layout — polar axes use their `type` prop just like cartesian axes (`type='number'` → `'linear'`, `type='category'` + bar → `'band'`); there are no special `layout === 'radial'` overrides for `radiusAxis`/`angleAxis` scale type selection
 
+### Sector
+- Props: `cx`, `cy`, `innerRadius`, `outerRadius`, `startAngle`, `endAngle` (all Number, default `0`), `cornerRadius` ([Number, String], default `0`), `forceCornerRadius` (Boolean, default `false`), `cornerIsExternal` (Boolean, default `false`), `className` (String)
+- Guard: returns `null` if `outerRadius <= 0 || outerRadius < innerRadius || startAngle === endAngle`
+- Corner radius: when `cornerRadius > 0 && |startAngle - endAngle| < 360`, uses `getSectorWithCorner`; falls back to plain `getSectorPath`; `cornerRadius` supports percent values (resolved against `outerRadius - innerRadius` via `getPercentValue`)
+- `forceCornerRadius`: when arc is too short for corner radius, forces a capsule shape instead of degrading to no corners
+- `cornerIsExternal`: adjusts tangent circle placement for external vs internal corner style
+- CSS class: `v-charts-sector`; public export from `index.ts`
+
 ### RadialBar
-- Props: `dataKey` (required), `angleAxisId`/`radiusAxisId` (default `0`), `background` (Boolean|Object, default `false`), `label` (Boolean|Object, default `false`), `isAnimationActive` (default `true`), `minPointSize` (default `0`), `maxBarSize`, `barSize`, `stackId`, `fill`, `stroke`, `fillOpacity`, `strokeWidth`, `strokeDasharray`, `legendType` (default `'rect'`), `tooltipType`, `hide`, `name`
+- Props: `dataKey` (required), `angleAxisId`/`radiusAxisId` (default `0`), `background` (Boolean|Object, default `false`), `label` (Boolean|Object, default `false`), `isAnimationActive` (default `true`), `minPointSize` (default `0`), `maxBarSize`, `barSize`, `stackId`, `fill`, `stroke`, `fillOpacity`, `strokeWidth`, `strokeDasharray`, `cornerRadius` ([Number, String], default `0`), `forceCornerRadius` (Boolean, default `false`), `cornerIsExternal` (Boolean, default `false`), `legendType` (default `'rect'`), `tooltipType`, `hide`, `name`
 - Two layout modes: `'centric'` (radius axis numeric — innerRadius/outerRadius from radius scale, startAngle/endAngle from angle ticks) and `'radial'` (angle axis numeric — startAngle/endAngle from angle scale, innerRadius/outerRadius from radius ticks)
 - Registers via `SetPolarGraphicalItem` (type: `'radialBar'`), `SetLegendPayload`, and `SetTooltipEntrySettings` directly (does NOT use `useSetupGraphicalItem`)
 - `getLegendItemColor` returns `fill` only (not stroke-preferring, unlike Line/Area/Radar)
-- Animation chase pattern: `prevSectors` + incrementing `animationId` as `<Animate key>`; interpolates `startAngle`, `endAngle`, `innerRadius`, `outerRadius`; new sectors animate from zero (endAngle from startAngle, outerRadius from innerRadius); existing sectors interpolate from previous values
+- Animation chase pattern: `prevSectors` + incrementing `animationId` as `<Animate key>`; new sectors animate arc sweep only (endAngle interpolates from startAngle → endAngle, radius stays constant); existing sectors interpolate `startAngle` and `endAngle` from previous values (radius not interpolated during chase)
 - `background` prop: renders background `<Sector>` elements behind each data sector with `fill="#eee"` `fill-opacity=0.5`; pass object to override background sector props
 - `label` prop: renders `<LabelList>` outside the animation block (always shows at final data position); hidden while `isAnimating`
 - `provideCartesianLabelListData`: passes `fill` from per-entry sector data (`sector.fill ?? props.fill`) so each label inherits entry color
@@ -360,6 +368,25 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - **Slot forwarding**: `CartesianGrid` passes `slots.horizontal` → `HorizontalGridLines` and `slots.vertical` → `VerticalGridLines` as named child slots; the grid-line components call `renderLineItem(slots.horizontal, horizontal, lineItemProps)` per tick
 - **Coordinate priority**: explicit `horizontalPoints`/`verticalPoints` → `horizontalValues`/`verticalValues` (data-domain, overrides ticks) → coordinate generators → default generators (use `CartesianAxisDefaultProps` + axis ticks via `getCoordinatesOfGrid` + `getTicks`)
 - CSS classes: `v-charts-cartesian-grid` (outer g), `v-charts-cartesian-grid-horizontal` (horizontal lines g), `v-charts-cartesian-grid-vertical` (vertical lines g)
+
+### Label
+- Props: `id`, `class`, `viewBox` (ViewBox), `parentViewBox` (ViewBox), `value` (Number|String), `formatter` (LabelFormatter: `(value) => string | number | undefined`), `offset` (default `5`), `position` (LabelPosition), `textBreakAll`, `angle`, `index`
+- Slot: `#content` — receives `{ ...props, viewBox }`; fully custom label rendering; takes priority over all built-in rendering
+- **viewBox resolution order**: `props.viewBox` → `polarLabelViewBox.value` (from `usePolarLabelViewBox()`) → `useViewBox()` context
+- **Radial positions** (`insideStart`/`insideEnd`/`end` on polar viewBox): calls `renderRadialLabel()` — draws SVG `<text>` with `<textPath>` along an arc `<path>`; arc path gets a `uniqueId`; CSS class `v-charts-radial-bar-label`
+- **`textAnchor` override**: `attrs.textAnchor` takes priority over computed `positionAttrs.textAnchor`
+- **`LabelPosition`** values: `'top'|'left'|'right'|'bottom'|'inside'|'outside'|'insideLeft'|'insideRight'|'insideTop'|'insideBottom'|'insideTopLeft'|'insideBottomLeft'|'insideTopRight'|'insideBottomRight'|'insideStart'|'insideEnd'|'end'|'center'|'centerTop'|'centerBottom'|'middle'|{x?,y?}`
+- CSS class: `v-charts-label`
+- Location: `packages/vue/src/components/label/Label.tsx`; utils in `utils.tsx` (JSX, exports `parseViewBox`, `isPolar`, `polarToCartesian`, `renderRadialLabel`, `getAttrsOfPolarLabel`, `getAttrsOfCartesianLabel`)
+
+### LabelList
+- Props: `id`, `data` (ReadonlyArray<Data>), `valueAccessor` (default: last of array value or `entry.value`), `clockWise`, `dataKey`, `textBreakAll`, `position` (LabelPosition), `offset`, `angle`
+- Slot: `#label` — custom per-label renderer; receives `{ ...others, ...attrs, ...viewBox, value, index, key }`
+- **Data source**: `props.data` → `useCartesianLabelListData()` context (provided by parent series via `provideCartesianLabelListData`)
+- **Auto fill inheritance**: if `entry.fill` is set and no explicit `fill` in props/attrs, passes `fill=entry.fill` to each `<Label>` automatically
+- **Teleport**: when `useLabelLayerRef()` is non-null, wraps rendered `<Layer>` in `<Teleport to={labelLayerRef.value}>` so labels render in the label SVG layer (above graphical content)
+- CSS class: `v-charts-label-list`
+- Location: `packages/vue/src/components/label/LabelList.tsx`; types in `types.ts` (`Data`, `ViewBox` (re-exported from `@/cartesian/type`), `LabelPosition`, `LabelFormatter`, `LabelVueProps`, `LabelListVueProps`, `LabelSlots`)
 <!-- END AUTO-MANAGED -->
 
 ## Dependencies

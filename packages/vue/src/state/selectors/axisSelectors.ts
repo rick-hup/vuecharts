@@ -237,6 +237,7 @@ export function selectAxisSettings(state: RechartsRootState, axisType: XorYType,
  */
 export function selectHasBar(state: RechartsRootState): boolean {
   return state.graphicalItems.cartesianItems.some(item => item.type === 'bar')
+    || state.graphicalItems.polarItems.some(item => item.type === 'radialBar')
 }
 
 /**
@@ -798,7 +799,11 @@ export function combineAxisDomain(
   const { dataKey, type } = axisSettings
   const isCategorical = isCategoricalAxis(layout, axisType)
   if (isCategorical && dataKey == null) {
-    return range(0, displayedData.length)
+    // Recharts v2 compat: PolarRadiusAxis defaults domain=[0,'auto'] (2 entries).
+    // When forced to band scale, parseSpecifiedDomain extends the data-derived domain
+    // to match the specified domain length, creating extra bands that make bars thinner.
+    const domainLen = Array.isArray(axisSettings.domain) ? axisSettings.domain.length : 0
+    return range(0, Math.max(displayedData.length, domainLen))
   }
 
   if (type === 'category') {

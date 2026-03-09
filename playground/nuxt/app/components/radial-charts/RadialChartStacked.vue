@@ -11,7 +11,7 @@ const chartConfig: ChartConfig = {
   mobile: { label: 'Mobile', color: 'var(--chart-2)' },
 }
 
-const totalVisitors = chartData[0].desktop + chartData[0].mobile
+const totalVisitors = chartData[0]?.desktop! + chartData[0]?.mobile!
 </script>
 
 <template>
@@ -73,16 +73,19 @@ const totalVisitors = chartData[0].desktop + chartData[0].mobile
               </template>
             </Label>
           </PolarRadiusAxis>
+
           <RadialBar
             data-key="desktop"
             stack-id="a"
             fill="var(--color-desktop)"
+            :corner-radius="5"
             class="stroke-transparent stroke-2"
           />
           <RadialBar
             data-key="mobile"
             stack-id="a"
             fill="var(--color-mobile)"
+            :corner-radius="5"
             class="stroke-transparent stroke-2"
           />
         </RadialBarChart>
