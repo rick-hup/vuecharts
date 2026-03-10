@@ -183,11 +183,15 @@ function copyCode() {
 }
 
 .chart-demo-code :deep(pre code) {
-  line-height: 1.5 !important;
+  display: block;
+  font-size: 0;
+  line-height: 0;
 }
 
 .chart-demo-code :deep(pre code .line) {
+  font-size: 0.8125rem;
   line-height: 1.5 !important;
+  min-height: 1.5em;
 }
 
 :global(.dark) .chart-demo-code :deep(pre) {
