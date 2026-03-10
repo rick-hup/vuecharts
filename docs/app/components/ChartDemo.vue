@@ -193,13 +193,15 @@ function copyCode() {
   line-height: 1.5 !important;
   min-height: 1.5em;
 }
+</style>
 
-:global(.dark) .chart-demo-code :deep(pre) {
+<style>
+.dark .chart-demo-code pre.shiki {
   background-color: var(--shiki-dark-bg, #24292e) !important;
   color: var(--shiki-dark, #e1e4e8) !important;
 }
 
-:global(.dark) .chart-demo-code :deep(span) {
+.dark .chart-demo-code .shiki span {
   color: var(--shiki-dark) !important;
 }
 </style>
