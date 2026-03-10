@@ -75,7 +75,8 @@ docs/                       # Documentation site (Nuxt 3, Nuxt Content v3)
 ├── app/
 │   ├── charts/             # Live chart demos (SFCs with plain vccs imports, hardcoded colors)
 │   ├── components/
-│   │   ├── content/        # ProseCode, CodeGroup, ChartDemo, Callout, PropsTable
+│   │   ├── ChartDemo.vue   # Lazy-loaded chart demo card (IntersectionObserver rootMargin 200px); props: name?, description?, src (required); loads component+raw source lazily via import.meta.glob (NOT eager); Shiki syntax highlighting via codeToHtml({ themes: { light: 'github-light', dark: 'github-dark' } }); skeleton pulse while loading; tab buttons 'Preview'/'Code' (hardcoded); copy button 'Copy'/'Copied!' (2s); CSS vars: --ui-border/--ui-bg-elevated/--ui-text/--ui-text-muted; dark mode via :global(.dark) + --shiki-dark-bg/--shiki-dark CSS vars
+│   │   ├── content/        # ProseCode, CodeGroup, Callout, PropsTable
 │   │   └── docs/           # ChartContainer, DocsHeader, DocsSearch, DocsSidebar, DocsPagination, DocsToc
 │   ├── composables/        # useLocale, useSearch, useToc
 │   ├── layouts/            # default.vue, docs.vue
@@ -104,7 +105,7 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 - Label-inside-PolarRadiusAxis: `<PolarRadiusAxis :tick="false" :tick-line="false" :axis-line="false"><Label><template #content="{ viewBox }">...</template></Label></PolarRadiusAxis>` — `viewBox` provides `{ cx, cy }` via `POLAR_LABEL_VIEW_BOX_KEY`
 
 **Docs site stack**: Nuxt 3, Nuxt Content v3, Tailwind v4, shadcn-nuxt, @nuxt/fonts (Doto/JetBrains Mono/Instrument Sans).
-- Content uses MDC `::chart-demo{src="..."}::` to embed live demos
+- Content uses MDC `::chart-demo{src="..."}::` to embed live demos (rendered by `components/ChartDemo.vue` — lazy-loaded)
 - `useLocale`: English-only, `collectionName` is plain string `'content_en'` (NOT a ref)
 - DocsSidebar: `queryCollectionNavigation(collectionName, ['icon'])` — Nuxt Content v3 stores `_dir.yml` metadata as child entry, so `getGroupIcon` checks child list fallback
 - Docs `ChartContainer` has NO `ChartConfig` support (unlike playground version)
