@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'vccs'
-import ChartContainer from '~/components/docs/ChartContainer.vue'
+<script setup>
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'vccs'
 
 const data = [
   { name: 'Jan', desktop: 186, mobile: 80 },
@@ -13,26 +12,27 @@ const data = [
 </script>
 
 <template>
-  <ChartContainer>
+  <ResponsiveContainer
+    width="100%"
+    :height="300"
+  >
     <LineChart :data="data">
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
       <Tooltip />
-      <Legend />
       <Line
         type="monotone"
         data-key="desktop"
-        stroke="var(--chart-1)"
-        :stroke-width="2"
+        stroke="#8884d8"
+        stroke-dasharray="5 5"
       />
       <Line
         type="monotone"
         data-key="mobile"
-        stroke="var(--chart-2)"
-        :stroke-width="2"
-        stroke-dasharray="5 5"
+        stroke="#82ca9d"
+        stroke-dasharray="3 3"
       />
     </LineChart>
-  </ChartContainer>
+  </ResponsiveContainer>
 </template>

@@ -1,41 +1,40 @@
-<script setup lang="ts">
-import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'vccs'
-import ChartContainer from '~/components/docs/ChartContainer.vue'
+<script setup>
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'vccs'
 
 const data = [
-  { name: 'Jan', desktop: 186, mobile: 80 },
-  { name: 'Feb', desktop: 305, mobile: 200 },
-  { name: 'Mar', desktop: 237, mobile: 120 },
-  { name: 'Apr', desktop: 73, mobile: 190 },
-  { name: 'May', desktop: 209, mobile: 130 },
-  { name: 'Jun', desktop: 214, mobile: 140 },
+  { name: 'Jan', desktop: 400, mobile: 240 },
+  { name: 'Feb', desktop: 300, mobile: 139 },
+  { name: 'Mar', desktop: 200, mobile: 980 },
+  { name: 'Apr', desktop: 278, mobile: 390 },
+  { name: 'May', desktop: 189, mobile: 480 },
+  { name: 'Jun', desktop: 239, mobile: 380 },
 ]
 </script>
 
 <template>
-  <ChartContainer>
+  <ResponsiveContainer
+    width="100%"
+    :height="300"
+  >
     <AreaChart :data="data">
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
       <Tooltip />
-      <Legend />
       <Area
         type="monotone"
         data-key="desktop"
-        stack-id="1"
-        stroke="var(--chart-1)"
-        fill="var(--chart-1)"
-        fill-opacity="0.4"
+        stack-id="a"
+        stroke="#8884d8"
+        fill="#8884d8"
       />
       <Area
         type="monotone"
         data-key="mobile"
-        stack-id="1"
-        stroke="var(--chart-2)"
-        fill="var(--chart-2)"
-        fill-opacity="0.4"
+        stack-id="a"
+        stroke="#82ca9d"
+        fill="#82ca9d"
       />
     </AreaChart>
-  </ChartContainer>
+  </ResponsiveContainer>
 </template>

@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
-import ChartContainer from '~/components/docs/ChartContainer.vue'
+<script setup>
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'vccs'
 
 const data = [
   { name: 'Jan', value: 400 },
@@ -13,7 +12,10 @@ const data = [
 </script>
 
 <template>
-  <ChartContainer>
+  <ResponsiveContainer
+    width="100%"
+    :height="300"
+  >
     <AreaChart :data="data">
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
@@ -22,10 +24,10 @@ const data = [
       <Area
         type="monotone"
         data-key="value"
-        stroke="var(--chart-1)"
-        fill="var(--chart-1)"
-        fill-opacity="0.3"
+        stroke="#8884d8"
+        fill="#8884d8"
+        :fill-opacity="0.3"
       />
     </AreaChart>
-  </ChartContainer>
+  </ResponsiveContainer>
 </template>

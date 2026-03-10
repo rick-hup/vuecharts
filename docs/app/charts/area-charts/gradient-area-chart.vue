@@ -1,6 +1,5 @@
-<script setup lang="ts">
-import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'vccs'
-import ChartContainer from '~/components/docs/ChartContainer.vue'
+<script setup>
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'vccs'
 
 const data = [
   { name: 'Jan', value: 400 },
@@ -13,7 +12,10 @@ const data = [
 </script>
 
 <template>
-  <ChartContainer>
+  <ResponsiveContainer
+    width="100%"
+    :height="300"
+  >
     <AreaChart :data="data">
       <defs>
         <linearGradient
@@ -25,13 +27,13 @@ const data = [
         >
           <stop
             offset="5%"
-            stop-color="var(--chart-1)"
+            stop-color="#8884d8"
             stop-opacity="0.8"
           />
           <stop
             offset="95%"
-            stop-color="var(--chart-1)"
-            stop-opacity="0.1"
+            stop-color="#8884d8"
+            stop-opacity="0"
           />
         </linearGradient>
       </defs>
@@ -42,9 +44,9 @@ const data = [
       <Area
         type="monotone"
         data-key="value"
-        stroke="var(--chart-1)"
+        stroke="#8884d8"
         fill="url(#colorValue)"
       />
     </AreaChart>
-  </ChartContainer>
+  </ResponsiveContainer>
 </template>

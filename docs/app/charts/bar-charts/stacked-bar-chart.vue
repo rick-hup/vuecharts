@@ -1,37 +1,36 @@
-<script setup lang="ts">
-import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'vccs'
-import ChartContainer from '~/components/docs/ChartContainer.vue'
+<script setup>
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'vccs'
 
 const data = [
-  { name: 'Jan', desktop: 186, mobile: 80 },
-  { name: 'Feb', desktop: 305, mobile: 200 },
-  { name: 'Mar', desktop: 237, mobile: 120 },
-  { name: 'Apr', desktop: 73, mobile: 190 },
-  { name: 'May', desktop: 209, mobile: 130 },
-  { name: 'Jun', desktop: 214, mobile: 140 },
+  { name: 'Page A', uv: 4000, pv: 2400 },
+  { name: 'Page B', uv: 3000, pv: 1398 },
+  { name: 'Page C', uv: 2000, pv: 9800 },
+  { name: 'Page D', uv: 2780, pv: 3908 },
+  { name: 'Page E', uv: 1890, pv: 4800 },
+  { name: 'Page F', uv: 2390, pv: 3800 },
 ]
 </script>
 
 <template>
-  <ChartContainer>
+  <ResponsiveContainer
+    width="100%"
+    :height="300"
+  >
     <BarChart :data="data">
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
       <Tooltip />
-      <Legend />
       <Bar
-        data-key="desktop"
+        data-key="pv"
         stack-id="a"
-        fill="var(--chart-1)"
-        radius="0"
+        fill="#8884d8"
       />
       <Bar
-        data-key="mobile"
+        data-key="uv"
         stack-id="a"
-        fill="var(--chart-2)"
-        :radius="[4, 4, 0, 0]"
+        fill="#82ca9d"
       />
     </BarChart>
-  </ChartContainer>
+  </ResponsiveContainer>
 </template>
