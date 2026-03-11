@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setLegendSettings, setLegendSize } from '@/state/legendSlice'
 import { selectLegendPayload } from '@/state/selectors/legendSelectors'
 import { useChartHeight, useChartWidth, useMargin } from '@/context/chartLayoutContext'
-import { usePortal } from '@/chart/TooltipPortalContext'
+import { useLegendPortal } from '@/chart/LegendPortalContext'
 import { getUniqPayload } from '@/utils/payload/getUniqPayload'
 import { sortBy } from 'es-toolkit/compat'
 import type { LegendPayload } from '@/components/DefaultLegendContent'
@@ -15,7 +15,7 @@ import { defaultUniqBy, getDefaultPosition, getWidthOrHeight } from '../utils'
 export function useLegend(props: LegendProps) {
   const dispatch = useAppDispatch()
   const contextPayload = useAppSelector(selectLegendPayload)
-  const legendPortalFromContext = usePortal()
+  const legendPortalFromContext = useLegendPortal()
   const margin = useMargin()
   const chartWidth = useChartWidth()
   const chartHeight = useChartHeight()

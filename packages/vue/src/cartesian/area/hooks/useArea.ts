@@ -1,6 +1,6 @@
 import { useChartLayout } from '@/context/chartLayoutContext'
 import { useChartName } from '@/state/selectors/selectors'
-import type { AreaProps } from '@/cartesian/area/type'
+import type { AreaDotSlotProps, AreaProps } from '@/cartesian/area/type'
 import { computed, inject, provide, ref, watch } from 'vue'
 import type { InjectionKey, Ref, SVGAttributes, ShallowRef } from 'vue'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
@@ -27,6 +27,9 @@ export interface AreaContext {
   clipDot: boolean
   dotSize: number
 
+  // dot slot for custom rendering
+  dotSlot?: (props: AreaDotSlotProps) => any
+
   areaData: Readonly<ShallowRef<ComputedArea | undefined>>
 
   // is Area animating
@@ -52,7 +55,7 @@ export function useAreaContext() {
   return context
 }
 
-export function useArea(props: AreaProps, attrs: SVGAttributes = {}) {
+export function useArea(props: AreaProps, attrs: SVGAttributes = {}, dotSlot?: (props: AreaDotSlotProps) => any) {
   const layout = useChartLayout()
   const chartName = useChartName()
   const localId = uniqueId('v-charts-area-')
@@ -107,6 +110,7 @@ export function useArea(props: AreaProps, attrs: SVGAttributes = {}) {
     dot,
     clipDot,
     dotSize,
+    dotSlot,
     areaData,
     isAnimating,
     isClipRectAnimating,

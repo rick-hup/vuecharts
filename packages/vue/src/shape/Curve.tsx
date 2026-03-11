@@ -153,7 +153,8 @@ export type CurveProps = WithSVGProps<typeof CurveVueProps>
 export const Curve = defineComponent<CurveProps>({
   name: 'Curve',
   props: CurveVueProps,
-  setup(props) {
+  inheritAttrs: false,
+  setup(props, { attrs }) {
     const realPath = computed(() => {
       if ((!props.points || !props.points.length) && !props.path) {
         return undefined
@@ -168,6 +169,7 @@ export const Curve = defineComponent<CurveProps>({
 
       return (
         <path
+          {...attrs}
           class={['v-charts-curve', props.class]}
           d={realPath.value}
         />

@@ -1,6 +1,6 @@
 import type { SVGAttributes, SlotsType } from 'vue'
 import { Fragment, Teleport, defineComponent } from 'vue'
-import type { AreaProps, AreaPropsWithSVG } from './type'
+import type { AreaDotSlotProps, AreaProps, AreaPropsWithSVG } from './type'
 import { AreaVueProps } from './type'
 import { useArea } from '@/cartesian/area/hooks/useArea'
 import { Layer } from '@/container/Layer'
@@ -11,14 +11,18 @@ import type { ActivePointsSlots } from './ActivePoints'
 import { useSetupGraphicalItem } from '@/hooks/useSetupGraphicalItem'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 
-export const Area = defineComponent<AreaPropsWithSVG>({
+export type AreaSlots = ActivePointsSlots & {
+  dot?: (props: AreaDotSlotProps) => any
+}
+
+const _Area = defineComponent<AreaPropsWithSVG>({
   name: 'Area',
   props: AreaVueProps,
   inheritAttrs: false,
-  slots: Object as SlotsType<ActivePointsSlots>,
-  setup(props: AreaProps, { attrs, slots }: { attrs: SVGAttributes, slots: ActivePointsSlots }) {
+  slots: Object as SlotsType<AreaSlots>,
+  setup(props: AreaProps, { attrs, slots }: { attrs: SVGAttributes, slots: AreaSlots }) {
     useSetupGraphicalItem(props, 'area')
-    const { shouldRender, areaData, points, clipPathId, shouldShowAnimation } = useArea(props, attrs)
+    const { shouldRender, areaData, points, clipPathId, shouldShowAnimation } = useArea(props, attrs, slots.dot)
     const graphicalLayerRef = useGraphicalLayerRef(null)
 
     return () => {
@@ -75,6 +79,15 @@ export const Area = defineComponent<AreaPropsWithSVG>({
     }
   },
 })
+
+/**
+ * Type-safe Area component with slot types preserved in .d.ts output.
+ * The `new () => { $slots }` pattern ensures Volar picks up slot types
+ * even when consuming from compiled declarations.
+ */
+export const Area = _Area as typeof _Area & {
+  new (): { $slots: AreaSlots }
+}
 
 function getLegendItemColor(stroke: string | undefined, fill: string): string {
   return stroke && stroke !== 'none' ? stroke : fill

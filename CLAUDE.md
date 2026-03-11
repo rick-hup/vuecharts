@@ -86,13 +86,16 @@ docs/                       # Documentation site (Nuxt 3, Nuxt Content v3)
 
 playground/nuxt/            # Nuxt 3 playground for manual testing
 ├── app/components/
-│   ├── area-charts/        # 10 Area chart SFCs
-│   ├── bar-charts/         # 10 Bar chart SFCs
-│   ├── line-charts/        # 10 Line chart SFCs
-│   ├── radar-charts/       # 11 Radar chart SFCs
-│   ├── radial-charts/      # 6 RadialBar chart SFCs
-│   ├── tooltip-charts/     # 9 Tooltip demo SFCs
+│   ├── area-charts/        # Area chart SFCs
+│   ├── bar-charts/         # Bar chart SFCs
+│   ├── line-charts/        # Line chart SFCs
+│   ├── radar-charts/       # Radar chart SFCs
+│   ├── radial-charts/      # RadialBar chart SFCs
+│   ├── tooltip-charts/     # Tooltip demo SFCs
+│   ├── test-charts/        # Visual verification SFCs mirroring unit test cases (e.g. TestXAxisTickLabels)
 │   └── ui/chart/           # ChartContainer, ChartTooltipContent, ChartLegendContent, types.ts
+├── app/pages/
+│   └── test.vue            # /test route — grid of test-charts/ components for visual verification
 └── nuxt.config.ts          # Nuxt 3, Tailwind v4, shadcn-nuxt, @nuxtjs/color-mode
 ```
 
@@ -117,7 +120,7 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 3. **Context**: `provide/inject` for parent-child communication
 4. **Chart Factory**: `generateCategoricalChart()` creates chart containers
 5. **Animation**: `motion-v` with `Animate` wrapper
-6. **Events**: Redux middleware (must be synchronous — no `createListenerMiddleware`)
+6. **Events**: Redux middleware — mouse events use `createListenerMiddleware` (chartPointer captured synchronously in `RechartsWrapper` before dispatch); external/keyboard/touch use plain synchronous `Middleware`
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: conventions -->
@@ -141,6 +144,15 @@ export const Component = defineComponent<PropsWithSVG>({
   },
 })
 ```
+
+**Volar slot type preservation** (for components with slots in compiled `.d.ts`): wrap with the `new () => { $slots }` pattern so Volar picks up slot types from package consumers:
+```typescript
+const _Component = defineComponent<PropsWithSVG>({ /* ... */ })
+export const Component = _Component as typeof _Component & {
+  new (): { $slots: ComponentSlots }
+}
+```
+Currently used by: `Area` (exports `AreaSlots`).
 
 ### Props Pattern
 ```typescript
@@ -167,7 +179,9 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 ### Redux
 - One store per chart; graphical items register via `useSetupGraphicalItem`
 - `getItemColor`: Bar/RadialBar → `fill`; Area/Line/Radar → `getLegendItemColor(stroke, fill)` (stroke-preferring)
-- Middleware must be plain `Middleware` (synchronous) — `createListenerMiddleware` defers to microtask, breaking `e.currentTarget`
+- Mouse event middleware (`mouseEventsMiddleware`) uses `createListenerMiddleware`; to avoid `e.currentTarget` being null in the deferred microtask, `RechartsWrapper` captures `getChartPointer(e)` synchronously *before* dispatching `mouseMoveAction`/`mouseClickAction`
+- External event handlers (`externalEventsMiddleware`) and keyboard/touch middleware remain plain synchronous `Middleware`
+- `ReportChartProps` (internal): syncs chart-level props (barCategoryGap, barGap, barSize, stackOffset, syncId, syncMethod, etc.) into Redux store via `watchEffect`; rendered internally by `generateCategoricalChart`
 
 ### SVG Layers (Teleport)
 Three-tier z-ordering: cursor → graphical → label (via `Surface.vue`). `Area`, `Line`, `Radar` use `<Teleport to={graphicalLayerRef.value}>` via `useGraphicalLayerRef(null)`.
@@ -175,11 +189,18 @@ Three-tier z-ordering: cursor → graphical → label (via `Surface.vue`). `Area
 ### Animation Chase Pattern
 All animated components (Bar, Line, Scatter, Radar, RadialBar) use: `previousData` + incrementing `animationId` as `Animate` key; previous state updated at `t > 0` so rapid changes interpolate from current visual position.
 
+### Area Animation (Different from Chase Pattern)
+`Area` does NOT use `Animate` wrapper. It has two distinct mechanisms:
+1. **Initial entrance** (`ClipRect` animation): `isClipRectAnimating` ref + clip-path `#animationClipPath-${clipPathId}` — `ClipRect` component handles the reveal sweep
+2. **Subsequent data changes** (`StaticArea`): direct `motion-v` `animate(0, 1, {...})` call in `watch(points)` with manual x/y lerp of `currentPoints`/`currentBaseLine`; skips interpolation while `isClipRectAnimating` is true
+- Context shared via `provideAreaContext`/`useAreaContext` (InjectionKey `AreaContextKey`); sub-components `StaticArea` and `Dots` consume via `useAreaContext()`
+
 ### Vue + D3
 - Always `toRaw(entry)` before passing to D3 scale functions (Vue Proxy breaks D3)
 
 ### Slots (not VNode props)
 Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `label`, `content`, `cursor`, `tick`, `horizontal`, `vertical`. Example: `<Bar>{{ shape: (props) => <Custom {...props} /> }}</Bar>`.
+- `Area` slots: `#dot` (`AreaDotSlotProps`), `#activeDot` — `slots.dot` passed directly to `useArea(props, attrs, slots.dot)` hook
 
 **Bar slot priority** (`BarRectangles`): (1) `isActive && #activeBar` → (2) `#shape` → (3) default `<Rectangle>`. Rectangle props merge (low→high): `baseProps` → `entry.payload?.fill` → `entry` → `cellPropsForIndex` → `activeBarProps`.
 
@@ -216,10 +237,16 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Does NOT use `useSetupGraphicalItem` — registers via `SetPolarGraphicalItem` directly
 - `cornerRadius`/`forceCornerRadius`/`cornerIsExternal` forwarded to background sectors
 
+### YAxis / XAxis Internal Architecture
+- Split into two internal components: `YAxisImpl` (reads Redux state, renders `<CartesianAxis>`) and `YAxisSettingsDispatcher` (dispatches `addYAxis`/`removeYAxis` via `watchEffect`)
+- `YAxisImpl` returns `null` when `axisSize` or `position` is not yet available from the store
+- Default `interval` is `'preserveEnd'` (applied in `YAxisSettingsDispatcher`, not in the public `YAxis` props)
+
 ### CartesianGrid
 - Custom line rendering via `#horizontal`/`#vertical` slots (Function type removed from props)
 - `renderLineItem(slot, option, props)` — slot is first argument
 - Rendering layers: Background → HorizontalStripes → VerticalStripes → HorizontalGridLines → VerticalGridLines
+- `horizontalPoints` and `verticalPoints` are declared Vue props (not attrs); must be declared to be picked up by `propsIncludingDefaults`
 
 ### ErrorBar
 - Place as child of `<Scatter>` or `<Bar>`; consumes `ErrorBarContext` from parent
@@ -229,6 +256,21 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - `isAnimationActive={false}` for deterministic rendering
 - `mockGetBoundingClientRect({ width, height })` in `beforeEach`
 - Helpers: `@/test/helper` (`getBarRectangles`, `expectAreaCurve`, etc.)
+- Tests written as render functions (arrow function JSX, not SFC): `render(() => <Component />)`
+- Public API imports from `@/index`; internal component imports use direct paths (e.g. `@/chart/RadarChart`)
+- Layout context assertions: `defineComponent` + `useViewBox()`, `useChartWidth()`, `useChartHeight()`, `useClipPathId()` from `@/context/chartLayoutContext` / `@/chart/provideClipPathId`
+- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
+- Line test helpers: `getLineCurves(container)` = `container.querySelectorAll('.v-charts-line .v-charts-line-curve')`; dots: `dot={true}` renders `.v-charts-line-dots` wrapper + `.v-charts-line-dot` per data point; single data point renders dot but no curve
+- Line curve type detection via path `d` attribute: monotone → contains `'C'` (cubic bezier); step/linear → no `'C'`, contains `'L'`; connectNulls=false → 2 `'M'` commands in `d`; connectNulls=true → 1 `'M'` command
+- Line `#activeDot` slot: dot only appears after `fireEvent(chart, new MouseEvent('mousemove', {...}))` (no extra `nextTick` needed unlike Tooltip defaultIndex)
+- Bar radius testing: `radius={5}` or `radius={[10,10,0,0]}` produces arc commands `'A '` in path `d` attribute; background bars queried via `path[fill="#eee"]`
+- ResizeObserver testing: use `MockResizeObserver` with static `instances` array + `trigger(width, height)` method; `vi.stubGlobal('ResizeObserver', MockResizeObserver)` in `beforeEach`; reset `MockResizeObserver.instances = []` each test
+- Selector tests in `state/selectors/__tests__/`: render real charts with `isAnimationActive={false}` and assert DOM output; covers axisSelectors, barSelectors, legendSelectors, lineSelectors, radarSelectors, tooltipSelectors
+- Selector test helpers: `getBarDimensions(rect)` reads `x`/`y`/`width`/`height` from bar `<path>` element attributes directly; `getCurveYCoords(container, index)` / `getCurveXCoords` parse `.v-charts-line-curve` path `d`; `parseCurvePoints(d)` / `extractPathPoints(d)` share regex `/[ML]\s*([\d.eE+-]+)[,\s]+([\d.eE+-]+)/g`
+- Tooltip selector integration tests: hover via `fireEvent(chart, new MouseEvent('mousemove', { clientX, clientY }))` on `.v-charts-wrapper` + 2x `nextTick()`; `defaultIndex` requires 3x `nextTick()` to activate
+- SVG path parsing in tests: `extractPathPoints(d)` matches `/[ML]\s*([\d.eE+-]+)[,\s]+([\d.eE+-]+)/g` to extract polygon vertices from `d` attribute
+- YAxis tests (`cartesian/axis/__tests__/YAxis.spec.tsx`): tick rendering requires 2x `await nextTick()`; orientation verified via `transform` translate-X (left < 100, right > 200)
+- Test suite phases: shapes, chart containers, cartesian items, polar items, components, state/selectors/utils; progress tracked in `tasks/todo.md`
 
 ### Storybook
 - Story titles must match Recharts conventions

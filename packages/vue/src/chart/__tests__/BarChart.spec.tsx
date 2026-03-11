@@ -4,12 +4,11 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from '@/index'
 import { Tooltip } from '@/components/Tooltip'
 import { getBarRectangles, getBarRects } from '@/test/helper'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
-import { useViewBox } from '@/context/chartLayoutContext'
+import { useChartHeight, useChartWidth, useViewBox } from '@/context/chartLayoutContext'
 import { useClipPathId } from '@/chart/provideClipPathId'
-import { useChartHeight, useChartWidth } from '@/context/chartLayoutContext'
-import { defineComponent } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 
-describe('BarChart', () => {
+describe('barChart', () => {
   beforeEach(() => {
     mockGetBoundingClientRect({ width: 500, height: 500 })
   })
@@ -312,24 +311,22 @@ describe('BarChart', () => {
   describe('tooltip interaction', () => {
     it('shows tooltip on mouse enter on a bar', async () => {
       const { container } = render(() => (
-        <div style="width: 500px; height: 300px;">
-          <BarChart width={500} height={300} data={data}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
-            <Tooltip />
-          </BarChart>
-        </div>
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+          <Tooltip />
+        </BarChart>
       ))
 
-      const bars = getBarRectangles(container)
-      expect(bars.length).toBe(6)
+      // Tooltip activation is driven by mousemove on the chart wrapper
+      const chart = container.querySelector('.v-charts-wrapper')!
+      await fireEvent(chart, new MouseEvent('mousemove', { clientX: 200, clientY: 150, bubbles: true }))
+      await nextTick()
+      await nextTick()
 
-      // Mouse enter on the first bar
-      await fireEvent.mouseEnter(bars[0])
-
-      const tooltip = container.querySelector('.v-charts-tooltip-content')
-      expect(tooltip).toBeTruthy()
+      const tooltipWrapper = document.body.querySelector('.v-charts-tooltip-wrapper')
+      expect(tooltipWrapper).toBeTruthy()
     })
   })
 

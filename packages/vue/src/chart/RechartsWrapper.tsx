@@ -9,6 +9,8 @@ import { touchEventAction } from '../state/touchEventsMiddleware'
 import type { CategoricalChartFunc } from '@/types'
 import { useReportScale } from '@/state/utils/useReportScale'
 import { providePortalRaw } from '@/chart/TooltipPortalContext'
+import { provideLegendPortalRaw } from '@/chart/LegendPortalContext'
+import { getChartPointer } from '@/utils/chart'
 
 export const RechartsWrapper = defineComponent({
   name: 'RechartsWrapper',
@@ -36,19 +38,30 @@ export const RechartsWrapper = defineComponent({
     const scaleRef = useReportScale()
 
     const tooltipPortal = ref<HTMLElement | null>(null)
+    const legendPortal = ref<HTMLElement | null>(null)
     providePortalRaw(tooltipPortal)
+    provideLegendPortalRaw(legendPortal)
     const innerRef = (node: HTMLDivElement | null) => {
       scaleRef.value = node
       tooltipPortal.value = node
+      legendPortal.value = node
     }
 
     const myOnClick = (e: MouseEvent) => {
-      dispatch(mouseClickAction(e))
+      // Capture chart pointer synchronously before dispatching to middleware,
+      // because createListenerMiddleware defers to microtask and e.currentTarget will be null by then
+      const chartPointer = getChartPointer(e)
+      if (chartPointer) {
+        dispatch(mouseClickAction(chartPointer))
+      }
       dispatch(externalEventAction({ handler: props.onClick!, event: e }))
     }
 
     const myOnMouseEnter = (e: MouseEvent) => {
-      dispatch(mouseMoveAction(e))
+      const chartPointer = getChartPointer(e)
+      if (chartPointer) {
+        dispatch(mouseMoveAction(chartPointer))
+      }
       dispatch(externalEventAction({ handler: props.onMouseEnter!, event: e }))
     }
 
@@ -58,7 +71,10 @@ export const RechartsWrapper = defineComponent({
     }
 
     const myOnMouseMove = (e: MouseEvent) => {
-      dispatch(mouseMoveAction(e))
+      const chartPointer = getChartPointer(e)
+      if (chartPointer) {
+        dispatch(mouseMoveAction(chartPointer))
+      }
       dispatch(externalEventAction({ handler: props.onMouseMove!, event: e }))
     }
 

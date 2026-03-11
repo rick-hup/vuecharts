@@ -86,3 +86,15 @@ export type AreaProps = VuePropsToType<typeof AreaVueProps>
 export type AreaPropsWithSVG = WithSVGProps<
   typeof AreaVueProps
 >
+
+export interface AreaDotSlotProps {
+  cx: number
+  cy: number
+  r: number
+  fill?: string
+  stroke?: string
+  strokeWidth?: number
+  fillOpacity?: number
+  clipDot?: boolean
+  class?: string
+}

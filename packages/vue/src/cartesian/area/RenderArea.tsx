@@ -22,7 +22,7 @@ export const Dots = defineComponent({
     },
   },
   setup(_props) {
-    const { clipPathId, props, attrs } = useAreaContext()
+    const { clipPathId, props, attrs, dotSlot } = useAreaContext()
 
     return () => {
       const { points } = _props
@@ -43,7 +43,11 @@ export const Dots = defineComponent({
         >
           {
             points?.map((point) => {
-              return <Dot {...dotsProps} {...attrs} r={3} cx={point.x} cy={point.y} class="v-charts-area-dot" clipDot={clipDot} />
+              const dotProps = { ...dotsProps, ...attrs, r: 3, cx: point.x, cy: point.y, class: 'v-charts-area-dot', clipDot }
+              if (dotSlot) {
+                return dotSlot(dotProps)
+              }
+              return <Dot {...dotProps} />
             })
           }
         </Layer>

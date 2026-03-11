@@ -5,7 +5,7 @@ import type { CartesianViewBox } from '@/cartesian/type'
 
 export type Dimension2D = 'x' | 'y'
 
-const CSS_CLASS_PREFIX = 'recharts-tooltip-wrapper'
+const CSS_CLASS_PREFIX = 'v-charts-tooltip-wrapper'
 
 const TOOLTIP_HIDDEN: CSSProperties = { visibility: 'hidden' }
 

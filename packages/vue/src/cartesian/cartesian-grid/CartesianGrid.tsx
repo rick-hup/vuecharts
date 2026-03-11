@@ -94,6 +94,8 @@ export const CartesianGrid = defineComponent({
       type: [Boolean, Object],
       default: true,
     },
+    horizontalPoints: Array,
+    verticalPoints: Array,
     horizontalValues: Array,
     verticalValues: Array,
     fill: String,
@@ -131,7 +133,7 @@ export const CartesianGrid = defineComponent({
       const verticalCoordinatesGenerator = propsIncludingDefaults.verticalCoordinatesGenerator || defaultVerticalCoordinatesGenerator
       const horizontalCoordinatesGenerator = propsIncludingDefaults.horizontalCoordinatesGenerator || defaultHorizontalCoordinatesGenerator
 
-      let horizontalPoints, verticalPoints
+      let { horizontalPoints, verticalPoints } = propsIncludingDefaults
       // No horizontal points are specified
       if ((!horizontalPoints || !horizontalPoints.length) && typeof horizontalCoordinatesGenerator === 'function') {
         const isHorizontalValues = horizontalValues && horizontalValues.length

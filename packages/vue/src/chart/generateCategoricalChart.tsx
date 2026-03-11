@@ -9,7 +9,6 @@ import { provideClipPathId } from './provideClipPathId'
 import Surface from '@/chart/Surface.vue'
 import { ChartDataContextProvider } from '@/context/ChartDataContextProvider'
 import type { ChartData } from '@/state/chartDataSlice'
-import { LegendPortalProvider } from '@/chart/LegendPortalContext'
 import ClipPath from '@/container/ClipPath'
 import { RechartsWrapper } from './RechartsWrapper'
 import { FULL_WIDTH_AND_HEIGHT } from '@/chart/const'
@@ -227,28 +226,26 @@ export function generateCategoricalChart({
                 outerRadius={props.outerRadius ?? '80%'}
               />
             )}
-            <LegendPortalProvider to={props.to!}>
-              <RechartsWrapper
-                style={props.style}
-                class={props.class}
+            <RechartsWrapper
+              style={props.style}
+              class={props.class}
+              width={width!}
+              height={height!}
+              {...eventHandlerAttrs}
+            >
+              <Surface
+                {...svgAttributes}
                 width={width!}
                 height={height!}
-                {...eventHandlerAttrs}
+                title={title}
+                desc={desc}
+                style={FULL_WIDTH_AND_HEIGHT}
               >
-                <Surface
-                  {...svgAttributes}
-                  width={width!}
-                  height={height!}
-                  title={title}
-                  desc={desc}
-                  style={FULL_WIDTH_AND_HEIGHT}
-                >
-                  <ClipPath clipPathId={clipPathId} />
-                  {slots.default?.()}
-                </Surface>
-                {slots.tooltip?.()}
-              </RechartsWrapper>
-            </LegendPortalProvider>
+                <ClipPath clipPathId={clipPathId} />
+                {slots.default?.()}
+              </Surface>
+              {slots.tooltip?.()}
+            </RechartsWrapper>
             <ReportChartProps {...props as any} />
           </Fragment>
         )
