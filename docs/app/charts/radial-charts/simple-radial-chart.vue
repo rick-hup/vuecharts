@@ -2,10 +2,10 @@
 import { RadialBar, RadialBarChart, ResponsiveContainer, Tooltip } from 'vccs'
 
 const data = [
-  { name: 'Chrome', visitors: 275, fill: '#0088FE' },
-  { name: 'Safari', visitors: 200, fill: '#00C49F' },
-  { name: 'Firefox', visitors: 187, fill: '#FFBB28' },
-  { name: 'Edge', visitors: 173, fill: '#FF8042' },
+  { name: 'Chrome', visitors: 275, fill: '#6366f1' },
+  { name: 'Safari', visitors: 200, fill: '#f472b6' },
+  { name: 'Firefox', visitors: 187, fill: '#fbbf24' },
+  { name: 'Edge', visitors: 173, fill: '#34d399' },
 ]
 </script>
 

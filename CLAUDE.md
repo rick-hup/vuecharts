@@ -56,7 +56,7 @@ pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
 
 ```
 packages/vue/src/           # Main library source (vccs)
-├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid
+├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid, ZAxis
 ├── polar/                  # Pie, Radar, RadialBar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 ├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, etc.)
 ├── components/             # Legend, Tooltip, Text, Label, Cell
@@ -71,18 +71,15 @@ packages/vue/src/           # Main library source (vccs)
 ├── utils/                  # Utility functions
 └── index.ts                # Public API
 
-docs/                       # Documentation site (Nuxt 3, Nuxt Content v3)
+docs/                       # Documentation site (Nuxt 3, Docus framework)
 ├── app/
 │   ├── charts/             # Live chart demos (SFCs with plain vccs imports, hardcoded colors)
 │   ├── components/
-│   │   ├── ChartDemo.vue   # Lazy-loaded chart demo card (IntersectionObserver rootMargin 200px); props: name?, description?, src (required); loads component+raw source lazily via import.meta.glob (NOT eager); Shiki syntax highlighting via codeToHtml({ themes: { light: 'github-light', dark: 'github-dark' } }); skeleton pulse while loading; tab buttons 'Preview'/'Code' (hardcoded); copy button 'Copy'/'Copied!' (2s); CSS vars: --ui-border/--ui-bg-elevated/--ui-text/--ui-text-muted; dark mode via :global(.dark) + --shiki-dark-bg/--shiki-dark CSS vars
-│   │   ├── content/        # ProseCode, CodeGroup, Callout, PropsTable
-│   │   └── docs/           # ChartContainer, DocsHeader, DocsSearch, DocsSidebar, DocsPagination, DocsToc
-│   ├── composables/        # useLocale, useSearch, useToc
-│   ├── layouts/            # default.vue, docs.vue
-│   └── pages/              # index.vue (home), docs/[...slug].vue (catch-all)
-├── content/                # Markdown; folder metadata via .navigation.yml (NOT _dir.yml)
-└── nuxt.config.ts          # Nuxt 3, @nuxt/content, Tailwind v4, shadcn-nuxt, @nuxt/fonts
+│   │   └── ChartDemo.vue   # Lazy-loaded chart demo card (IntersectionObserver rootMargin 200px); props: name?, description?, src (required); loads component+raw source lazily via import.meta.glob (NOT eager); Shiki syntax highlighting via codeToHtml({ themes: { light: 'github-light', dark: 'github-dark' } }); skeleton pulse while loading; tab buttons 'Preview'/'Code' (hardcoded); copy button 'Copy'/'Copied!' (2s); CSS vars: --ui-border/--ui-bg-elevated/--ui-text/--ui-text-muted; dark mode via :global(.dark) + --shiki-dark-bg/--shiki-dark CSS vars
+│   ├── pages/              # index.vue (home)
+│   └── app.config.ts       # Docus config (name/url/socials) + UI colors (primary: indigo, neutral: slate)
+├── content/                # Markdown content (1.getting-started/, 2.charts/, 3.components/, index.md)
+└── nuxt.config.ts          # Minimal Nuxt 3 config (global components); Docus provides the rest
 
 playground/nuxt/            # Nuxt 3 playground for manual testing
 ├── app/components/
@@ -107,11 +104,10 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 - Legend slot pattern: `<Legend #content="legendProps"><ChartLegendContent v-bind="legendProps" /></Legend>`
 - Label-inside-PolarRadiusAxis: `<PolarRadiusAxis :tick="false" :tick-line="false" :axis-line="false"><Label><template #content="{ viewBox }">...</template></Label></PolarRadiusAxis>` — `viewBox` provides `{ cx, cy }` via `POLAR_LABEL_VIEW_BOX_KEY`
 
-**Docs site stack**: Nuxt 3, Nuxt Content v3, Tailwind v4, shadcn-nuxt, @nuxt/fonts (Doto/JetBrains Mono/Instrument Sans).
+**Docs site stack**: Nuxt 3, Docus framework, Shiki (syntax highlighting), vccs (`workspace:*`).
+- Docus configured via `app/app.config.ts` (`docus` key + `ui.colors`: primary indigo, neutral slate)
 - Content uses MDC `::chart-demo{src="..."}::` to embed live demos (rendered by `components/ChartDemo.vue` — lazy-loaded)
-- `useLocale`: English-only, `collectionName` is plain string `'content_en'` (NOT a ref)
-- DocsSidebar: `queryCollectionNavigation(collectionName, ['icon'])` — Nuxt Content v3 stores `_dir.yml` metadata as child entry, so `getGroupIcon` checks child list fallback
-- Docs `ChartContainer` has NO `ChartConfig` support (unlike playground version)
+- `nuxt.config.ts` is minimal — only registers global components; Docus handles layouts, nav, theming
 
 ### Key Decisions
 
@@ -129,6 +125,7 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 ### Naming
 - Components: PascalCase; Directories: kebab-case; Hooks: `use` prefix; Types: `Props` suffix
 - Type files: `type.ts`; Tests: `__tests__/*.spec.tsx`; Stories: `__stories__/*.stories.tsx`
+- Exception: `animation/__tests__/Animate.test.tsx` uses `.test.tsx` (not `.spec.tsx`)
 
 ### Component Pattern
 ```typescript
@@ -270,7 +267,15 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Tooltip selector integration tests: hover via `fireEvent(chart, new MouseEvent('mousemove', { clientX, clientY }))` on `.v-charts-wrapper` + 2x `nextTick()`; `defaultIndex` requires 3x `nextTick()` to activate
 - SVG path parsing in tests: `extractPathPoints(d)` matches `/[ML]\s*([\d.eE+-]+)[,\s]+([\d.eE+-]+)/g` to extract polygon vertices from `d` attribute
 - YAxis tests (`cartesian/axis/__tests__/YAxis.spec.tsx`): tick rendering requires 2x `await nextTick()`; orientation verified via `transform` translate-X (left < 100, right > 200)
+- Animation testing (`Animate`): `motion-v`'s `animate()` uses RAF — value stays at `from` in JSDOM when `isActive=true`; when `isActive=false`, value snaps to `to` after `nextTick()`; default slot is a render function `(value: number) => JSX`; `onAnimationStart` is called synchronously before `animate()` runs
 - Test suite phases: shapes, chart containers, cartesian items, polar items, components, state/selectors/utils; progress tracked in `tasks/todo.md`
+
+### Scatter
+- Each `<Scatter>` receives its own `:data` array (not on the chart container, unlike Bar/Line/Area)
+- `ZAxis` (exported from `vccs`) maps a third data dimension to dot size: `<ZAxis data-key="z" :range="[60, 400]" />`
+- `XAxis`/`YAxis` require `type="number"` for numeric scatter data
+- `shape` prop accepts: `circle`, `cross`, `diamond`, `square`, `star`, `triangle`, `wye`
+- `line={true}` connects dots with a line
 
 ### Storybook
 - Story titles must match Recharts conventions

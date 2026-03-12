@@ -24,12 +24,12 @@ const data = [
       <Bar
         data-key="pv"
         stack-id="a"
-        fill="#8884d8"
+        fill="#2dd4bf"
       />
       <Bar
         data-key="uv"
         stack-id="a"
-        fill="#82ca9d"
+        fill="#fb923c"
       />
     </BarChart>
   </ResponsiveContainer>

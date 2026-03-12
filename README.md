@@ -1,74 +1,138 @@
-<h1 align="center">Vue Charts</h1>
+<h1 align="center">Vue Charts (vccs)</h1>
 
 <p align="center">
-  <strong>A composable charting library built for Vue 3</strong>
+  <strong>Composable charting components for Vue 3</strong>
 </p>
 
 <p align="center">
-  An unofficial Vue.js port of <a href="https://recharts.org">Recharts</a>, bringing the power of React's most popular charting library to the Vue ecosystem.
+  An unofficial Vue.js port of <a href="https://recharts.org">Recharts</a>, bringing React's most popular charting library to the Vue ecosystem.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/vccs"><img src="https://img.shields.io/npm/v/vccs.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/vccs"><img src="https://img.shields.io/npm/l/vccs.svg" alt="license"></a>
 </p>
 
 ---
 
-> ⚠️ **Work in Progress**: This library is currently under active development. APIs may change and some features might not be fully stable yet.
+> **Work in Progress**: This library is under active development. APIs may change.
 
-## ✨ Features
+## Install
 
-- 🎯 **Vue 3 Native** - Built specifically for Vue 3 with Composition API
-- 🔄 **Recharts Compatible** - Maintains the same intuitive API as Recharts
-- 🎨 **Rich Chart Types** - Area, Bar, Line, Pie, and more chart components
-- ⚡ **Smooth Animations** - Powered by Motion for Vue for fluid transitions
-- 📱 **Responsive Design** - Built-in responsive container support
-- 🎛️ **Highly Customizable** - Extensive theming and styling options
-- 📊 **Interactive** - Built-in tooltip, legend, and zoom functionality
-- 🔧 **TypeScript Ready** - Full TypeScript support with comprehensive type definitions
+```bash
+# pnpm
+pnpm add vccs
 
-## 🏗️ Architecture
+# npm
+npm install vccs
 
-Vue Charts is built with modern Vue 3 patterns and leverages:
+# yarn
+yarn add vccs
+```
 
-- **Composition API** for reactive chart state management
-- **Redux Toolkit** for complex state coordination (via @reduxjs/vue-redux)
-- **Victory Vendor** for mathematical calculations and D3 utilities
-- **Motion for Vue** for smooth animations and transitions
-- **TypeScript** for type safety and better developer experience
+**Peer dependency**: `vue >= 3.0.0`
 
-## 🎯 Roadmap
+## Quick Start
 
-- [ ] Core chart infrastructure
-- [ ] Area Chart component
-- [ ] Basic animations and interactions
-- [ ] Bar Chart component
-- [ ] Line Chart component
-- [ ] Pie Chart component
-- [ ] Scatter Chart component
-- [ ] Composed Chart component
-- [ ] Advanced animations
-- [ ] Accessibility improvements
-- [ ] Performance optimizations
+```vue
+<script setup>
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'vccs'
 
-## 📄 License
+const data = [
+  { name: 'Page A', uv: 4000, pv: 2400 },
+  { name: 'Page B', uv: 3000, pv: 1398 },
+  { name: 'Page C', uv: 2000, pv: 9800 },
+  { name: 'Page D', uv: 2780, pv: 3908 },
+  { name: 'Page E', uv: 1890, pv: 4800 },
+  { name: 'Page F', uv: 2390, pv: 3800 },
+]
+</script>
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<template>
+  <ResponsiveContainer
+    width="100%"
+    :height="300"
+  >
+    <BarChart :data="data">
+      <CartesianGrid stroke-dasharray="3 3" />
+      <XAxis data-key="name" />
+      <YAxis />
+      <Tooltip />
+      <Bar
+        data-key="pv"
+        fill="#8884d8"
+      />
+      <Bar
+        data-key="uv"
+        fill="#82ca9d"
+      />
+    </BarChart>
+  </ResponsiveContainer>
+</template>
+```
 
-## 🙏 Credits
+## Chart Types
 
-This project is inspired by and built upon the excellent work of the open-source community:
+| Chart | Component | Description |
+|-------|-----------|-------------|
+| Area | `<AreaChart>` + `<Area>` | Filled area charts with stacking & gradients |
+| Bar | `<BarChart>` + `<Bar>` | Vertical/horizontal bar charts |
+| Line | `<LineChart>` + `<Line>` | Line charts with multiple curve types |
+| Scatter | `<ScatterChart>` + `<Scatter>` | X-Y scatter plots |
+| Composed | `<ComposedChart>` | Mix Area, Bar, Line in one chart |
+| Pie | `<PieChart>` + `<Pie>` | Pie and donut charts |
+| Radar | `<RadarChart>` + `<Radar>` | Radar/spider charts |
+| Radial Bar | `<RadialBarChart>` + `<RadialBar>` | Circular bar charts |
 
-### Core Inspiration
-- **[Recharts](https://recharts.org)** - A composable charting library built on React components. Vue Charts maintains the same API design philosophy and component architecture that makes Recharts so intuitive and powerful.
+## Components
 
-### Key Dependencies
-- **[Victory Vendor](https://github.com/FormidableLabs/victory)** - Mathematical utilities and D3 shape functions
-- **[Motion for Vue](https://motion.dev/vue)** - Production-ready motion library powering all animations and transitions
-- **[Redux Toolkit](https://redux-toolkit.js.org/)** - State management for complex chart interactions
-- **[VueUse](https://vueuse.org/)** - Essential Vue composition utilities
+**Cartesian**: `XAxis`, `YAxis`, `CartesianGrid`, `ReferenceLine`, `ReferenceArea`, `ErrorBar`, `Brush`
+
+**Polar**: `PolarGrid`, `PolarAngleAxis`, `PolarRadiusAxis`
+
+**General**: `Tooltip`, `Legend`, `Label`, `LabelList`, `Cell`, `ResponsiveContainer`
+
+**Shapes**: `Rectangle`, `Dot`, `Sector`, `Symbols`
+
+## Features
+
+- **Vue 3 Native** — Composition API + JSX, full TypeScript support
+- **Recharts API** — Same intuitive composable component design
+- **Animated** — Smooth transitions powered by [Motion for Vue](https://motion.dev/docs/vue)
+- **Interactive** — Tooltip, legend, brush, and click/hover events
+- **Responsive** — `<ResponsiveContainer>` adapts to parent width
+- **Customizable** — Named slots for shapes, ticks, tooltip content, legend, and more
+
+## Architecture
+
+- **State**: Redux Toolkit via [@reduxjs/vue-redux](https://github.com/nicepkg/reduxjs-vue-redux) — one store per chart
+- **Math**: D3 scales and shapes via [victory-vendor](https://github.com/FormidableLabs/victory)
+- **Animation**: [Motion for Vue](https://motion.dev/docs/vue)
+
+## Development
+
+```bash
+pnpm install          # Install dependencies
+pnpm dev              # Watch mode (library)
+pnpm test             # Run tests
+pnpm storybook        # Storybook
+pnpm play             # Nuxt playground
+pnpm docs             # Documentation site
+```
+
+## License
+
+[MIT](LICENSE)
+
+## Credits
+
+- **[Recharts](https://recharts.org)** — Original React charting library this project ports from
+- **[Victory Vendor](https://github.com/FormidableLabs/victory)** — D3 math utilities
+- **[Motion for Vue](https://motion.dev/docs/vue)** — Animation engine
+- **[Redux Toolkit](https://redux-toolkit.js.org/)** — State management
+- **[VueUse](https://vueuse.org/)** — Vue composition utilities
 
 ---
-
-<p align="center">
-  <strong>Made with ❤️ for the Vue community</strong>
-</p>
 
 <p align="center">
   <em>This is an unofficial port and is not affiliated with the original Recharts team.</em>

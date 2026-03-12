@@ -30,20 +30,22 @@ const data = [
         <p class="text-muted-foreground mb-4 text-sm">
           Expected: Legend visible below chart with "uv" entry
         </p>
-        <BarChart
-          :width="500"
-          :height="300"
-          :data="[...data]"
-        >
-          <XAxis data-key="name" />
-          <YAxis />
-          <Legend />
-          <Bar
-            data-key="uv"
-            fill="#8884d8"
-            :is-animation-active="false"
-          />
-        </BarChart>
+        <ClientOnly>
+          <BarChart
+            :width="500"
+            :height="300"
+            :data="[...data]"
+          >
+            <XAxis data-key="name" />
+            <YAxis />
+            <Legend />
+            <Bar
+              data-key="uv"
+              fill="#8884d8"
+              :is-animation-active="false"
+            />
+          </BarChart>
+        </ClientOnly>
       </div>
     </div>
   </div>

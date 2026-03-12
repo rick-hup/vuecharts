@@ -27,12 +27,12 @@ const data = [
         >
           <stop
             offset="5%"
-            stop-color="#8884d8"
+            stop-color="#a78bfa"
             stop-opacity="0.8"
           />
           <stop
             offset="95%"
-            stop-color="#8884d8"
+            stop-color="#a78bfa"
             stop-opacity="0"
           />
         </linearGradient>
@@ -44,7 +44,7 @@ const data = [
       <Area
         type="monotone"
         data-key="value"
-        stroke="#8884d8"
+        stroke="#a78bfa"
         fill="url(#colorValue)"
       />
     </AreaChart>

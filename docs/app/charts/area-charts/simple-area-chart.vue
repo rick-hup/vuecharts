@@ -24,8 +24,8 @@ const data = [
       <Area
         type="monotone"
         data-key="value"
-        stroke="#8884d8"
-        fill="#8884d8"
+        stroke="#38bdf8"
+        fill="#38bdf8"
         :fill-opacity="0.3"
       />
     </AreaChart>

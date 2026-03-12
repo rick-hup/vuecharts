@@ -23,11 +23,11 @@ const data = [
       <Tooltip />
       <Bar
         data-key="pv"
-        fill="#8884d8"
+        fill="#60a5fa"
       />
       <Bar
         data-key="uv"
-        fill="#82ca9d"
+        fill="#f472b6"
       />
     </BarChart>
   </ResponsiveContainer>

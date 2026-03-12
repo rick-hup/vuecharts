@@ -24,13 +24,13 @@ const data = [
       <Line
         type="monotone"
         data-key="desktop"
-        stroke="#8884d8"
+        stroke="#ec4899"
         stroke-dasharray="5 5"
       />
       <Line
         type="monotone"
         data-key="mobile"
-        stroke="#82ca9d"
+        stroke="#34d399"
         stroke-dasharray="3 3"
       />
     </LineChart>

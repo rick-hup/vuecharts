@@ -7,4 +7,10 @@ export default defineAppConfig({
       github: 'nicepkg/vccs',
     },
   },
+  ui: {
+    colors: {
+      primary: 'indigo',
+      neutral: 'slate',
+    },
+  },
 })

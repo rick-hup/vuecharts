@@ -49,7 +49,7 @@ Build charts with composable components
   Composable API
 
   #description
-  Build charts declaratively using Vue components — Area, Bar, Line, Pie, Radar, and more.
+  Build charts declaratively using Vue components — Area, Bar, Line, Scatter, Composed, Pie, Radar, and RadialBar.
   :::
 
   :::u-page-feature
@@ -84,7 +84,7 @@ Build charts with composable components
   Animated
 
   #description
-  Smooth transitions and animations powered by motion-v.
+  Smooth transitions and animations powered by Motion for Vue.
   :::
 
   :::u-page-feature

@@ -27,8 +27,8 @@ const data = [
       <Tooltip />
       <Radar
         data-key="A"
-        stroke="#8884d8"
-        fill="#8884d8"
+        stroke="#8b5cf6"
+        fill="#8b5cf6"
         :fill-opacity="0.6"
       />
     </RadarChart>

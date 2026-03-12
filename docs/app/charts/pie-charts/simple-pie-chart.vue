@@ -8,7 +8,7 @@ const data = [
   { name: 'Edge', value: 100 },
 ]
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
+const COLORS = ['#6366f1', '#f472b6', '#fbbf24', '#34d399']
 </script>
 
 <template>
@@ -25,7 +25,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
         cx="50%"
         cy="50%"
         :outer-radius="100"
-        fill="#8884d8"
+        fill="#6366f1"
       >
         <Cell
           v-for="(entry, index) in data"

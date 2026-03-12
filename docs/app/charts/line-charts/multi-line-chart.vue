@@ -24,12 +24,12 @@ const data = [
       <Line
         type="monotone"
         data-key="desktop"
-        stroke="#8884d8"
+        stroke="#f59e0b"
       />
       <Line
         type="monotone"
         data-key="mobile"
-        stroke="#82ca9d"
+        stroke="#38bdf8"
       />
     </LineChart>
   </ResponsiveContainer>
