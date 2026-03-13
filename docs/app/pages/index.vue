@@ -75,17 +75,17 @@ const categories = [
   { label: 'Radial Charts', key: 'radial' },
 ]
 
-// Each category maps to a different Y offset
-const categoryOffsets: Record<string, number> = {
-  bar: -850,
-  area: -1200,
-  line: -1600,
-  pie: -2000,
-  radar: -500,
-  radial: -300,
+// 2D grid offsets — categories arranged in a 3×2 layout, animate X+Y to pan
+const categoryOffsets: Record<string, { x: number, y: number }> = {
+  bar: { x: 0, y: -100 },
+  area: { x: -760, y: -100 },
+  line: { x: -1520, y: -100 },
+  pie: { x: 0, y: -950 },
+  radar: { x: -760, y: -950 },
+  radial: { x: -1520, y: -950 },
 }
 
-const gridAnimateY = computed(() => categoryOffsets[activeCategory.value] ?? -850)
+const gridOffset = computed(() => categoryOffsets[activeCategory.value] ?? categoryOffsets.bar)
 
 // ─── Featured chart (preload + shallowRef = no flicker) ───
 const featuredLoaders: Record<string, () => Promise<any>> = {
@@ -122,18 +122,24 @@ onMounted(async () => {
   featuredComponent.value = mod.default
 })
 
-// Distribute charts into 4 columns (round-robin)
-const columns = computed(() => {
-  const cols: { offset: boolean, charts: ChartEntry[] }[] = [
-    { offset: false, charts: [] },
-    { offset: true, charts: [] },
-    { offset: false, charts: [] },
-    { offset: true, charts: [] },
-  ]
-  allCharts.forEach((chart, i) => {
-    cols[i % 4].charts.push(chart)
+// Group charts by category, each group gets 2 columns arranged in a 3×2 macro grid
+const categoryLayout: Record<string, { col: number, row: number }> = {
+  bar: { col: 0, row: 0 },
+  area: { col: 1, row: 0 },
+  line: { col: 2, row: 0 },
+  pie: { col: 0, row: 1 },
+  radar: { col: 1, row: 1 },
+  radial: { col: 2, row: 1 },
+}
+
+const categoryGroups = computed(() => {
+  return categories.map((cat) => {
+    const charts = allCharts.filter(c => c.category === cat.key)
+    const col1 = charts.filter((_, i) => i % 2 === 0)
+    const col2 = charts.filter((_, i) => i % 2 === 1)
+    const layout = categoryLayout[cat.key]
+    return { key: cat.key, col1, col2, gridCol: layout.col + 1, gridRow: layout.row + 1 }
   })
-  return cols
 })
 
 // ─── Install copy ───
@@ -351,43 +357,75 @@ function scrollToShowcase() {
         <!-- Left fade gradient -->
         <div class="showcase-charts-fade" />
 
-        <!-- Background chart grid — scrolls with spring animation -->
+        <!-- Background chart grid — 2D pan with spring animation -->
         <motion.div
           class="chart-grid"
-          :animate="{ y: gridAnimateY }"
+          :animate="{ x: gridOffset.x, y: gridOffset.y }"
           :transition="{ type: 'spring', stiffness: 75, damping: 25 }"
           :style="{ willChange: 'transform' }"
         >
           <div
-            v-for="(col, ci) in columns"
-            :key="ci"
-            class="chart-col"
-            :class="{ 'chart-col-offset': col.offset }"
+            v-for="group in categoryGroups"
+            :key="group.key"
+            class="chart-category-block"
+            :style="{ gridColumn: group.gridCol, gridRow: group.gridRow }"
           >
-            <div
-              v-for="(chart, i) in col.charts"
-              :key="`c${ci}-${i}`"
-              class="chart-cell"
-            >
-              <div class="chart-cell-header">
-                <div class="chart-cell-title-row">
-                  <div class="chart-cell-title">
-                    {{ chart.title }}
+            <div class="chart-block-cols">
+              <div class="chart-col">
+                <div
+                  v-for="(chart, i) in group.col1"
+                  :key="`${group.key}-0-${i}`"
+                  class="chart-cell"
+                >
+                  <div class="chart-cell-header">
+                    <div class="chart-cell-title-row">
+                      <div class="chart-cell-title">
+                        {{ chart.title }}
+                      </div>
+                      <div
+                        class="chart-cell-trend"
+                        :class="chart.trendUp ? 'trend-up' : 'trend-down'"
+                      >
+                        <span class="trend-arrow">{{ chart.trendUp ? '↗' : '↘' }}</span>
+                        {{ chart.trend }}
+                      </div>
+                    </div>
+                    <div class="chart-cell-desc">
+                      {{ chart.desc }}
+                    </div>
                   </div>
-                  <div
-                    class="chart-cell-trend"
-                    :class="chart.trendUp ? 'trend-up' : 'trend-down'"
-                  >
-                    <span class="trend-arrow">{{ chart.trendUp ? '↗' : '↘' }}</span>
-                    {{ chart.trend }}
+                  <div class="chart-cell-body">
+                    <component :is="chart.component" />
                   </div>
-                </div>
-                <div class="chart-cell-desc">
-                  {{ chart.desc }}
                 </div>
               </div>
-              <div class="chart-cell-body">
-                <component :is="chart.component" />
+              <div class="chart-col chart-col-offset">
+                <div
+                  v-for="(chart, i) in group.col2"
+                  :key="`${group.key}-1-${i}`"
+                  class="chart-cell"
+                >
+                  <div class="chart-cell-header">
+                    <div class="chart-cell-title-row">
+                      <div class="chart-cell-title">
+                        {{ chart.title }}
+                      </div>
+                      <div
+                        class="chart-cell-trend"
+                        :class="chart.trendUp ? 'trend-up' : 'trend-down'"
+                      >
+                        <span class="trend-arrow">{{ chart.trendUp ? '↗' : '↘' }}</span>
+                        {{ chart.trend }}
+                      </div>
+                    </div>
+                    <div class="chart-cell-desc">
+                      {{ chart.desc }}
+                    </div>
+                  </div>
+                  <div class="chart-cell-body">
+                    <component :is="chart.component" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -788,12 +826,23 @@ function scrollToShowcase() {
   background: linear-gradient(to right, var(--ui-bg), transparent);
 }
 
-/* Grid — background cards */
+/* Grid — 3×2 macro grid of category blocks */
 .chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: repeat(2, auto);
+  gap: 2rem;
+  padding: 5rem 2.5rem;
+  user-select: none;
+}
+
+.chart-category-block {
+  /* Each category block */
+}
+
+.chart-block-cols {
   display: flex;
   gap: 1rem;
-  padding: 10rem 2.5rem;
-  user-select: none;
 }
 
 .chart-col {

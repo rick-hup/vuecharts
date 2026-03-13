@@ -23,7 +23,7 @@
   "dependencies": {
     "@vueuse/core": "^13.1.0",
     "decimal.js-light": "^2.5.1",
-    "motion-v": "^1.4.0"
+    "motion-v": "^2.0.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.27.3",
@@ -71,6 +71,12 @@
     "vue": "^3.5.0",
     "vue-tsc": "^2.1.4"
   },
+  "pnpm": {
+    "overrides": {
+      "typescript": "5.9.3",
+      "vue": "3.5.18"
+    }
+  },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged",
     "commit-msg": "pnpm commitlint --edit ${1}"
@@ -84,11 +90,5 @@
     "extends": [
       "plugin:storybook/recommended"
     ]
-  },
-  "pnpm": {
-    "overrides": {
-      "vue": "3.5.18",
-      "typescript": "5.9.3"
-    }
   }
 }
