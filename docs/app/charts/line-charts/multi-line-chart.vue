@@ -20,16 +20,24 @@ const data = [
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Line
         type="monotone"
         data-key="desktop"
-        stroke="#f59e0b"
+        stroke="#f97316"
       />
       <Line
         type="monotone"
         data-key="mobile"
-        stroke="#38bdf8"
+        stroke="#14b8a6"
       />
     </LineChart>
   </ResponsiveContainer>

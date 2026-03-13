@@ -27,12 +27,12 @@ const data = [
         >
           <stop
             offset="5%"
-            stop-color="#a78bfa"
+            stop-color="#f97316"
             stop-opacity="0.8"
           />
           <stop
             offset="95%"
-            stop-color="#a78bfa"
+            stop-color="#f97316"
             stop-opacity="0"
           />
         </linearGradient>
@@ -40,11 +40,19 @@ const data = [
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Area
         type="monotone"
         data-key="value"
-        stroke="#a78bfa"
+        stroke="#f97316"
         fill="url(#colorValue)"
       />
     </AreaChart>

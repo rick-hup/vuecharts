@@ -24,11 +24,19 @@ const data = [
     >
       <PolarGrid />
       <PolarAngleAxis data-key="subject" />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Radar
         data-key="A"
-        stroke="#8b5cf6"
-        fill="#8b5cf6"
+        stroke="#f97316"
+        fill="#f97316"
         :fill-opacity="0.6"
       />
     </RadarChart>

@@ -20,12 +20,20 @@ const data = [
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Bar data-key="value">
         <Cell
           v-for="(item, index) in data"
           :key="index"
-          :fill="item.value > 0 ? '#82ca9d' : '#ff7c7c'"
+          :fill="item.value > 0 ? '#f97316' : '#f87171'"
         />
       </Bar>
     </BarChart>

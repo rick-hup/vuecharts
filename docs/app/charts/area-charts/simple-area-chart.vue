@@ -20,12 +20,20 @@ const data = [
       <CartesianGrid stroke-dasharray="3 3" />
       <XAxis data-key="name" />
       <YAxis />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Area
         type="monotone"
         data-key="value"
-        stroke="#38bdf8"
-        fill="#38bdf8"
+        stroke="#f97316"
+        fill="#f97316"
         :fill-opacity="0.3"
       />
     </AreaChart>

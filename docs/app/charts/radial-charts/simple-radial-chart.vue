@@ -2,10 +2,10 @@
 import { RadialBar, RadialBarChart, ResponsiveContainer, Tooltip } from 'vccs'
 
 const data = [
-  { name: 'Chrome', visitors: 275, fill: '#6366f1' },
-  { name: 'Safari', visitors: 200, fill: '#f472b6' },
-  { name: 'Firefox', visitors: 187, fill: '#fbbf24' },
-  { name: 'Edge', visitors: 173, fill: '#34d399' },
+  { name: 'Chrome', visitors: 275, fill: '#f97316' },
+  { name: 'Safari', visitors: 200, fill: '#14b8a6' },
+  { name: 'Firefox', visitors: 187, fill: '#f59e0b' },
+  { name: 'Edge', visitors: 173, fill: '#06b6d4' },
 ]
 </script>
 
@@ -23,7 +23,15 @@ const data = [
         data-key="visitors"
         :background="true"
       />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
     </RadialBarChart>
   </ResponsiveContainer>
 </template>

@@ -39,16 +39,24 @@ const data02 = [
         data-key="z"
         :range="[60, 400]"
       />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Scatter
         name="Series A"
         :data="data01"
-        fill="#8884d8"
+        fill="#f97316"
       />
       <Scatter
         name="Series B"
         :data="data02"
-        fill="#82ca9d"
+        fill="#14b8a6"
       />
     </ScatterChart>
   </ResponsiveContainer>

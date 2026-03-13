@@ -19,17 +19,25 @@ const data = [
     >
       <RadialBar
         data-key="desktop"
-        fill="#8884d8"
+        fill="#f97316"
         stack-id="a"
         :corner-radius="5"
       />
       <RadialBar
         data-key="mobile"
-        fill="#82ca9d"
+        fill="#14b8a6"
         stack-id="a"
         :corner-radius="5"
       />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
     </RadialBarChart>
   </ResponsiveContainer>
 </template>

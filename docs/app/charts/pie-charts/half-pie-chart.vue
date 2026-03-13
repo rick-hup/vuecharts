@@ -9,7 +9,7 @@ const data = [
   { name: 'E', value: 100 },
 ]
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
+const COLORS = ['#f97316', '#14b8a6', '#f59e0b', '#06b6d4', '#ef4444']
 </script>
 
 <template>
@@ -18,7 +18,15 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
     :height="300"
   >
     <PieChart>
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Pie
         :data="data"
         data-key="value"
@@ -28,7 +36,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
         :outer-radius="120"
         :start-angle="180"
         :end-angle="0"
-        fill="#8884d8"
+        fill="#f97316"
       >
         <Cell
           v-for="(entry, index) in data"
