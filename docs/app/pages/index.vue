@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type Component, computed, defineAsyncComponent, defineComponent, h, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
-import { AnimatePresence, motion } from 'motion-v'
+import { AnimatePresence, LayoutGroup, motion } from 'motion-v'
 
 useSeoMeta({
   title: 'vccs — Vue 3 Charting Components',
@@ -337,18 +337,28 @@ function scrollToShowcase() {
           30+ chart variants across 7 categories.
         </p>
 
-        <!-- Category tabs — chevron prefix like evilcharts -->
+        <!-- Category tabs — chevron prefix with shared layout animation -->
         <nav class="showcase-categories">
-          <button
-            v-for="cat in categories"
-            :key="cat.key"
-            class="showcase-category"
-            :class="{ 'showcase-category-active': activeCategory === cat.key }"
-            @click="switchCategory(cat.key)"
-          >
-            <span class="showcase-category-chevron">&gt;</span>
-            <span>{{ cat.label }}</span>
-          </button>
+          <LayoutGroup>
+            <button
+              v-for="cat in categories"
+              :key="cat.key"
+              class="showcase-category"
+              :class="{ 'showcase-category-active': activeCategory === cat.key }"
+              @click="switchCategory(cat.key)"
+            >
+              <span class="showcase-category-chevron">
+                <motion.div
+                  v-if="activeCategory === cat.key"
+                  layout-id="category-chevron"
+                  class="showcase-category-chevron-icon"
+                >
+                  <UIcon name="i-lucide-chevron-right" />
+                </motion.div>
+              </span>
+              <span>{{ cat.label }}</span>
+            </button>
+          </LayoutGroup>
         </nav>
       </div>
 
@@ -791,13 +801,21 @@ function scrollToShowcase() {
 }
 
 .showcase-category-chevron {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  transition: opacity 0.15s;
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
 }
 
-.showcase-category-active .showcase-category-chevron {
-  opacity: 1;
+.showcase-category-chevron-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--ui-text-highlighted);
 }
 
 /* ─── Chart area (right side) ─── */
