@@ -339,26 +339,28 @@ function scrollToShowcase() {
 
         <!-- Category tabs — chevron prefix with shared layout animation -->
         <nav class="showcase-categories">
-          <LayoutGroup>
-            <button
-              v-for="cat in categories"
-              :key="cat.key"
-              class="showcase-category"
-              :class="{ 'showcase-category-active': activeCategory === cat.key }"
-              @click="switchCategory(cat.key)"
-            >
-              <span class="showcase-category-chevron">
-                <motion.div
-                  v-if="activeCategory === cat.key"
-                  layout-id="category-chevron"
-                  class="showcase-category-chevron-icon"
-                >
-                  <UIcon name="i-lucide-chevron-right" />
-                </motion.div>
-              </span>
-              <span>{{ cat.label }}</span>
-            </button>
-          </LayoutGroup>
+          <ClientOnly>
+            <LayoutGroup>
+              <button
+                v-for="cat in categories"
+                :key="cat.key"
+                class="showcase-category"
+                :class="{ 'showcase-category-active': activeCategory === cat.key }"
+                @click="switchCategory(cat.key)"
+              >
+                <span class="showcase-category-chevron">
+                  <motion.div
+                    v-if="activeCategory === cat.key"
+                    layout-id="category-chevron"
+                    class="showcase-category-chevron-icon"
+                  >
+                    <UIcon name="i-lucide-chevron-right" />
+                  </motion.div>
+                </span>
+                <span>{{ cat.label }}</span>
+              </button>
+            </LayoutGroup>
+          </ClientOnly>
         </nav>
       </div>
 
@@ -544,7 +546,7 @@ function scrollToShowcase() {
   width: 400px;
   height: 250px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse at center, rgba(20, 184, 166, 0.10) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.10) 0%, transparent 70%);
 }
 
 :global(.dark) .hero-glow-orange {
@@ -552,7 +554,7 @@ function scrollToShowcase() {
 }
 
 :global(.dark) .hero-glow-teal {
-  background: radial-gradient(ellipse at center, rgba(20, 184, 166, 0.06) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
 }
 
 .landing-hero-inner {
