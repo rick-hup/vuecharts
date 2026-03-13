@@ -449,8 +449,8 @@ function scrollToShowcase() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - 64px);
-  height: calc(100dvh - 64px);
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: #fafafa;
 }
