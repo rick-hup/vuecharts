@@ -1,0 +1,26 @@
+:root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Chart color palette */
+  --chart-1: #f97316;
+  --chart-2: #14b8a6;
+  --chart-3: #f59e0b;
+  --chart-4: #06b6d4;
+  --chart-5: #ef4444;
+}
+
+.dark {
+  --chart-1: #fb923c;
+  --chart-2: #2dd4bf;
+  --chart-3: #fbbf24;
+  --chart-4: #22d3ee;
+  --chart-5: #f87171;
+}
+
+body {
+  font-family: var(--font-sans);
+}
