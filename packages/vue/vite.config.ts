@@ -35,7 +35,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      name: 'motion-number-vue',
+      name: 'vccs',
       fileName: (format, name) => {
         return `${name}.${format === 'es' ? 'js' : 'umd.cjs'}`
       },
@@ -64,7 +64,7 @@ export default defineConfig({
         },
         {
           format: 'cjs',
-          name: 'motion-number-vue',
+          name: 'vccs',
           globals: {
             vue: 'Vue',
           },

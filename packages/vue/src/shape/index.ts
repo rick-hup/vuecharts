@@ -1,4 +1,7 @@
 export * from './types'
+export * from './Cross'
+export { Curve, CurveVueProps, getPath } from './Curve'
+export type { CurveType, CurvePropsWithOutSVG, CurveProps } from './Curve'
 export * from './Dot'
 export * from './Rectangle'
 export * from './Symbols'

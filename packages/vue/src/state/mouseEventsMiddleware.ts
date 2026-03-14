@@ -9,20 +9,25 @@ export const mouseClickAction = createAction<ChartPointer>('mouseClick')
 
 export const mouseClickMiddleware = createListenerMiddleware()
 
-// TODO: there's a bug here when you click the chart the activeIndex resets to zero
 mouseClickMiddleware.startListening({
   actionCreator: mouseClickAction,
   effect: (action, listenerApi) => {
     const chartPointer = action.payload
-    const activeProps = selectActivePropsFromChartPointer(listenerApi.getState() as RechartsRootState, chartPointer)
-    if (activeProps?.activeIndex != null) {
-      listenerApi.dispatch(
-        setMouseClickAxisIndex({
-          activeIndex: activeProps.activeIndex,
-          activeDataKey: undefined,
-          activeCoordinate: activeProps.activeCoordinate,
-        }),
-      )
+    const state = listenerApi.getState() as RechartsRootState
+    const tooltipEventType = selectTooltipEventType(state, state.tooltip.settings.shared)
+    // Only handle axis-type tooltip interactions here;
+    // item-level click events are handled by graphical items directly
+    if (tooltipEventType === 'axis') {
+      const activeProps = selectActivePropsFromChartPointer(state, chartPointer)
+      if (activeProps?.activeIndex != null) {
+        listenerApi.dispatch(
+          setMouseClickAxisIndex({
+            activeIndex: activeProps.activeIndex,
+            activeDataKey: undefined,
+            activeCoordinate: activeProps.activeCoordinate,
+          }),
+        )
+      }
     }
   },
 })

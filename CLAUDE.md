@@ -27,7 +27,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Vue Charts (vccs)** — An unofficial Vue 3 port of [Recharts](https://recharts.org/). Composable charting components built with Vue 3 Composition API + JSX/TSX.
 
-- **Recharts source:** `/Users/huangpeng/Documents/workspace/web/mygithub/charts/recharts`
 - When porting, refer to React source for behavior parity
 - Monorepo: `vccs` (library) + `play` (Nuxt playground) + `docs` (Nuxt docs site), managed by pnpm workspaces
 <!-- END AUTO-MANAGED -->
@@ -61,7 +60,7 @@ packages/vue/src/           # Main library source (vccs)
 ├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, etc.)
 ├── components/             # Legend, Tooltip, Text, Label, Cell
 ├── container/              # ResponsiveContainer, Surface, Layer
-├── shape/                  # Rectangle, Symbols, Dot, Sector (public); Curve, Cross (internal)
+├── shape/                  # Rectangle, Symbols, Dot, Sector, Cross, Curve (all exported from barrel)
 ├── state/                  # Redux store, slices, middleware, selectors
 ├── animation/              # Animate component, motion-v utilities
 ├── context/                # provide/inject context providers
@@ -188,7 +187,7 @@ export type ComponentPropsWithSVG = WithSVGProps<VuePropsToType<typeof Component
 ### Redux
 - One store per chart; graphical items register via `useSetupGraphicalItem`
 - `getItemColor`: Bar/RadialBar → `fill`; Area/Line/Radar → `getLegendItemColor(stroke, fill)` (stroke-preferring)
-- Mouse event middleware (`mouseEventsMiddleware`) uses `createListenerMiddleware`; to avoid `e.currentTarget` being null in the deferred microtask, `RechartsWrapper` captures `getChartPointer(e)` synchronously *before* dispatching `mouseMoveAction`/`mouseClickAction`
+- Mouse event middleware (`mouseEventsMiddleware`) uses `createListenerMiddleware`; to avoid `e.currentTarget` being null in the deferred microtask, `RechartsWrapper` captures `getChartPointer(e)` synchronously *before* dispatching `mouseMoveAction`/`mouseClickAction`; both `mouseClickMiddleware` and `mouseMoveMiddleware` check `selectTooltipEventType` and only handle `'axis'`-type interactions — item-level click events are handled by graphical items directly
 - External event handlers (`externalEventsMiddleware`) and keyboard/touch middleware remain plain synchronous `Middleware`
 - `ReportChartProps` (internal): syncs chart-level props (barCategoryGap, barGap, barSize, stackOffset, syncId, syncMethod, etc.) into Redux store via `watchEffect`; rendered internally by `generateCategoricalChart`
 
@@ -307,7 +306,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 | Library | Purpose |
 |---------|---------|
 | `@reduxjs/toolkit` + `@reduxjs/vue-redux` | Chart state management |
-| `motion-v` | SVG animations |
+| `motion-v` | SVG animations (external peer dep — not bundled; externalized in vite.config.ts) |
 | `victory-vendor` | D3 math/scale utilities |
 | `lodash-es` / `es-toolkit` | Utility functions |
 | `@vueuse/core` | Vue composition utilities |

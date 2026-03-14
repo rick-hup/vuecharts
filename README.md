@@ -83,6 +83,10 @@ const data = [
 | Pie | `<PieChart>` + `<Pie>` | Pie and donut charts |
 | Radar | `<RadarChart>` + `<Radar>` | Radar/spider charts |
 | Radial Bar | `<RadialBarChart>` + `<RadialBar>` | Circular bar charts |
+| Funnel | `<FunnelChart>` + `<Funnel>` | Not yet supported |
+| Treemap | `<Treemap>` | Not yet supported |
+| Sankey | `<Sankey>` | Not yet supported |
+| Sunburst | `<SunburstChart>` | Not yet supported |
 
 ## Components
 
