@@ -48,6 +48,8 @@ pnpm pub:release          # Publish
 # Run specific test
 pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
 ```
+
+**CI** (`.github/workflows/test.yml`): triggers on PRs to `main`; runs `pnpm install --frozen-lockfile` → `pnpm --filter vccs build` → `pnpm test` on Node 20 / ubuntu-latest.
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: architecture -->
