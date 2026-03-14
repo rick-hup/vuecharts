@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Component, computed, defineAsyncComponent, defineComponent, h, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { AnimatePresence, LayoutGroup, motion } from 'motion-v'
+import { useColorMode } from '#imports'
 
 useSeoMeta({
   title: 'vccs — Vue 3 Charting Components',
@@ -170,6 +171,11 @@ onBeforeUnmount(() => {
   clearTimeout(copyTimer)
 })
 
+// ─── Dot grid colors (canvas can't read CSS vars) ───
+const colorMode = useColorMode()
+const dotBaseColor = computed(() => colorMode.value === 'dark' ? '#404040' : '#c0c0c0')
+const dotActiveColor = computed(() => '#f97316')
+
 // ─── Hero stagger animation ───
 const containerVariants = {
   hidden: {},
@@ -198,8 +204,20 @@ function scrollToShowcase() {
   <div>
     <!-- ═══════════ Section 1: Full-screen Hero ═══════════ -->
     <section class="landing-hero">
-      <!-- Subtle dot pattern background -->
-      <div class="landing-hero-pattern" />
+      <!-- Interactive dot grid background (vue-bits inspired, motion-v powered) -->
+      <ClientOnly>
+        <DotGrid
+          class="landing-hero-dotgrid"
+          :dot-size="5"
+          :gap="28"
+          :base-color="dotBaseColor"
+          :active-color="dotActiveColor"
+          :proximity="150"
+          :speed-trigger="80"
+          :shock-radius="250"
+          :shock-strength="5"
+        />
+      </ClientOnly>
 
       <!-- Floating glow orbs — prime-number durations for organic drift -->
       <motion.div
@@ -263,7 +281,6 @@ function scrollToShowcase() {
               target="_blank"
               rel="noopener"
             >Recharts</a>
-            — built with Composition API & JSX.
           </p>
         </motion.div>
 
@@ -502,24 +519,15 @@ function scrollToShowcase() {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #fafafa;
-}
-
-:global(.dark) .landing-hero {
   background: var(--ui-bg);
 }
 
-/* Subtle dot pattern */
-.landing-hero-pattern {
+/* Interactive dot grid background */
+.landing-hero-dotgrid {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-}
-
-:global(.dark) .landing-hero-pattern {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  pointer-events: auto;
+  z-index: 0;
 }
 
 /* Floating glow orbs */
@@ -537,7 +545,7 @@ function scrollToShowcase() {
   width: 500px;
   height: 300px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.12) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, var(--glow-orange, rgba(249, 115, 22, 0.12)) 0%, transparent 70%);
 }
 
 .hero-glow-teal {
@@ -546,15 +554,7 @@ function scrollToShowcase() {
   width: 400px;
   height: 250px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.10) 0%, transparent 70%);
-}
-
-:global(.dark) .hero-glow-orange {
-  background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
-}
-
-:global(.dark) .hero-glow-teal {
-  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, var(--glow-teal, rgba(16, 185, 129, 0.10)) 0%, transparent 70%);
 }
 
 .landing-hero-inner {
@@ -733,10 +733,6 @@ function scrollToShowcase() {
   height: calc(100vh - 64px);
   height: calc(100dvh - 64px);
   overflow: hidden;
-  background: #fafafa;
-}
-
-:global(.dark) .showcase {
   background: var(--ui-bg);
 }
 
@@ -837,13 +833,9 @@ function scrollToShowcase() {
   left: 0;
   width: 150px;
   height: 100%;
-  background: linear-gradient(to right, #fafafa, transparent);
+  background: linear-gradient(to right, var(--ui-bg), transparent);
   z-index: 15;
   pointer-events: none;
-}
-
-:global(.dark) .showcase-charts-fade {
-  background: linear-gradient(to right, var(--ui-bg), transparent);
 }
 
 /* Grid — 3×2 macro grid of category blocks */
@@ -882,19 +874,13 @@ function scrollToShowcase() {
   width: 100%;
   overflow: hidden;
   border-radius: 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--cell-border, rgba(0, 0, 0, 0.03));
+  background: var(--cell-bg, rgba(255, 255, 255, 0.15));
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
-  opacity: 0.65;
-}
-
-:global(.dark) .chart-cell {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.04);
-  opacity: 0.5;
+  opacity: var(--cell-opacity, 0.65);
 }
 
 .chart-cell-header {
@@ -938,18 +924,14 @@ function scrollToShowcase() {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 26rem;
-  background: white;
+  background: var(--ui-bg-elevated);
   border-radius: 1rem;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.08),
-    0 10px 15px -3px rgba(0, 0, 0, 0.12),
-    0 20px 40px -4px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--featured-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 20px 40px -4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.02));
   overflow: visible;
 }
 
-/* Large frosted glow behind featured card — matches evilcharts */
+/* Large frosted glow behind featured card */
 .featured-card::before {
   content: '';
   position: absolute;
@@ -958,21 +940,8 @@ function scrollToShowcase() {
   left: -80%;
   width: 260%;
   height: 300%;
-  background: radial-gradient(ellipse at center, rgba(250, 250, 250, 0.95) 0%, rgba(250, 250, 250, 0.85) 30%, rgba(250, 250, 250, 0.5) 55%, rgba(250, 250, 250, 0) 75%);
+  background: var(--featured-glow, radial-gradient(ellipse at center, rgba(250, 250, 250, 0.95) 0%, rgba(250, 250, 250, 0.85) 30%, rgba(250, 250, 250, 0.5) 55%, rgba(250, 250, 250, 0) 75%));
   pointer-events: none;
-}
-
-:global(.dark) .featured-card {
-  background: var(--ui-bg-elevated);
-  border-color: var(--ui-border);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.2),
-    0 10px 15px -3px rgba(0, 0, 0, 0.3),
-    0 20px 40px -4px rgba(0, 0, 0, 0.2);
-}
-
-:global(.dark) .featured-card::before {
-  background: radial-gradient(ellipse at center, rgba(15, 15, 15, 0.97) 0%, rgba(15, 15, 15, 0.85) 30%, rgba(15, 15, 15, 0.5) 55%, rgba(15, 15, 15, 0) 75%);
 }
 
 .featured-card-header {
@@ -1032,23 +1001,13 @@ function scrollToShowcase() {
 }
 
 .trend-up {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--trend-up-bg, #dcfce7);
+  color: var(--trend-up-color, #16a34a);
 }
 
 .trend-down {
-  background: #fee2e2;
-  color: #ef4444;
-}
-
-:global(.dark) .trend-up {
-  background: rgba(22, 163, 74, 0.15);
-  color: #4ade80;
-}
-
-:global(.dark) .trend-down {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background: var(--trend-down-bg, #fee2e2);
+  color: var(--trend-down-color, #ef4444);
 }
 
 .trend-arrow {
@@ -1109,5 +1068,37 @@ function scrollToShowcase() {
   .chart-grid {
     transform: translateY(-850px) !important;
   }
+}
+</style>
+
+<!-- Unscoped dark mode overrides — :global(.dark) in scoped <style> is stripped by Nuxt/Vite -->
+<style>
+.dark .hero-glow-orange {
+  --glow-orange: rgba(249, 115, 22, 0.08);
+}
+
+.dark .hero-glow-teal {
+  --glow-teal: rgba(16, 185, 129, 0.06);
+}
+
+.dark .chart-cell {
+  --cell-bg: rgba(255, 255, 255, 0.03);
+  --cell-border: rgba(255, 255, 255, 0.04);
+  --cell-opacity: 0.5;
+}
+
+.dark .featured-card {
+  --featured-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 20px 40px -4px rgba(0, 0, 0, 0.2);
+  --featured-glow: radial-gradient(ellipse at center, rgba(15, 15, 15, 0.97) 0%, rgba(15, 15, 15, 0.85) 30%, rgba(15, 15, 15, 0.5) 55%, rgba(15, 15, 15, 0) 75%);
+}
+
+.dark .trend-up {
+  --trend-up-bg: rgba(22, 163, 74, 0.15);
+  --trend-up-color: #4ade80;
+}
+
+.dark .trend-down {
+  --trend-down-bg: rgba(239, 68, 68, 0.15);
+  --trend-down-color: #f87171;
 }
 </style>
