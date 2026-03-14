@@ -86,7 +86,7 @@ const data = [
 
 ## Components
 
-**Cartesian**: `XAxis`, `YAxis`, `CartesianGrid`, `ReferenceLine`, `ReferenceArea`, `ErrorBar`, `Brush`
+**Cartesian**: `XAxis`, `YAxis`, `ZAxis`, `CartesianGrid`, `ReferenceLine`, `ReferenceArea`, `ErrorBar`, `Brush`
 
 **Polar**: `PolarGrid`, `PolarAngleAxis`, `PolarRadiusAxis`
 
@@ -109,12 +109,21 @@ const data = [
 - **Math**: D3 scales and shapes via [victory-vendor](https://github.com/FormidableLabs/victory)
 - **Animation**: [Motion for Vue](https://motion.dev/docs/vue)
 
+## Project Structure
+
+```
+packages/vue/src/     # Library source (published as vccs)
+playground/nuxt/      # Nuxt 3 playground for manual testing
+docs/                 # Documentation site (Nuxt 3 + Docus)
+```
+
 ## Development
 
 ```bash
 pnpm install          # Install dependencies
 pnpm dev              # Watch mode (library)
 pnpm test             # Run tests
+pnpm test:coverage    # Tests with coverage
 pnpm storybook        # Storybook
 pnpm play             # Nuxt playground
 pnpm docs             # Documentation site
