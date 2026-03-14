@@ -1,12 +1,27 @@
 {
   "name": "vccs",
   "version": "0.1.0",
-  "description": "vue lib",
-  "author": "",
+  "description": "Composable charting components for Vue 3 — an unofficial port of Recharts",
+  "author": "rick-hup",
   "license": "MIT",
+  "homepage": "https://github.com/rick-hup/vuecharts#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rick-hup/vuecharts"
+  },
+  "bugs": {
+    "url": "https://github.com/rick-hup/vuecharts/issues"
+  },
   "keywords": [
     "charts",
-    "vue"
+    "vue",
+    "vue3",
+    "recharts",
+    "composable",
+    "typescript",
+    "svg",
+    "data-visualization",
+    "charting"
   ],
   "sideEffects": false,
   "exports": {
@@ -21,6 +36,7 @@
   "types": "./dist/index.d.ts",
   "files": [
     "./LICENSE",
+    "./README.md",
     "./dist"
   ],
   "scripts": {
