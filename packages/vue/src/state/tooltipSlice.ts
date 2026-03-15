@@ -251,10 +251,6 @@ export type TooltipActionPayload = {
   activeIndex: TooltipIndex
   activeDataKey: DataKey<any> | undefined
   activeCoordinate?: ChartCoordinate | undefined
-  activePayload?: any[]
-  activeLabel?: string
-  chartX?: number
-  chartY?: number
 }
 
 const tooltipSlice = createSlice({

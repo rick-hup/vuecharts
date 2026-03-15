@@ -243,6 +243,8 @@ const TooltipBoundingBox = defineComponent({
       }
       return (
         <motion.div
+          role="tooltip"
+          aria-live="polite"
           tabindex={-1}
           class={cssClasses}
           style={boundingBoxStyle}
