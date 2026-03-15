@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { Funnel, FunnelChart, Legend, Tooltip } from 'vccs'
+import { Cell, Funnel, FunnelChart, Legend, Tooltip } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
 import ChartTooltipContent from '~/components/ui/chart/ChartTooltipContent.vue'
 import ChartLegendContent from '~/components/ui/chart/ChartLegendContent.vue'
 
 const chartData = [
-  { stage: 'Impressions', value: 12000, fill: 'var(--color-impressions)' },
-  { stage: 'Clicks', value: 4800, fill: 'var(--color-clicks)' },
-  { stage: 'Signups', value: 1500, fill: 'var(--color-signups)' },
-  { stage: 'Active', value: 680, fill: 'var(--color-active)' },
+  { stage: 'Impressions', value: 12000 },
+  { stage: 'Clicks', value: 4800 },
+  { stage: 'Signups', value: 1500 },
+  { stage: 'Active', value: 680 },
 ]
+
+const COLORS = ['#f97316', '#14b8a6', '#f59e0b', '#06b6d4']
 
 const chartConfig: ChartConfig = {
   value: { label: 'Count' },
-  impressions: { label: 'Impressions', color: 'var(--chart-1)' },
-  clicks: { label: 'Clicks', color: 'var(--chart-2)' },
-  signups: { label: 'Signups', color: 'var(--chart-3)' },
-  active: { label: 'Active', color: 'var(--chart-4)' },
+  impressions: { label: 'Impressions', color: '#f97316' },
+  clicks: { label: 'Clicks', color: '#14b8a6' },
+  signups: { label: 'Signups', color: '#f59e0b' },
+  active: { label: 'Active', color: '#06b6d4' },
 }
 </script>
 
@@ -48,7 +50,13 @@ const chartConfig: ChartConfig = {
             :data="chartData"
             data-key="value"
             name-key="stage"
-          />
+          >
+            <Cell
+              v-for="(entry, index) in chartData"
+              :key="index"
+              :fill="COLORS[index]"
+            />
+          </Funnel>
           <Legend>
             <template #content="legendProps">
               <ChartLegendContent

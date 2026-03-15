@@ -1,11 +1,11 @@
 <script setup>
-import { Cell, Funnel, FunnelChart, Legend, ResponsiveContainer, Tooltip } from 'vccs'
+import { Funnel, FunnelChart, Legend, ResponsiveContainer, Tooltip } from 'vccs'
 
 const data = [
-  { name: 'Impressions', value: 12000 },
-  { name: 'Clicks', value: 4800 },
-  { name: 'Signups', value: 1500 },
-  { name: 'Active', value: 680 },
+  { name: 'Impressions', value: 12000, fill: '#f97316' },
+  { name: 'Clicks', value: 4800, fill: '#14b8a6' },
+  { name: 'Signups', value: 1500, fill: '#f59e0b' },
+  { name: 'Active', value: 680, fill: '#06b6d4' },
 ]
 
 const COLORS = ['#f97316', '#14b8a6', '#f59e0b', '#06b6d4']
@@ -30,13 +30,7 @@ const COLORS = ['#f97316', '#14b8a6', '#f59e0b', '#06b6d4']
         :data="data"
         data-key="value"
         name-key="name"
-      >
-        <Cell
-          v-for="(entry, index) in data"
-          :key="index"
-          :fill="COLORS[index]"
-        />
-      </Funnel>
+      />
       <Legend />
     </FunnelChart>
   </ResponsiveContainer>

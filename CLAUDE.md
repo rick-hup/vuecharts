@@ -205,6 +205,8 @@ All animated components (Bar, Line, Scatter, Radar, RadialBar) use: `previousDat
 
 `Animate` respects `prefers-reduced-motion`: uses `usePreferredReducedMotion()` from `@vueuse/core`; when `reducedMotion === 'reduce'` and `isActive=true`, animation is skipped — fires `onAnimationStart`, snaps `currentValue` to `props.to`, fires `onAnimationEnd`. Watch target is `[() => props.isActive, reducedMotion]`.
 
+**`useIsAnimating` hook** (`hooks/useIsAnimating.ts`): shared by Bar, Line, Radar, RadialBar, Area, Funnel. Signature: `useIsAnimating(isAnimationActive: () => boolean): Ref<boolean>`. Returns a computed with get/set — get returns `false` immediately when `isAnimationActive()` is false (gates LabelList and other animation-dependent rendering), otherwise returns internal ref; set updates the internal ref (called on animation end). Watch on the getter resets internal state to `true` when `isAnimationActive` re-enables. Pass a getter, not the raw prop: `useIsAnimating(() => props.isAnimationActive)`.
+
 ### Area Animation (Different from Chase Pattern)
 `Area` does NOT use `Animate` wrapper. It has two distinct mechanisms:
 1. **Initial entrance** (`ClipRect` animation): `isClipRectAnimating` ref + clip-path `#animationClipPath-${clipPathId}` — `ClipRect` component handles the reveal sweep
@@ -227,7 +229,8 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 
 ### Cell Component
 - Marker component rendering nothing — parents read Cell VNode children and apply props by index
-- `Bar` integration: `extractCellProps(slots.default?.())` collects per-index props; `cellProps` applied at highest priority (below `activeBarProps`)
+- `Bar` and `Funnel` integration: `extractCellProps(slots.default?.())` collects per-index props; `cellProps` applied at highest priority (below `activeBarProps`)
+- `filterOutCells` in both `Bar` and `Funnel` **recursively descends Fragment children** to preserve non-Cell siblings (e.g. `<LabelList>` co-located in a `v-for` Fragment) — does NOT drop entire Fragment VNodes
 - Usage: `<Bar dataKey="value"><Cell v-for="(entry, i) in data" :key="i" :fill="COLORS[i]" /></Bar>`
 
 ### LabelList

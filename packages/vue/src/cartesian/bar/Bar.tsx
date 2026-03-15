@@ -99,14 +99,19 @@ export const Bar = defineComponent<BarPropsWithSVG>({
     }
 
     const filterOutCells = (vnodes: VNode[]): VNode[] => {
-      return vnodes.filter((vnode) => {
-        if (vnode.type === Cell) return false
-        if (vnode.type === Fragment && Array.isArray(vnode.children)) {
-          const hasCells = (vnode.children as VNode[]).some(c => c.type === Cell)
-          if (hasCells) return false
+      const result: VNode[] = []
+      for (const vnode of vnodes) {
+        if (vnode.type === Cell) {
+          continue
         }
-        return true
-      })
+        if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+          result.push(...filterOutCells(vnode.children as VNode[]))
+        }
+        else {
+          result.push(vnode)
+        }
+      }
+      return result
     }
 
     return () => {

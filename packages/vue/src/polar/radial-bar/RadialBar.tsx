@@ -1,4 +1,4 @@
-import { Fragment, computed, defineComponent, ref } from 'vue'
+import { Fragment, computed, defineComponent } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { mouseLeaveItem, setActiveMouseOverItemIndex } from '@/state/tooltipSlice'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
@@ -11,6 +11,7 @@ import { Sector } from '@/shape/Sector'
 import { Animate } from '@/animation/Animate'
 import { LabelList } from '@/components/label/LabelList'
 import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
+import { useIsAnimating } from '@/hooks/useIsAnimating'
 import { interpolate } from '@/utils/data-utils'
 import type { RadialBarPropsWithSVG } from './type'
 import { RadialBarVueProps } from './type'
@@ -80,7 +81,7 @@ export const RadialBar = defineComponent<RadialBarPropsWithSVG>({
       })),
     })
 
-    const isAnimating = ref(props.isAnimationActive)
+    const isAnimating = useIsAnimating(() => props.isAnimationActive)
 
     provideCartesianLabelListData(computed(() => {
       if (props.isAnimationActive && isAnimating.value)

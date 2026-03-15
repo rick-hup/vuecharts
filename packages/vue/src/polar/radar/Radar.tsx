@@ -1,4 +1,4 @@
-import { Fragment, Teleport, computed, defineComponent, ref } from 'vue'
+import { Fragment, Teleport, computed, defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { SetPolarGraphicalItem } from '@/state/SetGraphicalItem'
@@ -14,6 +14,7 @@ import { interpolate } from '@/utils/data-utils'
 import { ActivePoints } from '@/cartesian/line/ActivePoints'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
+import { useIsAnimating } from '@/hooks/useIsAnimating'
 import type { DataKey } from '@/types'
 import type { LegendType } from '@/types/legend'
 import type { TooltipType } from '@/types/tooltip'
@@ -126,7 +127,7 @@ export const Radar = defineComponent({
 
     const graphicalLayerRef = useGraphicalLayerRef()
 
-    const isAnimating = ref(props.isAnimationActive)
+    const isAnimating = useIsAnimating(() => props.isAnimationActive)
 
     provideCartesianLabelListData(computed(() => {
       if (props.isAnimationActive && isAnimating.value) return undefined

@@ -1,4 +1,4 @@
-import { Fragment, computed, defineComponent, ref } from 'vue'
+import { Fragment, computed, defineComponent, shallowRef } from 'vue'
 import type { SlotsType, VNode } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
@@ -11,6 +11,7 @@ import { type ResolvedFunnelSettings, selectFunnelTrapezoids } from '@/state/sel
 import { mouseLeaveItem, setActiveMouseOverItemIndex } from '@/state/tooltipSlice'
 import { Cell } from '@/components/Cell'
 import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
+import { useIsAnimating } from '@/hooks/useIsAnimating'
 import type { FunnelPropsWithSVG, FunnelTrapezoidItem } from './type'
 import { FunnelVueProps } from './type'
 
@@ -28,16 +29,20 @@ function extractCellProps(vnodes: VNode[]): Record<string, any>[] {
 }
 
 function filterOutCells(vnodes: VNode[]): VNode[] {
-  return vnodes.filter((vnode) => {
-    if (vnode.type === Cell)
-      return false
-    if (vnode.type === Fragment && Array.isArray(vnode.children)) {
-      const hasCells = (vnode.children as VNode[]).some(c => c.type === Cell)
-      if (hasCells)
-        return false
+  const result: VNode[] = []
+  for (const vnode of vnodes) {
+    if (vnode.type === Cell) {
+      continue
     }
-    return true
-  })
+    if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+      // Recursively filter Fragment children instead of dropping the whole Fragment
+      result.push(...filterOutCells(vnode.children as VNode[]))
+    }
+    else {
+      result.push(vnode)
+    }
+  }
+  return result
 }
 
 export const Funnel = defineComponent<FunnelPropsWithSVG>({
@@ -50,7 +55,8 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
   }>,
   setup(props, { attrs, slots }) {
     const dispatch = useAppDispatch()
-    const isAnimating = ref(props.isAnimationActive)
+    const isAnimating = useIsAnimating(() => props.isAnimationActive)
+    const cellPropsRef = shallowRef<Record<string, any>[]>([])
 
     const funnelSettings = computed<ResolvedFunnelSettings>(() => ({
       data: props.data,
@@ -79,19 +85,17 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
 
     const trapezoids = computed(() => composedData.value?.trapezoids ?? [])
 
-    // Legend payload: one entry per data item (like Pie)
+    // Legend payload: built from trapezoids, with Cell fill overrides applied
     const legendPayload = computed(() => {
-      const data = props.data ?? []
-      return data.map((entry: any, i: number) => {
-        const name = typeof props.nameKey === 'string' ? entry[props.nameKey] : `Item ${i}`
-        const color = entry.fill ?? props.fill
-        return {
-          type: props.legendType,
-          value: String(name ?? ''),
-          color,
-          payload: entry,
-        }
-      })
+      const trapList = trapezoids.value
+      if (!trapList || trapList.length === 0) return []
+      const cells = cellPropsRef.value
+      return trapList.map((trap: any, i: number) => ({
+        type: props.legendType,
+        value: String(trap.name ?? ''),
+        color: cells[i]?.fill ?? trap.fill ?? props.fill,
+        payload: trap.payload,
+      }))
     })
     SetLegendPayload(legendPayload)
 
@@ -158,6 +162,7 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
       // Extract Cell props and non-Cell children (e.g. LabelList) from default slot
       const defaultContent = slots.default?.() ?? []
       const cells = extractCellProps(defaultContent)
+      cellPropsRef.value = cells
       const nonCellContent = cells.length > 0 ? filterOutCells(defaultContent) : defaultContent
       const stroke = (attrs.stroke as string) ?? props.stroke
 

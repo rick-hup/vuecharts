@@ -2,11 +2,12 @@ import { useChartLayout } from '@/context/chartLayoutContext'
 import { useChartName } from '@/state/selectors/selectors'
 import type { LinePointItem, LinePropsInternal } from '../type'
 import type { ComputedRef, InjectionKey, Ref, SVGAttributes, ShallowRef } from 'vue'
-import { computed, inject, provide, ref } from 'vue'
+import { computed, inject, provide } from 'vue'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { useAppSelector } from '@/state/hooks'
 import { selectLinePoints } from '@/state/selectors/lineSelectors'
 import { uniqueId } from '@/utils'
+import { useIsAnimating } from '@/hooks/useIsAnimating'
 import { isClipDot } from '@/utils/chart'
 import { filterProps } from '@/utils/VueUtils'
 import { useNeedsClip } from '@/cartesian/useNeedsClip'
@@ -53,7 +54,7 @@ export function useLine(props: LinePropsInternal, attrs: SVGAttributes = {}, sha
   const clipPathId = computed(() => props.id || localId)
   const isPanorama = useIsPanorama()
 
-  const isAnimating = ref(props.isAnimationActive)
+  const isAnimating = useIsAnimating(() => props.isAnimationActive)
   const { needClip } = useNeedsClip(props.xAxisId!, props.yAxisId!)
 
   const shouldRender = computed(() =>
