@@ -53,6 +53,8 @@ export const FunnelVueProps = {
       ease: 'easeOut',
     }),
   },
+  onAnimationStart: { type: Function as PropType<() => void>, default: undefined },
+  onAnimationEnd: { type: Function as PropType<() => void>, default: undefined },
   className: { type: String, default: undefined },
   width: { type: [Number, String] as PropType<number | string>, default: undefined },
 }

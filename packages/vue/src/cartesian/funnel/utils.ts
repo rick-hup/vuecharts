@@ -17,7 +17,7 @@ function getRealWidthHeight({ customWidth }: { customWidth?: number | string }, 
   }
 
   return {
-    realWidth: realWidth! - left! - right! - 50,
+    realWidth: realWidth! - left! - right!,
     realHeight: realHeight! - bottom! - top!,
     offsetX: (width! - realWidth!) / 2,
     offsetY: (height! - realHeight!) / 2,
@@ -77,8 +77,8 @@ export function computeFunnelTrapezoids({
         nextVal = 0
       }
 
-      const x = ((maxValue - val) * realWidth) / (2 * maxValue) + top + 25 + offsetX
-      const y = rowHeight * i + left! + offsetY
+      const x = ((maxValue - val) * realWidth) / (2 * maxValue) + left! + offsetX
+      const y = rowHeight * i + top! + offsetY
       const upperWidth = (val / maxValue) * realWidth
       const lowerWidth = (nextVal / maxValue) * realWidth
 

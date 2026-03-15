@@ -168,7 +168,8 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
             from={0}
             to={1}
             transition={props.transition}
-            onAnimationEnd={() => { isAnimating.value = false }}
+            onAnimationStart={props.onAnimationStart}
+            onAnimationEnd={() => { isAnimating.value = false; props.onAnimationEnd?.() }}
           >
             {(progress: number) => {
               return trapList.map((trap: any, i: number) => {
