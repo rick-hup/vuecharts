@@ -1068,6 +1068,23 @@ function scrollToShowcase() {
   .chart-grid {
     transform: translateY(-850px) !important;
   }
+  .hero-glow {
+    animation: none !important;
+    transition: none !important;
+  }
+  .landing-scroll,
+  .landing-scroll-icon {
+    animation: none !important;
+    transition: none !important;
+  }
+  .landing-hero-inner,
+  .landing-hero-inner * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }
 </style>
 

@@ -9,6 +9,7 @@ import type { OffsetHorizontal, OffsetVertical } from '@/types/offset'
 import { DEFAULT_Y_AXIS_WIDTH } from '@/utils/const'
 import { appendOffsetOfLegend } from '@/utils/legend'
 import type { ChartOffsetInternal } from '@/utils/types'
+import type { RechartsRootState } from '@/state/store'
 import { createSelector } from '@reduxjs/toolkit'
 import { get } from 'es-toolkit/compat'
 
@@ -18,8 +19,7 @@ import { get } from 'es-toolkit/compat'
  * @param root state
  * @return ChartOffsetInternal
  */
-// @ts-ignore
-export const selectChartOffsetInternal = createSelector(
+export const selectChartOffsetInternal: (state: RechartsRootState) => ChartOffsetInternal = createSelector(
   [
     selectChartWidth,
     selectChartHeight,
@@ -35,8 +35,8 @@ export const selectChartOffsetInternal = createSelector(
     chartHeight: number,
     margin: Margin,
     brushHeight: number,
-    xAxes: XAxisSettings[],
-    yAxes: YAxisSettings[],
+    xAxes: readonly XAxisSettings[],
+    yAxes: readonly YAxisSettings[],
     legendSettings: LegendSettings,
     legendSize: Size,
   ): ChartOffsetInternal => {

@@ -1,6 +1,7 @@
 import type { PropType } from 'vue'
 import { defineComponent, onUnmounted, ref, watch } from 'vue'
 import { animate } from 'motion-v'
+import { usePreferredReducedMotion } from '@vueuse/core'
 import type { AnimationOptions } from 'motion-v'
 
 const DEFAULT_TRANSITION: AnimationOptions = {
@@ -50,6 +51,7 @@ const Animate = defineComponent({
   setup(props, { slots }) {
     let animationControls: any = null
     const currentValue = ref(0)
+    const reducedMotion = usePreferredReducedMotion()
 
     // 开始动画
     const startAnimation = () => {
@@ -88,9 +90,22 @@ const Animate = defineComponent({
     }
 
     // 监听isActive变化
-    watch(() => props.isActive, (isActive) => {
+    watch([() => props.isActive, reducedMotion] as const, ([isActive, motion]) => {
       if (isActive) {
-        startAnimation()
+        if (motion === 'reduce') {
+          // Skip animation — snap to final value
+          stopAnimation()
+          if (props.onAnimationStart) {
+            props.onAnimationStart()
+          }
+          currentValue.value = props.to
+          if (props.onAnimationEnd) {
+            props.onAnimationEnd()
+          }
+        }
+        else {
+          startAnimation()
+        }
       }
       else {
         stopAnimation()

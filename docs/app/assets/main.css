@@ -24,3 +24,22 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* Focus-visible styles for keyboard navigation (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--chart-1, #f97316);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduced motion: disable all animations for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

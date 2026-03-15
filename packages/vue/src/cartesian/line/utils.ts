@@ -24,8 +24,7 @@ export function computeLinePoints({
   displayedData: any[]
 }): ReadonlyArray<LinePointItem> {
   return displayedData.map((entry, index): LinePointItem => {
-    // @ts-expect-error getValueByDataKey does not validate the output type
-    const value: number = getValueByDataKey(entry, dataKey)
+    const value = getValueByDataKey(entry, dataKey) as number
 
     if (layout === 'horizontal') {
       return {

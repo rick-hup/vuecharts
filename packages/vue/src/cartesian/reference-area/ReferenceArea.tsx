@@ -42,10 +42,10 @@ export const ReferenceAreaVueProps = {
   strokeWidth: { type: [Number, String], default: 1 },
   fill: { type: String, default: '#ccc' },
   fillOpacity: { type: Number, default: 0.5 },
-  label: { type: [String, Number, Object] as PropType<string | number | Record<string, any>>, default: undefined },
+  label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
   className: { type: String, default: undefined },
-  radius: { type: [Number, Array] as PropType<number | number[]>, default: 0 },
+  radius: { type: [Number, Array] as PropType<number | [number, number, number, number]>, default: 0 },
 }
 
 export const ReferenceArea = defineComponent({
@@ -142,7 +142,7 @@ export const ReferenceArea = defineComponent({
           {labelValue != null && labelValue !== false && (
             <Label
               viewBox={r}
-              value={typeof labelValue === 'object' ? undefined : labelValue}
+              value={typeof labelValue === 'string' || typeof labelValue === 'number' ? labelValue : undefined}
               {...labelProps}
             />
           )}

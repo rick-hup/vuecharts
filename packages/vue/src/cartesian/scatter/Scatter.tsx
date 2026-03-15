@@ -11,6 +11,7 @@ import type { CurveType } from '@/shape/Curve'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import { LabelList } from '@/components/label'
 import type { DataKey } from '@/types'
+import type { TooltipType } from '@/types/tooltip'
 import type { ScatterPointItem } from '@/types/common'
 import type { ErrorBarDirection } from '@/types/bar'
 import { Animate } from '@/animation/Animate'
@@ -52,7 +53,7 @@ const ScatterVueProps = {
   lineJointType: { type: [String, Function] as PropType<CurveType>, default: 'linear' },
   label: { type: [Boolean, Object], default: false },
   legendType: { type: String, default: 'circle' },
-  tooltipType: { type: String, default: undefined },
+  tooltipType: { type: String as PropType<TooltipType>, default: undefined },
   transition: { type: Object as PropType<AnimationOptions>, default: undefined },
 }
 
@@ -79,7 +80,7 @@ export const Scatter = defineComponent({
     // arrayTooltipSearcher returns the tooltipPayload array for the active index,
     // which combineTooltipPayload processes into per-axis tooltip entries.
     SetTooltipEntrySettings({
-      fn: (input: { points: ReadonlyArray<ScatterPointItem> | undefined, fill: string | undefined, stroke: string | undefined, strokeWidth: string | number | undefined, name: string | number | undefined, dataKey: DataKey<any> | undefined, hide: boolean, tooltipType: string | undefined }) => ({
+      fn: (input) => ({
         dataDefinedOnItem: input.points?.map(p => p.tooltipPayload),
         positions: undefined,
         settings: {

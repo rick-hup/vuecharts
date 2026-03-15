@@ -87,7 +87,7 @@ docs/                       # Documentation site (Nuxt 3, Docus framework)
 │   │   ├── ChartDemo.vue   # Lazy-loaded chart demo card (IntersectionObserver rootMargin 200px); props: name?, description?, src (required); loads component+raw source lazily via import.meta.glob (NOT eager); Shiki syntax highlighting via codeToHtml({ lang: 'vue', themes: { light: 'github-light', dark: 'github-dark' } }); skeleton pulse while loading; ARIA-compliant tab buttons 'Preview'/'Code' (role=tablist/tab/tabpanel, aria-selected, aria-controls); ClientOnly wraps chart component; copy button 'Copy'/'Copied!' (2s, copyTimer cleared onBeforeUnmount); clipboard: navigator.clipboard?.writeText with textarea+execCommand fallback; error state via loadError ref (chart-not-found + load-failed); CSS vars: --ui-border/--ui-bg-elevated/--ui-text/--ui-text-muted; dark mode via :global(.dark) + --shiki-dark-bg/--shiki-dark CSS vars; Shiki line fix: .chart-demo-code :deep(pre code .line) font-size 0.8125rem + line-height 1.5; code block max-height 28rem
 │   │   └── DotGrid.vue     # Interactive canvas dot grid background for hero section; props: dotSize (16), gap (32), baseColor, activeColor, proximity (150), speedTrigger (100), shockRadius (250), shockStrength (5), maxSpeed (5000); canvas 2D + RAF loop, DPR-aware; color lerp between baseColor/activeColor by proximity distance; `kickDot()` uses underdamped spring analytical solution — x(t) = e^(-γt)·[x₀·cos(ωd·t) + ((v₀+γ·x₀)/ωd)·sin(ωd·t)] with stiffness=35, damping=2.5, mass=1; smooth re-kick mid-animation by capturing current offset as x₀; dots shoot out and elastically return via pure RAF springTick loop (no motion-v at runtime); onMove throttled 50ms, kicks dots when speed>speedTrigger && dist<proximity; onClick shockwave within shockRadius with distance falloff; ResizeObserver rebuilds grid; SSR-safe (Path2D guard); used in index.vue wrapped in `<ClientOnly>`, dotBaseColor from useColorMode() (dark:#404040, light:#c0c0c0), dotActiveColor #f97316
 │   ├── assets/
-│   │   └── main.css        # Global CSS: --font-sans system stack, -webkit-font-smoothing/-moz-osx-font-smoothing antialiasing, body font-family; defines chart CSS vars (light: --chart-1..5 = #f97316/#14b8a6/#f59e0b/#06b6d4/#ef4444; dark .dark override: #fb923c/#2dd4bf/#fbbf24/#22d3ee/#f87171)
+│   │   └── main.css        # Global CSS: --font-sans system stack, -webkit-font-smoothing/-moz-osx-font-smoothing antialiasing, body font-family; defines chart CSS vars (light: --chart-1..5 = #f97316/#14b8a6/#f59e0b/#06b6d4/#ef4444; dark .dark override: #fb923c/#2dd4bf/#fbbf24/#22d3ee/#f87171); `:focus-visible` keyboard focus ring: `outline: 2px solid var(--chart-1, #f97316)`, `outline-offset: 2px`, `border-radius: 4px` (WCAG 2.4.7); `@media (prefers-reduced-motion: reduce)` disables all animations/transitions/scroll-behavior globally
 │   ├── pages/              # index.vue (home) — two full-screen scroll-snap sections (`:global(html) scroll-snap-type: y mandatory`, each section `scroll-snap-align: start`): (1) `.landing-hero` (height: 100vh/100dvh) centered hero: `<DotGrid>` interactive canvas background (`<ClientOnly>`, dotBaseColor via useColorMode dark:#404040/light:#c0c0c0, dotActiveColor #f97316) + two floating glow orbs with `filter:blur(10px)` (`.hero-glow-orange` x:23s/y:19s drift, `.hero-glow-teal` x:17s/y:29s drift — prime-number durations for organic movement, fade in over 1.2s/1.4s); staggered hero content via `containerVariants` (`staggerChildren:0.1, delayChildren:0.15`) + `itemVariants` (hidden: `opacity:0, y:40, blur(4px)` → visible: `opacity:1, y:0, blur(0px)`, spring `stiffness:120 damping:20`); `motion.div` wraps `.landing-hero-inner` with `initial="hidden" animate="visible"`; install snippet `.landing-install` pill (click-to-copy `npm install vccs`, UIcon toggles `i-lucide-copy`↔`i-lucide-check` via `installCopied` ref, copyTimer cleared onBeforeUnmount), title `vccs v0.1`, tagline, CTA buttons (Get Started + GitHub via UButton), feature pills (Vue 3/TypeScript/Composable/Animated), scroll indicator `.landing-scroll` bounces via `motion.div` `animate: { y: [0,8,0] }` repeat Infinity easeInOut, calls `scrollToShowcase()` (`getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })`); (2) `.showcase` evilcharts-style: left 40% `.showcase-content` z-10 (heading "Explore Charts" + desc + category tabs) + right 55% `.showcase-charts` position:absolute overflow-hidden (left fade gradient + background chart grid + featured card); `ChartEntry` interface: `{ component, title, desc, category, trend, trendUp }`; `allCharts` 28 entries; **2D grid layout**: `categoryLayout` maps each category to `{col, row}` in a 3×2 macro grid (bar:0,0 / area:1,0 / line:2,0 / pie:0,1 / radar:1,1 / radial:2,1); `categoryGroups` computed splits each category's charts into col1 (even indices) + col2 (odd indices), placed on CSS grid via `gridColumn`/`gridRow`; col2 gets `chart-col-offset` (margin-top); `motion.div` spring `{ stiffness:75, damping:25 }` animates BOTH `x` and `y` to `gridOffset` (bar:{x:0,y:-100}, area:{x:-760,y:-100}, line:{x:-1520,y:-100}, pie:{x:0,y:-950}, radar:{x:-760,y:-950}, radial:{x:-1520,y:-950}); category chevron: `<ClientOnly>` wraps `<LayoutGroup>`; active button has `<motion.div layout-id="category-chevron" v-if="activeCategory===cat.key">` for shared layout transition with `<UIcon name="i-lucide-chevron-right" />`; `activeCategory` ref drives grid pan + featured card; `featuredComponent = shallowRef<Component | null>` (no flicker); `onMounted` eagerly loads bar chart; `switchCategory(key)` async — awaits `featuredLoaders[key]?.()`, sets `featuredComponent.value = mod.default` then `activeCategory.value = key`; separate `featuredLoaders` + `featuredMeta` maps (per-category title/desc/trend/trendUp); featured card `.featured-card` 26rem wide, absolutely centered z-10, `::before` frosted glow; `<AnimatePresence mode="wait">` wraps `motion.div` keyed by `activeCategory` with `initial/animate/exit: { opacity, scale:0.95→1→0.95 }` `{ duration:0.3, ease:'easeOut' }`; `asyncChart()`: `defineAsyncComponent({ loader, loadingComponent:ChartLoading, delay:0, errorComponent:ChartError, timeout:10000 })` (ChartError renders null; ChartLoading renders 300px-tall div); `copyInstall()` clipboard with textarea+execCommand fallback; trend badges `.trend-up`/`.trend-down`; responsive: stacks at 768px; uses `useSeoMeta` + UButton/UIcon (Nuxt UI)
 │   └── app.config.ts       # Docus config (name/url/socials) + UI colors (primary: zinc, neutral: zinc)
 ├── content/                # Markdown content (1.getting-started/, 2.charts/, 3.components/, index.md)
@@ -199,6 +199,8 @@ Three-tier z-ordering: cursor → graphical → label (via `Surface.vue`). `Area
 ### Animation Chase Pattern
 All animated components (Bar, Line, Scatter, Radar, RadialBar) use: `previousData` + incrementing `animationId` as `Animate` key; previous state updated at `t > 0` so rapid changes interpolate from current visual position.
 
+`Animate` respects `prefers-reduced-motion`: uses `usePreferredReducedMotion()` from `@vueuse/core`; when `reducedMotion === 'reduce'` and `isActive=true`, animation is skipped — fires `onAnimationStart`, snaps `currentValue` to `props.to`, fires `onAnimationEnd`. Watch target is `[() => props.isActive, reducedMotion]`.
+
 ### Area Animation (Different from Chase Pattern)
 `Area` does NOT use `Animate` wrapper. It has two distinct mechanisms:
 1. **Initial entrance** (`ClipRect` animation): `isClipRectAnimating` ref + clip-path `#animationClipPath-${clipPathId}` — `ClipRect` component handles the reveal sweep
@@ -212,7 +214,12 @@ All animated components (Bar, Line, Scatter, Radar, RadialBar) use: `previousDat
 Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `label`, `content`, `cursor`, `tick`, `horizontal`, `vertical`. Example: `<Bar>{{ shape: (props) => <Custom {...props} /> }}</Bar>`.
 - `Area` slots: `#dot` (`AreaDotSlotProps`), `#activeDot` — `slots.dot` passed directly to `useArea(props, attrs, slots.dot)` hook
 
-**Bar slot priority** (`BarRectangles`): (1) `isActive && #activeBar` → (2) `#shape` → (3) default `<Rectangle>`. Rectangle props merge (low→high): `baseProps` → `entry.payload?.fill` → `entry` → `cellPropsForIndex` → `activeBarProps`.
+**Bar slot priority** (`BarRectangles`): (1) `isActive && #activeBar` → (2) `#shape` → (3) default `<Rectangle>`. Rectangle props merge (low→high): `baseProps` → `entry.payload?.fill` → `entry` → `cellPropsForIndex` → `activeBarProps`. Each bar rectangle wrapped in `<Layer class="v-charts-bar-rectangle">` (use this selector to query individual bars in tests).
+
+### Legend Accessibility
+- Legend items: `tabindex={0}`, `role="button"`, `aria-label="Toggle {name} series"`, keyboard handler fires `handleClick` on Enter/Space
+- LegendSymbol `<Surface>` SVG: `aria-label="{name} legend icon"`
+- `Legend` exported as `default` (not named); cast to `DefineSetupFnComponent<LegendPropsWithSVG, {}, SlotsType<LegendSlots>>` for correct slot type inference
 
 ### Cell Component
 - Marker component rendering nothing — parents read Cell VNode children and apply props by index
@@ -223,12 +230,16 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Place as **child slot** inside series component (Bar, Line, RadialBar): `<Bar><LabelList position="top" /></Bar>`
 - Data flows via `provideCartesianLabelListData` context
 - Teleports to label SVG layer when available
+- Supports `#label` slot for fully custom label rendering: `slots.label({ ...props, ...viewBox, value, index, key })`
+- `entryFill` priority: explicit attrs/props > `entry.fill` (entry fill only used when no `fill` prop/attr present)
 
 ### Tooltip
 - **`#content` slot** (preferred): `<Tooltip><template #content="{ active, payload, label }">...</template></Tooltip>`
 - **IMPORTANT**: use destructured props, NOT `v-bind="tooltipProps"` — `@antfu/eslint-config` auto-fix strips `v-bind` spread on slot props
 - **Docs demos standard**: always add `:cursor="false"` to `<Tooltip>`; pass `ChartTooltipContent` with explicit `:active="active" :payload="payload" :label="label"` (NOT `v-bind` spread)
 - Key props: `defaultIndex`, `trigger="click"`, `shared={false}`, `cursor={false}`
+- `DefaultTooltipContent` `itemSorter` prop accepts function OR string literals: `'dataKey' | 'value' | 'name'`
+- `TooltipIndex` type is `string | null` (null = no active index; NOT a number)
 
 ### Tooltip Payload Selection
 - `tooltipEventType='axis'`: returns all items at hovered index
@@ -236,7 +247,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 
 ### Polar Components
 - **PolarAngleAxis**: slot `#tick` with `{ x, y, value, textAnchor }` for custom tick labels; full-circle dedup removes last tick at 360°=0°
-- **PolarRadiusAxis**: `type='auto'` resolves by layout (radial→category, centric→number); default `domain` is `[0, 'auto']`; provides `POLAR_LABEL_VIEW_BOX_KEY` for child `<Label>` to access `{ cx, cy }`
+- **PolarRadiusAxis**: `type='auto'` resolves by layout (radial→category, centric→number); default `domain` is `[0, 'auto']`; provides `POLAR_LABEL_VIEW_BOX_KEY` for child `<Label>` to access `{ cx, cy }`; uses `watchEffect` for dispatch; renders slot children even when `tick=false` and `axisLine=false` (needed for `<Label>` child pattern)
 - **PolarGrid**: `gridType` (`polygon`|`circle`), `radialLines` (default `true`), `polarRadius` (number[] override)
 
 ### Pie
@@ -249,9 +260,11 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - `cornerRadius`/`forceCornerRadius`/`cornerIsExternal` forwarded to background sectors
 
 ### YAxis / XAxis Internal Architecture
-- Split into two internal components: `YAxisImpl` (reads Redux state, renders `<CartesianAxis>`) and `YAxisSettingsDispatcher` (dispatches `addYAxis`/`removeYAxis` via `watchEffect`)
-- `YAxisImpl` returns `null` when `axisSize` or `position` is not yet available from the store
-- Default `interval` is `'preserveEnd'` (applied in `YAxisSettingsDispatcher`, not in the public `YAxis` props)
+- Both split into three tiers: `{X|Y}AxisImpl` (reads Redux state, renders `<CartesianAxis>`) + `{X|Y}AxisSettingsDispatcher` (dispatches `add{X|Y}Axis`/`remove{X|Y}Axis` via `watchEffect`) + public `{X|Y}Axis`
+- `{X|Y}AxisImpl` returns `null` when `axisSize` or `position` is not yet available from the store
+- Default `interval` is `'preserveEnd'` (applied in the Dispatcher, not in the public props)
+- **XAxisImpl** supports `#tick` slot forwarded through XAxisSettingsDispatcher; **YAxisImpl** does NOT support `#tick` slot
+- `XAxisSettingsDispatcher` also defaults: `includeHidden=false`, `angle=0`, `minTickGap=5`, `tick=true`
 
 ### CartesianGrid
 - Custom line rendering via `#horizontal`/`#vertical` slots (Function type removed from props)
@@ -263,6 +276,26 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Place as child of `<Scatter>` or `<Bar>`; consumes `ErrorBarContext` from parent
 - Self-registers into parent's `ErrorBarRegistry` for axis domain extension
 
+### Brush
+- Prop defaults: `height=40`, `travellerWidth=5`, `gap=1`, `fill='#fff'`, `stroke='#666'`, `padding={top:1,right:1,bottom:1,left:1}`, `leaveTimeOut=1000`, `alwaysShowText=false`
+- `BrushTravellerId`: `'startX' | 'endX'`
+- `onChange` / `onDragEnd` both receive `BrushStartEndIndex` (re-exported from `chartDataSlice`)
+- Internal `BrushState`: `isTravellerMoving`, `isTravellerFocused`, `isSlideMoving`, `startX`, `endX`, `slideMoveStartX`, `movingTravellerId`, `isTextActive`, `brushMoveStartX`, `scale`, `scaleValues`
+
+### TooltipSlice State Shape
+- `TooltipState`: `{ itemInteraction: {click, hover}, axisInteraction: {click, hover}, keyboardInteraction, syncInteraction, tooltipItemPayloads, settings }`
+- Each interaction field is a `TooltipInteractionState`: `{ active: boolean, index: TooltipIndex, dataKey, coordinate }` — `active` is separate from `index` so `active=true` prop keeps tooltip visible after mouse-leave without clearing last position
+- `itemInteraction` (click/hover) vs `axisInteraction` (click/hover): independent; `mouseLeaveItem` only clears `itemInteraction.hover.active`; `mouseLeaveChart` clears both hover flags
+- `syncInteraction` extends `TooltipInteractionState` with `label: string | undefined`
+- `TooltipSettingsState`: `{ shared, trigger, axisId, active: boolean|undefined, defaultIndex: TooltipIndex|undefined }`
+- `TooltipPayloadConfiguration`: `{ settings: TooltipEntrySettings, dataDefinedOnItem: unknown, positions: Record<...> | ReadonlyArray<Coordinate> | undefined }`
+- Actions: `setActiveMouseOverItemIndex`, `mouseLeaveItem`, `mouseLeaveChart`, `setActiveClickItemIndex`, `setMouseOverAxisIndex`, `setMouseClickAxisIndex`, `setSyncInteraction`, `setKeyboardInteraction`, `addTooltipEntrySettings`, `removeTooltipEntrySettings`, `setTooltipSettingsState`
+
+### ReferenceArea / ReferenceLine
+- Both register via `addArea`/`addLine` (referenceElementsSlice) on `onMounted`/`onUnmounted`
+- **ReferenceArea**: supports `radius` prop for rounded corners (passed to `<Rectangle>`); `ifOverflow` defaults to `'discard'`
+- **ReferenceLine**: `scaleCoord()` adds `bandwidth/2` to center on band-scale categories; respects `yAxisSettings.orientation` (left/right) and `xAxisSettings.orientation` to order line endpoint coordinates
+
 ### Testing
 - `isAnimationActive={false}` for deterministic rendering
 - `mockGetBoundingClientRect({ width, height })` in `beforeEach`
@@ -270,7 +303,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Tests written as render functions (arrow function JSX, not SFC): `render(() => <Component />)`
 - Public API imports from `@/index`; internal component imports use direct paths (e.g. `@/chart/RadarChart`)
 - Layout context assertions: `defineComponent` + `useViewBox()`, `useChartWidth()`, `useChartHeight()`, `useClipPathId()` from `@/context/chartLayoutContext` / `@/chart/provideClipPathId`
-- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
+- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; bar: `.v-charts-bar-rectangle` (each individual bar's `<Layer>` wrapper); tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
 - Line test helpers: `getLineCurves(container)` = `container.querySelectorAll('.v-charts-line .v-charts-line-curve')`; dots: `dot={true}` renders `.v-charts-line-dots` wrapper + `.v-charts-line-dot` per data point; single data point renders dot but no curve
 - Line curve type detection via path `d` attribute: monotone → contains `'C'` (cubic bezier); step/linear → no `'C'`, contains `'L'`; connectNulls=false → 2 `'M'` commands in `d`; connectNulls=true → 1 `'M'` command
 - Line `#activeDot` slot: dot only appears after `fireEvent(chart, new MouseEvent('mousemove', {...}))` (no extra `nextTick` needed unlike Tooltip defaultIndex)
@@ -281,7 +314,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Tooltip selector integration tests: hover via `fireEvent(chart, new MouseEvent('mousemove', { clientX, clientY }))` on `.v-charts-wrapper` + 2x `nextTick()`; `defaultIndex` requires 3x `nextTick()` to activate
 - SVG path parsing in tests: `extractPathPoints(d)` matches `/[ML]\s*([\d.eE+-]+)[,\s]+([\d.eE+-]+)/g` to extract polygon vertices from `d` attribute
 - YAxis tests (`cartesian/axis/__tests__/YAxis.spec.tsx`): tick rendering requires 2x `await nextTick()`; orientation verified via `transform` translate-X (left < 100, right > 200)
-- Animation testing (`Animate`): `motion-v`'s `animate()` uses RAF — value stays at `from` in JSDOM when `isActive=true`; when `isActive=false`, value snaps to `to` after `nextTick()`; default slot is a render function `(value: number) => JSX`; `onAnimationStart` is called synchronously before `animate()` runs
+- Animation testing (`Animate`): `motion-v`'s `animate()` uses RAF — value stays at `from` in JSDOM when `isActive=true`; when `isActive=false`, value snaps to `to` after `nextTick()`; default slot is a render function `(value: number) => JSX`; `onAnimationStart` is called synchronously before `animate()` runs; when `usePreferredReducedMotion()` returns `'reduce'` and `isActive=true`, animation is skipped — `onAnimationStart`/`onAnimationEnd` fire and value snaps to `props.to` immediately
 - Test suite phases: shapes, chart containers, cartesian items, polar items, components, state/selectors/utils; progress tracked in `tasks/todo.md`
 
 ### Scatter
@@ -290,6 +323,8 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - `XAxis`/`YAxis` require `type="number"` for numeric scatter data
 - `shape` prop accepts: `circle`, `cross`, `diamond`, `square`, `star`, `triangle`, `wye`
 - `line={true}` connects dots with a line
+- Uses `useSetupGraphicalItem` with `{ skipTooltip: true }` — tooltip handled via `SetTooltipEntrySettings` with per-point `tooltipPayload` arrays as `dataDefinedOnItem`
+- Supports `<ErrorBar>` children via `createErrorBarRegistry`/`provideErrorBarRegistry`
 
 ### Storybook
 - Story titles must match Recharts conventions

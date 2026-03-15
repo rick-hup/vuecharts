@@ -59,7 +59,16 @@ export default defineComponent({
                 key={`legend-item-${index}`}
                 class="v-charts-legend-item"
                 style={getItemStyle(layout)}
+                tabindex={0}
+                role="button"
+                aria-label={`Toggle ${formatValue(entry)} series`}
                 onClick={() => handleClick(entry, index)}
+                onKeydown={(e: KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleClick(entry, index)
+                  }
+                }}
                 onMouseenter={() => handleMouseEnter(entry, index)}
                 onMouseleave={() => handleMouseLeave(entry, index)}
               >
@@ -77,12 +86,12 @@ export default defineComponent({
                 >
                   <LegendSymbol
                     type={props.iconType ?? entry.type}
-                    color={entry.inactive ? '#ccc' : entry.color}
+                    color={entry.inactive ? '#a3a3a3' : entry.color}
                     size={iconSize}
                     data={entry}
                   />
                 </Surface>
-                <span class="v-charts-legend-item-text" style={{ color: entry.inactive ? '#ccc' : entry.color }}>
+                <span class="v-charts-legend-item-text" style={{ color: entry.inactive ? '#a3a3a3' : entry.color }}>
                   {formatValue(entry)}
                 </span>
               </li>

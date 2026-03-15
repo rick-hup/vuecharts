@@ -9,6 +9,7 @@ export interface Data {
   value?: number | string | Array<number | string>
   payload?: any
   parentViewBox?: ViewBox
+  fill?: string
 }
 
 export type LabelPosition =

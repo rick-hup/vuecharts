@@ -234,15 +234,17 @@ const TooltipBoundingBox = defineComponent({
       preTransform = transform || preTransform
       const boundingBoxStyle = {
         ...cssProperties,
-        pointerEvents: 'none',
-        visibility: !dismissed.value && active && hasPayload ? 'visible' : 'hidden',
-        position: 'absolute',
+        pointerEvents: 'none' as const,
+        visibility: !dismissed.value && active && hasPayload ? ('visible' as const) : ('hidden' as const),
+        position: 'absolute' as const,
         top: 0,
         left: 0,
         ...style,
       }
       return (
         <motion.div
+          role="tooltip"
+          aria-live="polite"
           tabindex={-1}
           class={cssClasses}
           style={boundingBoxStyle}
@@ -292,15 +294,18 @@ const Cursor = defineComponent({
 
       let cursorElement: VNode
       if (isScatterChart) {
-        const coord = props.coordinate!
-        const off = offset.value
+        const { offset: _offset, ...coord } = props.coordinate!
+        const { top, left, width, height } = offset.value
         const crossProps = {
           stroke: '#ccc',
           fill: 'none',
           ...coord,
-          ...off,
+          top,
+          left,
+          width,
+          height,
           class: 'v-charts-tooltip-cursor',
-          style: { pointerEvents: 'none' },
+          style: { pointerEvents: 'none' as const },
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(crossProps) : <Cross {...crossProps} />
@@ -318,7 +323,7 @@ const Cursor = defineComponent({
           width: layout.value === 'horizontal' ? bandSize : off.width - 1,
           height: layout.value === 'horizontal' ? off.height - 1 : bandSize,
           class: 'v-charts-tooltip-cursor',
-          style: { pointerEvents: 'none' },
+          style: { pointerEvents: 'none' as const },
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(rectProps) : <Rectangle {...rectProps} />
@@ -335,7 +340,7 @@ const Cursor = defineComponent({
           stroke: '#ccc',
           fill: 'none',
           class: 'v-charts-tooltip-cursor',
-          style: { pointerEvents: 'none' },
+          style: { pointerEvents: 'none' as const },
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(sectorProps) : <Sector {...sectorProps} />
@@ -346,7 +351,7 @@ const Cursor = defineComponent({
           class: ['v-charts-tooltip-cursor'],
           layout: layout.value,
           points: points.value as ReadonlyArray<Point>,
-          style: { pointerEvents: 'none' },
+          style: { pointerEvents: 'none' as const },
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(cursorProps) : <Curve {...cursorProps} />

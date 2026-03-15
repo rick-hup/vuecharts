@@ -10,7 +10,6 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/vccs"><img src="https://img.shields.io/npm/v/vccs.svg" alt="npm version"></a>
-  <a href="https://www.npmjs.com/package/vccs"><img src="https://img.shields.io/npm/l/vccs.svg" alt="license"></a>
 </p>
 
 ---

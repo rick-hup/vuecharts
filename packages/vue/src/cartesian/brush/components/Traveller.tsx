@@ -1,5 +1,4 @@
 import { defineComponent } from 'vue';
-import type { TravellerProps } from '../type';
 
 export const Traveller = defineComponent({
   name: 'Traveller',
@@ -8,8 +7,8 @@ export const Traveller = defineComponent({
     y: Number,
     width: Number,
     height: Number,
-    stroke: String
-  } as unknown as TravellerProps,
+    stroke: String,
+  },
 
   setup(props) {
     return () => {

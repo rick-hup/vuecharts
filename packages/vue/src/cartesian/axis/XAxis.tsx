@@ -12,7 +12,7 @@ import { CartesianAxis } from '@/cartesian/cartesian-axis/CartesianAxis'
 import type { DataKey } from '@/types'
 import { selectAxisViewBox } from '@/state/selectors/selectChartOffset'
 import type { AxisDomain, AxisInterval } from '@/types/axis'
-import type { AxisTick } from '@/types/tick'
+import type { AxisTick, TickFormatter } from '@/types/tick'
 
 const XAxisImpl = defineComponent({
   props: {
@@ -59,7 +59,7 @@ const XAxisImpl = defineComponent({
 
 const XAxisSettingsDispatcher = defineComponent({
   props: {
-    interval: String,
+    interval: [String, Number],
     xAxisId: [String, Number],
     scale: [String, Function],
     type: String,
@@ -86,7 +86,7 @@ const XAxisSettingsDispatcher = defineComponent({
     angle: Number,
     minTickGap: Number,
     tick: { type: [Boolean, Object], default: true },
-    tickFormatter: Function,
+    tickFormatter: Function as PropType<TickFormatter>,
   },
   setup(props, { slots: dispatcherSlots }) {
     const dispatch = useAppDispatch()
@@ -214,7 +214,7 @@ export const XAxis = defineComponent({
       type: Number,
       default: 5,
     },
-    tickFormatter: Function,
+    tickFormatter: Function as PropType<TickFormatter>,
   },
   setup(props, { attrs, slots }) {
     return () => (

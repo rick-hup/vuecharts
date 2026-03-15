@@ -4,7 +4,7 @@ import { polarToCartesian } from '@/utils/polar'
 import type { ChartOffsetInternal } from '@/utils/types'
 
 function getRadialCursorPoints(activeCoordinate: ChartCoordinate): RadialCursorPoints {
-  const { cx, cy, radius, startAngle, endAngle } = activeCoordinate as any
+  const { cx, cy, radius, startAngle, endAngle } = activeCoordinate
   const startPoint = polarToCartesian(cx, cy, radius, startAngle)
   const endPoint = polarToCartesian(cx, cy, radius, endAngle)
   return {
@@ -47,7 +47,6 @@ export function getCursorPoints(
       y2 = outerPoint.y
     }
     else {
-      // @ts-expect-error TODO the state is marked as containing Coordinate but actually in polar charts it contains PolarCoordinate, we should keep the polar state separate
       return getRadialCursorPoints(activeCoordinate)
     }
   }

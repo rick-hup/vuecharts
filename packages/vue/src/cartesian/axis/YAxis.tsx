@@ -53,7 +53,7 @@ const YAxisImpl = defineComponent({
 // Handles YAxis settings registration in the store
 const YAxisSettingsDispatcher = defineComponent({
   props: {
-    interval: String,
+    interval: [String, Number],
     yAxisId: {
       type: [String, Number],
       default: 0,

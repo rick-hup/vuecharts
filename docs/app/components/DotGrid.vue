@@ -357,6 +357,7 @@ watch([() => props.proximity, () => props.baseColor, activeRgb, baseRgb, circleP
     <canvas
       ref="canvasRef"
       class="dot-grid-canvas"
+      aria-hidden="true"
     />
   </div>
 </template>

@@ -51,10 +51,6 @@ export const BarRectangles = defineComponent({
           x: entry.tooltipPosition.x,
           y: entry.tooltipPosition.y,
         },
-        activePayload: entry.payload ? [entry.payload] : [],
-        activeLabel: entry.payload?.name || String(index),
-        chartX: e.clientX,
-        chartY: e.clientY,
       }))
     }
     const onMouseLeaveFromContext = (entry: BarRectangleItem, index: number) => (e: MouseEvent) => {
@@ -68,10 +64,6 @@ export const BarRectangles = defineComponent({
           x: entry.tooltipPosition.x,
           y: entry.tooltipPosition.y,
         },
-        activePayload: entry.payload ? [entry.payload] : [],
-        activeLabel: entry.payload?.name || String(index),
-        chartX: e.clientX,
-        chartY: e.clientY,
       }))
     }
 

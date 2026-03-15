@@ -200,7 +200,7 @@ export function computePieSectors({
   const totalPaddingAngle = (absDeltaAngle >= 360 ? notZeroItemCount : notZeroItemCount - 1) * paddingAngle
   const realTotalAngle = absDeltaAngle - notZeroItemCount * minAngle - totalPaddingAngle
 
-  const sum: number = displayedData.reduce((result: number, entry: any) => {
+  const sum: number = displayedData.reduce<number>((result, entry: any) => {
     const val = getValueByDataKey(entry, dataKey, 0)
     return result + (isNumber(val) ? (val as number) : 0)
   }, 0)
@@ -211,8 +211,8 @@ export function computePieSectors({
 
   let prev: PieSectorDataItem
   const sectors = displayedData.map((entry: unknown, i: number) => {
-    const val: number = getValueByDataKey(entry, dataKey, 0)
-    const name: string | number = getValueByDataKey(entry, nameKey, i)
+    const val = getValueByDataKey(entry, dataKey, 0) as number
+    const name = getValueByDataKey(entry, nameKey, i) as string | number
     const coordinate: PieCoordinate = parseCoordinateOfPie(pieSettings, offset, entry)
     const percent = (isNumber(val) ? val : 0) / sum
 
