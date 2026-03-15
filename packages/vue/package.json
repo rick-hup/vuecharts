@@ -1,5 +1,6 @@
 {
   "name": "vccs",
+  "type": "module",
   "version": "0.1.0",
   "description": "Composable charting components for Vue 3 — an unofficial port of Recharts",
   "author": "rick-hup",
@@ -27,11 +28,9 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/es/index.mjs",
-      "require": "./dist/cjs/index.js"
+      "import": "./dist/es/index.mjs"
     }
   },
-  "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -50,12 +49,14 @@
   },
   "typings": "./dist/index.d.ts",
   "peerDependencies": {
+    "motion-v": ">=2.0.0",
     "vue": ">=3.0.0"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "@reduxjs/vue-redux": "^1.0.1",
     "@vueuse/core": "^13.1.0",
+    "decimal.js-light": "^2.5.1",
     "es-toolkit": "^1.39.3",
     "eventemitter3": "^5.0.1",
     "immer": "^10.1.1",
@@ -64,7 +65,7 @@
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
-    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "@vitejs/plugin-vue-jsx": "^5.0.0",
     "@vue/babel-plugin-jsx": "^1.1.1",
     "@vue/runtime-core": "^3.5.13",
     "vue": "^3.5.13"
