@@ -223,12 +223,16 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Place as **child slot** inside series component (Bar, Line, RadialBar): `<Bar><LabelList position="top" /></Bar>`
 - Data flows via `provideCartesianLabelListData` context
 - Teleports to label SVG layer when available
+- Supports `#label` slot for fully custom label rendering: `slots.label({ ...props, ...viewBox, value, index, key })`
+- `entryFill` priority: explicit attrs/props > `entry.fill` (entry fill only used when no `fill` prop/attr present)
 
 ### Tooltip
 - **`#content` slot** (preferred): `<Tooltip><template #content="{ active, payload, label }">...</template></Tooltip>`
 - **IMPORTANT**: use destructured props, NOT `v-bind="tooltipProps"` — `@antfu/eslint-config` auto-fix strips `v-bind` spread on slot props
 - **Docs demos standard**: always add `:cursor="false"` to `<Tooltip>`; pass `ChartTooltipContent` with explicit `:active="active" :payload="payload" :label="label"` (NOT `v-bind` spread)
 - Key props: `defaultIndex`, `trigger="click"`, `shared={false}`, `cursor={false}`
+- `DefaultTooltipContent` `itemSorter` prop accepts function OR string literals: `'dataKey' | 'value' | 'name'`
+- `TooltipIndex` type is `string | null` (null = no active index; NOT a number)
 
 ### Tooltip Payload Selection
 - `tooltipEventType='axis'`: returns all items at hovered index
@@ -236,7 +240,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 
 ### Polar Components
 - **PolarAngleAxis**: slot `#tick` with `{ x, y, value, textAnchor }` for custom tick labels; full-circle dedup removes last tick at 360°=0°
-- **PolarRadiusAxis**: `type='auto'` resolves by layout (radial→category, centric→number); default `domain` is `[0, 'auto']`; provides `POLAR_LABEL_VIEW_BOX_KEY` for child `<Label>` to access `{ cx, cy }`
+- **PolarRadiusAxis**: `type='auto'` resolves by layout (radial→category, centric→number); default `domain` is `[0, 'auto']`; provides `POLAR_LABEL_VIEW_BOX_KEY` for child `<Label>` to access `{ cx, cy }`; uses `watchEffect` for dispatch; renders slot children even when `tick=false` and `axisLine=false` (needed for `<Label>` child pattern)
 - **PolarGrid**: `gridType` (`polygon`|`circle`), `radialLines` (default `true`), `polarRadius` (number[] override)
 
 ### Pie
@@ -249,9 +253,10 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - `cornerRadius`/`forceCornerRadius`/`cornerIsExternal` forwarded to background sectors
 
 ### YAxis / XAxis Internal Architecture
-- Split into two internal components: `YAxisImpl` (reads Redux state, renders `<CartesianAxis>`) and `YAxisSettingsDispatcher` (dispatches `addYAxis`/`removeYAxis` via `watchEffect`)
-- `YAxisImpl` returns `null` when `axisSize` or `position` is not yet available from the store
-- Default `interval` is `'preserveEnd'` (applied in `YAxisSettingsDispatcher`, not in the public `YAxis` props)
+- Both split into three tiers: `{X|Y}AxisImpl` (reads Redux state, renders `<CartesianAxis>`) + `{X|Y}AxisSettingsDispatcher` (dispatches `add{X|Y}Axis`/`remove{X|Y}Axis` via `watchEffect`) + public `{X|Y}Axis`
+- `{X|Y}AxisImpl` returns `null` when `axisSize` or `position` is not yet available from the store
+- Default `interval` is `'preserveEnd'` (applied in the Dispatcher, not in the public props)
+- **XAxisImpl** supports `#tick` slot forwarded through XAxisSettingsDispatcher; **YAxisImpl** does NOT support `#tick` slot
 
 ### CartesianGrid
 - Custom line rendering via `#horizontal`/`#vertical` slots (Function type removed from props)
@@ -262,6 +267,11 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 ### ErrorBar
 - Place as child of `<Scatter>` or `<Bar>`; consumes `ErrorBarContext` from parent
 - Self-registers into parent's `ErrorBarRegistry` for axis domain extension
+
+### ReferenceArea / ReferenceLine
+- Both register via `addArea`/`addLine` (referenceElementsSlice) on `onMounted`/`onUnmounted`
+- **ReferenceArea**: supports `radius` prop for rounded corners (passed to `<Rectangle>`); `ifOverflow` defaults to `'discard'`
+- **ReferenceLine**: `scaleCoord()` adds `bandwidth/2` to center on band-scale categories; respects `yAxisSettings.orientation` (left/right) and `xAxisSettings.orientation` to order line endpoint coordinates
 
 ### Testing
 - `isAnimationActive={false}` for deterministic rendering
@@ -290,6 +300,8 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - `XAxis`/`YAxis` require `type="number"` for numeric scatter data
 - `shape` prop accepts: `circle`, `cross`, `diamond`, `square`, `star`, `triangle`, `wye`
 - `line={true}` connects dots with a line
+- Uses `useSetupGraphicalItem` with `{ skipTooltip: true }` — tooltip handled via `SetTooltipEntrySettings` with per-point `tooltipPayload` arrays as `dataDefinedOnItem`
+- Supports `<ErrorBar>` children via `createErrorBarRegistry`/`provideErrorBarRegistry`
 
 ### Storybook
 - Story titles must match Recharts conventions

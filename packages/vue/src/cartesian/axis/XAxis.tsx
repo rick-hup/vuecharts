@@ -59,7 +59,7 @@ const XAxisImpl = defineComponent({
 
 const XAxisSettingsDispatcher = defineComponent({
   props: {
-    interval: String,
+    interval: [String, Number],
     xAxisId: [String, Number],
     scale: [String, Function],
     type: String,
@@ -116,7 +116,7 @@ const XAxisSettingsDispatcher = defineComponent({
         minTickGap: props.minTickGap ?? 5,
         tick: props.tick ?? true,
         tickFormatter: props.tickFormatter,
-      } as XAxisSettings
+      } as unknown as XAxisSettings
       dispatch(addXAxis(settings))
       onCleanup(() => {
         dispatch(removeXAxis(settings))
@@ -218,7 +218,7 @@ export const XAxis = defineComponent({
   },
   setup(props, { attrs, slots }) {
     return () => (
-      <XAxisSettingsDispatcher {...props} {...attrs}>
+      <XAxisSettingsDispatcher {...props as any} {...attrs}>
         {slots.tick ? { tick: slots.tick } : undefined}
       </XAxisSettingsDispatcher>
     )

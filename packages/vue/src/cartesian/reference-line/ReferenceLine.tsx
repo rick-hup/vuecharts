@@ -37,7 +37,7 @@ export const ReferenceLineVueProps = {
   stroke: { type: String, default: '#ccc' },
   strokeWidth: { type: [Number, String], default: 1 },
   fill: { type: String, default: 'none' },
-  label: { type: [String, Number, Object] as PropType<string | number | Record<string, any>>, default: undefined },
+  label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
   className: { type: String, default: undefined },
 }
@@ -150,7 +150,7 @@ export const ReferenceLine = defineComponent({
           {labelValue != null && labelValue !== false && (
             <Label
               viewBox={labelViewBox}
-              value={typeof labelValue === 'object' ? undefined : labelValue}
+              value={typeof labelValue === 'string' || typeof labelValue === 'number' ? labelValue : undefined}
               {...labelProps}
             />
           )}

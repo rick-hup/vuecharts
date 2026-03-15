@@ -1,4 +1,6 @@
 import type { BrushStartEndIndex } from '@/state/chartDataSlice'
+
+export type { BrushStartEndIndex }
 import type { DataKey, Padding, VuePropsToType, WithSVGProps } from '../../types/common'
 import type { PropType } from 'vue'
 

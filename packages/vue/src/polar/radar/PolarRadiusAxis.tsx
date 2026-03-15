@@ -1,4 +1,4 @@
-import { defineComponent, onUnmounted, provide, watchEffect } from 'vue'
+import { computed, defineComponent, onUnmounted, provide, watchEffect } from 'vue'
 import type { PropType } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { addRadiusAxis, removeRadiusAxis } from '@/state/polarAxisSlice'
@@ -82,7 +82,7 @@ export const PolarRadiusAxis = defineComponent({
     const ticks = useAppSelector(state => selectPolarAxisTicks(state, 'radiusAxis', props.radiusAxisId, false))
 
     // Provide polar viewBox for child Label components
-    provide(POLAR_LABEL_VIEW_BOX_KEY, polarViewBox)
+    provide(POLAR_LABEL_VIEW_BOX_KEY, computed(() => polarViewBox.value))
 
     return () => {
       const viewBox = polarViewBox.value
