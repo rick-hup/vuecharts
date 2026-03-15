@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { TrendingUp } from 'lucide-vue-next'
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis } from 'vccs'
 import type { ChartConfig } from '~/components/ui/chart/types'
