@@ -37,9 +37,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm install              # Install dependencies
 pnpm dev                  # Watch mode
+pnpm build                # Build library (alias for --filter vccs build)
 pnpm test                 # Run tests
 pnpm test:coverage        # Tests with coverage
-pnpm --filter vccs build  # Build library
 pnpm storybook            # Storybook
 pnpm play                 # Playground
 pnpm docs                 # Docs site (Nuxt 3, port 3001)
@@ -130,6 +130,7 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 4. **Chart Factory**: `generateCategoricalChart()` creates chart containers
 5. **Animation**: `motion-v` with `Animate` wrapper
 6. **Events**: Redux middleware — mouse events use `createListenerMiddleware` (chartPointer captured synchronously in `RechartsWrapper` before dispatch); external/keyboard/touch use plain synchronous `Middleware`
+7. **Build output**: ESM-only (`dist/es/*.mjs`, `preserveModules: true`); no CJS output; all `dependencies` + `peerDependencies` auto-externalized via `externalDeps` array in `vite.config.ts`
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: conventions -->
