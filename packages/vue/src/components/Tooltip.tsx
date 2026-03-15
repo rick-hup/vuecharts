@@ -1,11 +1,12 @@
-import { Fragment, Teleport, computed, defineComponent, reactive, ref, watch, watchEffect } from 'vue'
+import { Fragment, Teleport, computed, defineComponent, reactive, ref, watch, watchEffect, watchPostEffect } from 'vue'
 import type { CSSProperties, PropType, SlotsType, VNode } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useChartLayout, useOffsetInternal, useViewBox } from '@/context/chartLayoutContext'
 import { useAccessibilityLayer } from '@/context/accessibilityContext'
 import { usePortal } from '@/chart/TooltipPortalContext'
 import { useTooltipEventType } from '@/state/selectors/selectTooltipEventType'
-import { motion } from 'motion-v'
+import { animate } from 'motion-v'
+import type { AnimationOptions, AnimationPlaybackControls } from 'motion-v'
 import type { TooltipIndex, TooltipPayload, TooltipPayloadEntry } from '@/state/tooltipSlice'
 import { setTooltipSettingsState } from '@/state/tooltipSlice'
 import {
@@ -15,7 +16,7 @@ import {
   selectTooltipPayload,
   useChartName,
 } from '@/state/selectors/selectors'
-import { useElementBounding, useMagicKeys } from '@vueuse/core'
+import { useElementBounding, useMagicKeys, usePreferredReducedMotion } from '@vueuse/core'
 import type { AxisId } from '@/state/cartesianAxisSlice'
 import type {
   ChartCoordinate,
@@ -174,9 +175,8 @@ const TooltipBoundingBox = defineComponent({
   name: 'TooltipBoundingBox',
   props: {
     allowEscapeViewBox: Object as PropType<AllowInDimension>,
-    animationDuration: Number,
-    animationEasing: String,
     isAnimationActive: Boolean,
+    transition: { type: Object as PropType<AnimationOptions>, default: () => ({ duration: 0.4, ease: 'easeOut' }) },
     active: Boolean,
     coordinate: Object as PropType<ChartCoordinate>,
     hasPayload: Boolean,
@@ -210,13 +210,15 @@ const TooltipBoundingBox = defineComponent({
         dismissedAtCoordinate.y = props.coordinate?.y ?? 0
       }
     })
-    const el = ref()
+    const el = ref<HTMLDivElement>()
     const lastBoundingBox = useElementBounding(el, {
     })
     let preTransform: CSSProperties | undefined
-    return () => {
-      const { viewBox, active, hasPayload, style, allowEscapeViewBox, coordinate, position, reverseDirection } = props
+    let animationControls: AnimationPlaybackControls | undefined
+    const reducedMotion = usePreferredReducedMotion()
 
+    const currentTransform = computed(() => {
+      const { allowEscapeViewBox, coordinate, position, reverseDirection, viewBox } = props
       let { cssClasses, cssProperties, transform } = getTooltipTranslate({
         allowEscapeViewBox: allowEscapeViewBox!,
         coordinate: coordinate!,
@@ -232,32 +234,53 @@ const TooltipBoundingBox = defineComponent({
       })
       transform = !lastBoundingBox.height.value && preTransform ? preTransform : transform
       preTransform = transform || preTransform
-      const boundingBoxStyle = {
+      return { cssClasses, cssProperties, transform }
+    })
+
+    // Animate transform changes using motion-v's animate()
+    watchPostEffect((onCleanup) => {
+      const element = el.value
+      const transform = currentTransform.value.transform
+      if (!element || !transform?.transform)
+        return
+
+      if (props.isAnimationActive && reducedMotion.value !== 'reduce') {
+        animationControls = animate(element, { transform: transform.transform }, props.transition)
+      }
+      else {
+        element.style.transform = transform.transform
+      }
+
+      onCleanup(() => {
+        animationControls?.stop()
+        animationControls = undefined
+      })
+    })
+
+    return () => {
+      const { active, hasPayload, style } = props
+      const { cssClasses, cssProperties } = currentTransform.value
+
+      const boundingBoxStyle: CSSProperties = {
         ...cssProperties,
-        pointerEvents: 'none' as const,
-        visibility: !dismissed.value && active && hasPayload ? ('visible' as const) : ('hidden' as const),
-        position: 'absolute' as const,
+        pointerEvents: 'none',
+        visibility: !dismissed.value && active && hasPayload ? 'visible' : 'hidden',
+        position: 'absolute',
         top: 0,
         left: 0,
         ...style,
       }
       return (
-        <motion.div
+        <div
           role="tooltip"
           aria-live="polite"
           tabindex={-1}
           class={cssClasses}
           style={boundingBoxStyle}
           ref={el}
-          animate={{
-            transform: transform?.transform,
-          }}
-          transition={{
-            duration: 0.4,
-          }}
         >
           {slots.default?.()}
-        </motion.div>
+        </div>
       )
     }
   },
@@ -600,8 +623,7 @@ export const Tooltip = defineComponent({
               >
                 {hasContentSlot.value
                   ? slots.content!(contentProps.value)
-                  : <contentComponent.value {...contentProps.value} />
-                }
+                  : <contentComponent.value {...contentProps.value} />}
               </TooltipBoundingBox>
             </Teleport>
           </foreignObject>

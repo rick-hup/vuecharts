@@ -1,6 +1,4 @@
-import type { PropType } from 'vue'
-import { defineComponent, ref, watch } from 'vue'
-import type { BarProps } from '../type'
+import { defineComponent, watch } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectActiveTooltipDataKey,
@@ -15,7 +13,6 @@ import { filterProps } from '@/utils/VueUtils'
 import { Layer } from '@/container/Layer'
 import { Rectangle } from '@/shape/Rectangle'
 import { useBarContext } from '../hooks/useBar'
-import { useDomRef } from 'motion-v'
 import { Animate } from '@/animation/Animate'
 import type { BarRectangleItem } from '@/types/bar'
 
@@ -29,7 +26,6 @@ export const BarRectangles = defineComponent({
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)
     let previousRectangles: ReadonlyArray<BarRectangleItem> | null = null
     let animationId = 0
-    const domRef = useDomRef()
 
     const { props, data: barData, layout, isAnimating, shapeSlot, activeBarSlot, cellProps } = useBarContext()
 
@@ -202,7 +198,7 @@ export const BarRectangles = defineComponent({
                 }
 
                 return (
-                  <g ref={domRef}>
+                  <g>
                     {renderRectangles(stepData)}
                   </g>
                 )
@@ -216,7 +212,7 @@ export const BarRectangles = defineComponent({
       isAnimating.value = false
       previousRectangles = data
       return (
-        <g ref={domRef}>
+        <g>
           {renderRectangles(data)}
         </g>
       )
