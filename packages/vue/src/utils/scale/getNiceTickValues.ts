@@ -1,8 +1,3 @@
-/**
- * @fileOverview calculate tick values of scale
- * @author xile611, arcthur
- * @date 2015-09-17
- */
 import { getDigitCount, rangeStep } from '@/utils/scale/utils/arithmetic'
 import { compose, map, memoize, range, reverse } from '@/utils/scale/utils/utils'
 import Decimal from 'decimal.js-light'
