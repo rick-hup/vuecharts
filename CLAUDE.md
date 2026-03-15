@@ -57,12 +57,12 @@ pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
 
 ```
 packages/vue/src/           # Main library source (vccs)
-├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid, ZAxis
+├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid, ZAxis; funnel/ subdirectory contains Funnel component
 ├── polar/                  # Pie, Radar, RadialBar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
-├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, etc.)
+├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, FunnelChart, etc.)
 ├── components/             # Legend, Tooltip, Text, Label, Cell
 ├── container/              # ResponsiveContainer, Surface, Layer
-├── shape/                  # Rectangle, Symbols, Dot, Sector, Cross, Curve (all exported from barrel)
+├── shape/                  # Rectangle, Symbols, Dot, Sector, Cross, Curve, Trapezoid (all exported from barrel)
 ├── state/                  # Redux store, slices, middleware, selectors
 ├── animation/              # Animate component, motion-v utilities
 ├── context/                # provide/inject context providers
@@ -82,7 +82,8 @@ docs/                       # Documentation site (Nuxt 3, Docus framework)
 │   │   ├── pie-charts/     # all use cx/cy="50%" + <Cell v-for> + COLORS array; donut (inner-radius+outer-radius), half (start-angle=180 end-angle=0, 5 COLORS adds #ef4444), label (:label="true")
 │   │   ├── radar-charts/   # circle-grid (PolarGrid grid-type="circle"), dots (<Radar :dot={r,fillOpacity}>), multiple (two <Radar> series)
 │   │   ├── radial-charts/  # label (<RadialBar :background> + <LabelList position="insideStart">), stacked (two <RadialBar stack-id="a" :corner-radius>)
-│   │   └── scatter-charts/ # simple (two <Scatter :data> + <ZAxis :range>)
+│   │   ├── scatter-charts/ # simple (two <Scatter :data> + <ZAxis :range>)
+│   │   └── funnel-charts/  # simple (Cell-colored 4-stage), label (#shape slot with inline SVG text), rectangle (last-shape-type="rectangle"), reversed (:reversed="true"), legend (<Legend />)
 │   ├── components/
 │   │   ├── ChartDemo.vue   # Lazy-loaded chart demo card (IntersectionObserver rootMargin 200px); props: name?, description?, src (required); loads component+raw source lazily via import.meta.glob (NOT eager); Shiki syntax highlighting via codeToHtml({ lang: 'vue', themes: { light: 'github-light', dark: 'github-dark' } }); skeleton pulse while loading; ARIA-compliant tab buttons 'Preview'/'Code' (role=tablist/tab/tabpanel, aria-selected, aria-controls); ClientOnly wraps chart component; copy button 'Copy'/'Copied!' (2s, copyTimer cleared onBeforeUnmount); clipboard: navigator.clipboard?.writeText with textarea+execCommand fallback; error state via loadError ref (chart-not-found + load-failed); CSS vars: --ui-border/--ui-bg-elevated/--ui-text/--ui-text-muted; dark mode via :global(.dark) + --shiki-dark-bg/--shiki-dark CSS vars; Shiki line fix: .chart-demo-code :deep(pre code .line) font-size 0.8125rem + line-height 1.5; code block max-height 28rem
 │   │   └── DotGrid.vue     # Interactive canvas dot grid background for hero section; props: dotSize (16), gap (32), baseColor, activeColor, proximity (150), speedTrigger (100), shockRadius (250), shockStrength (5), maxSpeed (5000); canvas 2D + RAF loop, DPR-aware; color lerp between baseColor/activeColor by proximity distance; `kickDot()` uses underdamped spring analytical solution — x(t) = e^(-γt)·[x₀·cos(ωd·t) + ((v₀+γ·x₀)/ωd)·sin(ωd·t)] with stiffness=35, damping=2.5, mass=1; smooth re-kick mid-animation by capturing current offset as x₀; dots shoot out and elastically return via pure RAF springTick loop (no motion-v at runtime); onMove throttled 50ms, kicks dots when speed>speedTrigger && dist<proximity; onClick shockwave within shockRadius with distance falloff; ResizeObserver rebuilds grid; SSR-safe (Path2D guard); used in index.vue wrapped in `<ClientOnly>`, dotBaseColor from useColorMode() (dark:#404040, light:#c0c0c0), dotActiveColor #f97316
@@ -100,10 +101,12 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 │   ├── line-charts/        # Line chart SFCs
 │   ├── radar-charts/       # Radar chart SFCs
 │   ├── radial-charts/      # RadialBar chart SFCs
+│   ├── funnel-charts/      # FunnelChart demos (simple, label, custom colors, rectangle, reversed, legend)
 │   ├── tooltip-charts/     # Tooltip demo SFCs
 │   ├── test-charts/        # Visual verification SFCs mirroring unit test cases (e.g. TestXAxisTickLabels)
 │   └── ui/chart/           # ChartContainer, ChartTooltipContent, ChartLegendContent, types.ts
 ├── app/pages/
+│   ├── funnel-charts.vue   # /funnel-charts route — grid of 6 funnel chart demos
 │   └── test.vue            # /test route — grid of test-charts/ components for visual verification
 └── nuxt.config.ts          # Nuxt 3, Tailwind v4, shadcn-nuxt, @nuxtjs/color-mode
 ```
@@ -130,7 +133,7 @@ playground/nuxt/            # Nuxt 3 playground for manual testing
 4. **Chart Factory**: `generateCategoricalChart()` creates chart containers
 5. **Animation**: `motion-v` with `Animate` wrapper
 6. **Events**: Redux middleware — mouse events use `createListenerMiddleware` (chartPointer captured synchronously in `RechartsWrapper` before dispatch); external/keyboard/touch use plain synchronous `Middleware`
-7. **Build output**: ESM-only (`dist/es/*.mjs`, `preserveModules: true`); no CJS output; all `dependencies` + `peerDependencies` auto-externalized via `externalDeps` array in `vite.config.ts`
+7. **Build output**: ESM-only (`dist/es/*.mjs`, `preserveModules: true`); no CJS output; all `dependencies` + `peerDependencies` auto-externalized via `externalDeps` array in `vite.config.ts`; `minify: false` — Rolldown's minifier renames variables (e.g. to `h`) which collides with Vue's `h` when consumers (e.g. Nuxt) re-bundle the ESM output; library builds with `preserveModules: true` must not minify
 <!-- END AUTO-MANAGED -->
 
 <!-- AUTO-MANAGED: conventions -->
@@ -202,6 +205,8 @@ All animated components (Bar, Line, Scatter, Radar, RadialBar) use: `previousDat
 
 `Animate` respects `prefers-reduced-motion`: uses `usePreferredReducedMotion()` from `@vueuse/core`; when `reducedMotion === 'reduce'` and `isActive=true`, animation is skipped — fires `onAnimationStart`, snaps `currentValue` to `props.to`, fires `onAnimationEnd`. Watch target is `[() => props.isActive, reducedMotion]`.
 
+**`useIsAnimating` hook** (`hooks/useIsAnimating.ts`): shared by Bar, Line, Radar, RadialBar, Area, Funnel. Signature: `useIsAnimating(isAnimationActive: () => boolean): Ref<boolean>`. Returns a computed with get/set — get returns `false` immediately when `isAnimationActive()` is false (gates LabelList and other animation-dependent rendering), otherwise returns internal ref; set updates the internal ref (called on animation end). Watch on the getter resets internal state to `true` when `isAnimationActive` re-enables. Pass a getter, not the raw prop: `useIsAnimating(() => props.isAnimationActive)`.
+
 ### Area Animation (Different from Chase Pattern)
 `Area` does NOT use `Animate` wrapper. It has two distinct mechanisms:
 1. **Initial entrance** (`ClipRect` animation): `isClipRectAnimating` ref + clip-path `#animationClipPath-${clipPathId}` — `ClipRect` component handles the reveal sweep
@@ -224,11 +229,12 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 
 ### Cell Component
 - Marker component rendering nothing — parents read Cell VNode children and apply props by index
-- `Bar` integration: `extractCellProps(slots.default?.())` collects per-index props; `cellProps` applied at highest priority (below `activeBarProps`)
+- `Bar` and `Funnel` integration: `extractCellProps(slots.default?.())` collects per-index props; `cellProps` applied at highest priority (below `activeBarProps`)
+- `filterOutCells` in both `Bar` and `Funnel` **recursively descends Fragment children** to preserve non-Cell siblings (e.g. `<LabelList>` co-located in a `v-for` Fragment) — does NOT drop entire Fragment VNodes
 - Usage: `<Bar dataKey="value"><Cell v-for="(entry, i) in data" :key="i" :fill="COLORS[i]" /></Bar>`
 
 ### LabelList
-- Place as **child slot** inside series component (Bar, Line, RadialBar): `<Bar><LabelList position="top" /></Bar>`
+- Place as **child slot** inside series component (Bar, Line, RadialBar, Funnel): `<Bar><LabelList position="top" /></Bar>`, `<Funnel><LabelList position="center" /></Funnel>`
 - Data flows via `provideCartesianLabelListData` context
 - Teleports to label SVG layer when available
 - Supports `#label` slot for fully custom label rendering: `slots.label({ ...props, ...viewBox, value, index, key })`
@@ -262,6 +268,20 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Two layout modes: `centric` (radius numeric) and `radial` (angle numeric)
 - Does NOT use `useSetupGraphicalItem` — registers via `SetPolarGraphicalItem` directly
 - `cornerRadius`/`forceCornerRadius`/`cornerIsExternal` forwarded to background sectors
+
+### Funnel
+- `FunnelChart`: created via `generateCategoricalChart({ defaultTooltipEventType: 'item', validateTooltipEventTypes: ['item'], tooltipPayloadSearcher: arrayTooltipSearcher })`
+- `Funnel` is a polar-style graphical item: registers via `SetPolarGraphicalItem` with `type: 'funnel'`; does NOT use `useSetupGraphicalItem`
+- Layout computed by `selectFunnelTrapezoids` selector; renders `<Trapezoid>` per data item inside `<Layer class="v-charts-funnel">`
+- **Coordinate calculation** (`computeFunnelTrapezoids` in `utils.ts`): `x = ((maxValue - val) * realWidth) / (2 * maxValue) + left! + offsetX`; `y = rowHeight * i + top! + offsetY` — x uses `left` offset, y uses `top` offset. Do NOT swap these (was a ported bug from Recharts that has been fixed). `realWidth = width - left - right` (no extra padding).
+- Animation: `<Animate from={0} to={1} transition={props.transition}>` — **simultaneous height + width scale**; height scales `0 → target * progress` with y centered (`yOffset = height * (1 - progress); y = trap.y + yOffset / 2`); `upperWidth` and `lowerWidth` both scale `0 → target * progress`; `x` expands outward from the trapezoid center (`centerX = trap.x + trap.upperWidth / 2; animatedX = centerX - animatedUpperWidth / 2`); both dimensions use the same `progress` scalar so they animate simultaneously; `transition` prop is `AnimationOptions` (from motion-v), default `{ duration: 0.8, ease: 'easeOut' }`
+- **Animation props**: uses motion-v `transition: AnimationOptions` — NOT legacy Recharts `animationBegin`/`animationDuration`/`animationEasing`; `onAnimationStart`/`onAnimationEnd` are internal-only (handled via `Animate`'s callback) and are NOT exposed as public props on `FunnelProps`
+- `Cell` children supported via `extractCellProps(slots.default?.())` for per-item `fill`/`stroke` overrides
+- **LabelList support**: `provideCartesianLabelListData` called with trapezoid geometry `{ x, y, width: Math.max(upperWidth, lowerWidth), height, value, payload, parentViewBox, fill }`; deferred while `isAnimationActive && isAnimating` (set false on `onAnimationEnd`); non-Cell default slot children (LabelList etc.) extracted via `filterOutCells` and rendered as `{nonCellContent}` after the `<Animate>` block — matches Bar's pattern exactly
+- `#shape` slot receives `FunnelTrapezoidItem` props plus `animationProgress: number` (0→1) for fully custom trapezoid rendering; use `v-if="props.animationProgress >= 1"` to defer labels until animation completes
+- Key props: `dataKey` (required), `nameKey` (default `'name'`), `lastShapeType` (`'triangle'|'rectangle'`, default `'triangle'`), `reversed` (default `false`), `fill` (default `'#808080'`), `width`, `transition` (`AnimationOptions`, default `{ duration: 0.8, ease: 'easeOut' }`)
+- `FunnelTrapezoidItem`: extends `TrapezoidProps` + `{ value, payload, isActive, tooltipPosition, parentViewBox, labelViewBox }`
+- `Trapezoid` shape (`shape/Trapezoid.tsx`): renders `<path class="v-charts-trapezoid">` from `getTrapezoidPath(x, y, upperWidth, lowerWidth, height)` (M top-left L top-right L bottom-right L bottom-left Z); returns null for zero height or NaN dims; passes SVG attrs through
 
 ### YAxis / XAxis Internal Architecture
 - Both split into three tiers: `{X|Y}AxisImpl` (reads Redux state, renders `<CartesianAxis>`) + `{X|Y}AxisSettingsDispatcher` (dispatches `add{X|Y}Axis`/`remove{X|Y}Axis` via `watchEffect`) + public `{X|Y}Axis`
@@ -307,7 +327,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Tests written as render functions (arrow function JSX, not SFC): `render(() => <Component />)`
 - Public API imports from `@/index`; internal component imports use direct paths (e.g. `@/chart/RadarChart`)
 - Layout context assertions: `defineComponent` + `useViewBox()`, `useChartWidth()`, `useChartHeight()`, `useClipPathId()` from `@/context/chartLayoutContext` / `@/chart/provideClipPathId`
-- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; bar: `.v-charts-bar-rectangle` (each individual bar's `<Layer>` wrapper); tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
+- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; bar: `.v-charts-bar-rectangle` (each individual bar's `<Layer>` wrapper); funnel: `.v-charts-funnel` (Funnel Layer wrapper), `.v-charts-trapezoid` (each individual trapezoid `<path>`); tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
 - Line test helpers: `getLineCurves(container)` = `container.querySelectorAll('.v-charts-line .v-charts-line-curve')`; dots: `dot={true}` renders `.v-charts-line-dots` wrapper + `.v-charts-line-dot` per data point; single data point renders dot but no curve
 - Line curve type detection via path `d` attribute: monotone → contains `'C'` (cubic bezier); step/linear → no `'C'`, contains `'L'`; connectNulls=false → 2 `'M'` commands in `d`; connectNulls=true → 1 `'M'` command
 - Line `#activeDot` slot: dot only appears after `fireEvent(chart, new MouseEvent('mousemove', {...}))` (no extra `nextTick` needed unlike Tooltip defaultIndex)

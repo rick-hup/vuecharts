@@ -7,6 +7,7 @@ import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { useAppSelector } from '@/state/hooks'
 import { selectArea } from '@/state/selectors/areaSelectors'
 import { uniqueId } from '@/utils'
+import { useIsAnimating } from '@/hooks/useIsAnimating'
 import { isClipDot } from '@/utils/chart'
 import { filterProps } from '@/utils/VueUtils'
 import type { AreaPointItem, ComputedArea } from '@/state/selectors/areaSelectors'
@@ -65,7 +66,7 @@ export function useArea(props: AreaProps, attrs: SVGAttributes = {}, dotSlot?: (
   /**
    * is Area animating
    */
-  const isAnimating = ref(props.isAnimationActive)
+  const isAnimating = useIsAnimating(() => props.isAnimationActive)
   /**
    * render only when layout is horizontal or vertical and chartName is AreaChart or ComposedChart
    */

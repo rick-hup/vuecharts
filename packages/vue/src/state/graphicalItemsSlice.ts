@@ -32,7 +32,7 @@ export type ErrorBarsSettings = {
 }
 
 export type CartesianGraphicalItemType = 'area' | 'bar' | 'line' | 'scatter'
-export type PolarGraphicalItemType = 'pie' | 'radar' | 'radialBar'
+export type PolarGraphicalItemType = 'pie' | 'radar' | 'radialBar' | 'funnel'
 
 export interface GraphicalItemSettings extends MaybeStackedGraphicalItem {
   data: ChartData

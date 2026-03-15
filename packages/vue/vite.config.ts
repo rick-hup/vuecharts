@@ -40,6 +40,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: false,
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
