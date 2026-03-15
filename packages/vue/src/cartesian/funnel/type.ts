@@ -1,8 +1,8 @@
+import type { AnimationOptions } from 'motion-v'
 import type { PropType } from 'vue'
 import type { ViewBox } from '@/cartesian/type'
 import type { TrapezoidProps } from '@/shape'
 import type { Coordinate, DataKey, TooltipType, WithSVGProps } from '@/types'
-import type { AnimationEasing } from '@/types/bar'
 import type { LegendType } from '@/types/legend'
 
 export interface FunnelTrapezoidItem extends TrapezoidProps {
@@ -16,15 +16,13 @@ export interface FunnelTrapezoidItem extends TrapezoidProps {
 
 export interface FunnelProps {
   // activeShape?: ActiveShape<FunnelTrapezoidItem, SVGPathElement>
-  animationBegin?: number
-  animationDuration?: number
-  animationEasing?: AnimationEasing
   className?: string
   data?: any[]
   dataKey: DataKey<any>
   hide?: boolean
   id?: string
   isAnimationActive?: boolean
+  transition?: AnimationOptions
   // label?: ImplicitLabelListType<any>
   lastShapeType?: 'triangle' | 'rectangle'
   legendType?: LegendType
@@ -48,9 +46,13 @@ export const FunnelVueProps = {
   tooltipType: { type: String as PropType<TooltipType>, default: undefined },
   hide: { type: Boolean, default: false },
   isAnimationActive: { type: Boolean, default: true },
-  animationBegin: { type: Number, default: 400 },
-  animationDuration: { type: Number, default: 1500 },
-  animationEasing: { type: String as PropType<AnimationEasing>, default: 'ease' },
+  transition: {
+    type: Object as PropType<AnimationOptions>,
+    default: () => ({
+      duration: 0.8,
+      ease: 'easeOut',
+    }),
+  },
   className: { type: String, default: undefined },
   width: { type: [Number, String] as PropType<number | string>, default: undefined },
 }

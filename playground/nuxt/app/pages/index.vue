@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, LineChart as LineChartIcon, MessageSquare, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Filter, LineChart as LineChartIcon, MessageSquare, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -42,6 +42,13 @@ const routes = [
     name: 'Radial Charts',
     description: 'Simple, grid, label, shape, stacked, text and more.',
     icon: CircleDot,
+    count: 6,
+  },
+  {
+    path: '/funnel-charts',
+    name: 'Funnel Charts',
+    description: 'Simple, label, custom colors, rectangle, reversed, legend and more.',
+    icon: Filter,
     count: 6,
   },
   {

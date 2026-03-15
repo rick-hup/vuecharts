@@ -1,4 +1,4 @@
-import { Fragment, computed, defineComponent } from 'vue'
+import { Fragment, computed, defineComponent, ref } from 'vue'
 import type { SlotsType, VNode } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
@@ -10,6 +10,7 @@ import { SetTooltipEntrySettings } from '@/state/SetTooltipEntrySettings'
 import { type ResolvedFunnelSettings, selectFunnelTrapezoids } from '@/state/selectors/funnelSelectors'
 import { mouseLeaveItem, setActiveMouseOverItemIndex } from '@/state/tooltipSlice'
 import { Cell } from '@/components/Cell'
+import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
 import type { FunnelPropsWithSVG, FunnelTrapezoidItem } from './type'
 import { FunnelVueProps } from './type'
 
@@ -26,6 +27,19 @@ function extractCellProps(vnodes: VNode[]): Record<string, any>[] {
   return result
 }
 
+function filterOutCells(vnodes: VNode[]): VNode[] {
+  return vnodes.filter((vnode) => {
+    if (vnode.type === Cell)
+      return false
+    if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+      const hasCells = (vnode.children as VNode[]).some(c => c.type === Cell)
+      if (hasCells)
+        return false
+    }
+    return true
+  })
+}
+
 export const Funnel = defineComponent<FunnelPropsWithSVG>({
   name: 'Funnel',
   props: FunnelVueProps,
@@ -36,6 +50,7 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
   }>,
   setup(props, { attrs, slots }) {
     const dispatch = useAppDispatch()
+    const isAnimating = ref(props.isAnimationActive)
 
     const funnelSettings = computed<ResolvedFunnelSettings>(() => ({
       data: props.data,
@@ -99,6 +114,25 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
       })),
     })
 
+    // Provide label list data for LabelList children — defer during animation
+    provideCartesianLabelListData(computed(() => {
+      if (props.isAnimationActive && isAnimating.value)
+        return undefined
+      const trapList = trapezoids.value
+      if (!trapList || trapList.length === 0)
+        return undefined
+      return trapList.map((trap: any) => ({
+        x: trap.x,
+        y: trap.y,
+        width: Math.max(trap.upperWidth, trap.lowerWidth),
+        height: trap.height,
+        value: trap.value ?? trap.val ?? '',
+        payload: trap.payload,
+        parentViewBox: trap.parentViewBox,
+        fill: trap.fill ?? props.fill,
+      }))
+    }))
+
     function handleTrapezoidEnter(trap: FunnelTrapezoidItem, index: number) {
       dispatch(setActiveMouseOverItemIndex({
         activeIndex: String(index),
@@ -121,21 +155,30 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
         return null
       }
 
-      // Extract Cell props from default slot
+      // Extract Cell props and non-Cell children (e.g. LabelList) from default slot
       const defaultContent = slots.default?.() ?? []
       const cells = extractCellProps(defaultContent)
+      const nonCellContent = cells.length > 0 ? filterOutCells(defaultContent) : defaultContent
       const stroke = (attrs.stroke as string) ?? props.stroke
 
       return (
         <Layer class={['v-charts-funnel', props.className]}>
-          <Animate isActive={props.isAnimationActive} from={0} to={1} transition={{ duration: 1.5 }}>
+          <Animate
+            isActive={props.isAnimationActive}
+            from={0}
+            to={1}
+            transition={props.transition}
+            onAnimationEnd={() => { isAnimating.value = false }}
+          >
             {(progress: number) => {
               return trapList.map((trap: any, i: number) => {
+                // Scale height + widths from center
                 const animatedHeight = trap.height * progress
                 const yOffset = trap.height * (1 - progress)
-                // Interpolate widths: at progress=0 all same as upperWidth, at progress=1 final widths
-                const animatedLowerWidth = trap.upperWidth + (trap.lowerWidth - trap.upperWidth) * progress
-                const animatedX = trap.x + (trap.upperWidth - animatedLowerWidth) / 2 * 0 // x stays same since upper is anchored
+                const animatedUpperWidth = trap.upperWidth * progress
+                const animatedLowerWidth = trap.lowerWidth * progress
+                const centerX = trap.x + trap.upperWidth / 2
+                const animatedX = centerX - animatedUpperWidth / 2
 
                 const cellProps = cells[i] ?? {}
                 const trapFill = cellProps.fill ?? trap.fill ?? props.fill
@@ -143,11 +186,14 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
 
                 const trapezoidProps = {
                   ...trap,
-                  height: animatedHeight,
-                  lowerWidth: animatedLowerWidth,
+                  x: animatedX,
                   y: trap.y + yOffset / 2,
+                  height: animatedHeight,
+                  upperWidth: animatedUpperWidth,
+                  lowerWidth: animatedLowerWidth,
                   fill: trapFill,
                   stroke: trapStroke,
+                  animationProgress: progress,
                 }
 
                 const content = slots.shape
@@ -177,6 +223,7 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
               })
             }}
           </Animate>
+          {nonCellContent}
         </Layer>
       )
     }
