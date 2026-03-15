@@ -1,4 +1,4 @@
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, watch } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectActiveTooltipDataKey,
@@ -26,7 +26,6 @@ export const BarRectangles = defineComponent({
     const activeDataKey = useAppSelector(selectActiveTooltipDataKey)
     let previousRectangles: ReadonlyArray<BarRectangleItem> | null = null
     let animationId = 0
-    const domRef = ref<SVGGElement | null>(null)
 
     const { props, data: barData, layout, isAnimating, shapeSlot, activeBarSlot, cellProps } = useBarContext()
 
@@ -199,7 +198,7 @@ export const BarRectangles = defineComponent({
                 }
 
                 return (
-                  <g ref={domRef}>
+                  <g>
                     {renderRectangles(stepData)}
                   </g>
                 )
@@ -213,7 +212,7 @@ export const BarRectangles = defineComponent({
       isAnimating.value = false
       previousRectangles = data
       return (
-        <g ref={domRef}>
+        <g>
           {renderRectangles(data)}
         </g>
       )

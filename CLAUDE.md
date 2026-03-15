@@ -241,7 +241,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Key props: `defaultIndex`, `trigger="click"`, `shared={false}`, `cursor={false}`
 - `DefaultTooltipContent` `itemSorter` prop accepts function OR string literals: `'dataKey' | 'value' | 'name'`
 - `TooltipIndex` type is `string | null` (null = no active index; NOT a number)
-- **TooltipBoundingBox animation**: uses imperative `animate(element, { transform }, options)` from motion-v via `watchPostEffect`; `animationControls` ref stops previous animation before starting new one; `isAnimationActive=false` skips animation and sets `element.style.transform` directly; `currentTransform` is a `computed()` so position updates reactively trigger the effect; `transition` prop (type: `AnimationOptions`) customizes easing/duration (default: `{ duration: 0.4, ease: 'easeOut' }`)
+- **TooltipBoundingBox animation**: uses imperative `animate(element, { transform }, options)` from motion-v via `watchPostEffect`; `animationControls` stopped before guard and via `onCleanup` (handles unmount + re-trigger); respects `usePreferredReducedMotion()` — snaps to final value when `'reduce'`; `currentTransform` is a `computed()` so position updates reactively trigger the effect; `transition` prop (type: `AnimationOptions`) customizes easing/duration (default: `{ duration: 0.4, ease: 'easeOut' }`)
 - **TooltipBoundingBox accessibility**: rendered as `<div role="tooltip" aria-live="polite">` (NOT `motion.div`)
 
 ### Tooltip Payload Selection

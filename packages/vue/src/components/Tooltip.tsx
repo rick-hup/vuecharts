@@ -16,7 +16,7 @@ import {
   selectTooltipPayload,
   useChartName,
 } from '@/state/selectors/selectors'
-import { useElementBounding, useMagicKeys } from '@vueuse/core'
+import { useElementBounding, useMagicKeys, usePreferredReducedMotion } from '@vueuse/core'
 import type { AxisId } from '@/state/cartesianAxisSlice'
 import type {
   ChartCoordinate,
@@ -215,6 +215,7 @@ const TooltipBoundingBox = defineComponent({
     })
     let preTransform: CSSProperties | undefined
     let animationControls: AnimationPlaybackControls | undefined
+    const reducedMotion = usePreferredReducedMotion()
 
     const currentTransform = computed(() => {
       const { allowEscapeViewBox, coordinate, position, reverseDirection, viewBox } = props
@@ -237,20 +238,23 @@ const TooltipBoundingBox = defineComponent({
     })
 
     // Animate transform changes using motion-v's animate()
-    watchPostEffect(() => {
+    watchPostEffect((onCleanup) => {
       const element = el.value
       const transform = currentTransform.value.transform
       if (!element || !transform?.transform)
         return
 
-      animationControls?.stop()
-
-      if (props.isAnimationActive) {
+      if (props.isAnimationActive && reducedMotion.value !== 'reduce') {
         animationControls = animate(element, { transform: transform.transform }, props.transition)
       }
       else {
         element.style.transform = transform.transform
       }
+
+      onCleanup(() => {
+        animationControls?.stop()
+        animationControls = undefined
+      })
     })
 
     return () => {
