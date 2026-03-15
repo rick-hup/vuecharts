@@ -4,8 +4,7 @@
 import type { PropType } from 'vue'
 import { defineComponent } from 'vue'
 import type { VuePropsToType, WithSVGProps } from '@/types'
-import { mathSign } from '@/utils/data'
-import { getPercentValue } from '@/utils/data'
+import { getPercentValue, mathSign } from '@/utils/data'
 import { RADIAN, polarToCartesian } from '@/utils/polar'
 
 const SectorVueProps = {
@@ -24,7 +23,7 @@ const SectorVueProps = {
 export type SectorProps = VuePropsToType<typeof SectorVueProps>
 export type SectorPropsWithSVG = WithSVGProps<typeof SectorVueProps>
 
-const getDeltaAngle = (startAngle: number, endAngle: number) => {
+function getDeltaAngle(startAngle: number, endAngle: number) {
   const sign = mathSign(endAngle - startAngle)
   const deltaAngle = Math.min(Math.abs(endAngle - startAngle), 359.999)
   return sign * deltaAngle
@@ -41,7 +40,7 @@ interface TangentCircleDef {
   cornerIsExternal?: boolean
 }
 
-const getTangentCircle = ({
+function getTangentCircle({
   cx,
   cy,
   radius,
@@ -50,7 +49,7 @@ const getTangentCircle = ({
   isExternal,
   cornerRadius,
   cornerIsExternal,
-}: TangentCircleDef) => {
+}: TangentCircleDef) {
   const centerRadius = cornerRadius * (isExternal ? 1 : -1) + radius
   const theta = Math.asin(cornerRadius / centerRadius) / RADIAN
   const centerAngle = cornerIsExternal ? angle : angle + sign * theta
@@ -111,14 +110,26 @@ function getSectorWithCorner(
     lineTangency: solt,
     theta: sot,
   } = getTangentCircle({
-    cx, cy, radius: outerRadius, angle: startAngle, sign, cornerRadius, cornerIsExternal,
+    cx,
+    cy,
+    radius: outerRadius,
+    angle: startAngle,
+    sign,
+    cornerRadius,
+    cornerIsExternal,
   })
   const {
     circleTangency: eoct,
     lineTangency: eolt,
     theta: eot,
   } = getTangentCircle({
-    cx, cy, radius: outerRadius, angle: endAngle, sign: -sign, cornerRadius, cornerIsExternal,
+    cx,
+    cy,
+    radius: outerRadius,
+    angle: endAngle,
+    sign: -sign,
+    cornerRadius,
+    cornerIsExternal,
   })
   const outerArcAngle = cornerIsExternal
     ? Math.abs(startAngle - endAngle)
@@ -144,14 +155,28 @@ function getSectorWithCorner(
       lineTangency: silt,
       theta: sit,
     } = getTangentCircle({
-      cx, cy, radius: innerRadius, angle: startAngle, sign, isExternal: true, cornerRadius, cornerIsExternal,
+      cx,
+      cy,
+      radius: innerRadius,
+      angle: startAngle,
+      sign,
+      isExternal: true,
+      cornerRadius,
+      cornerIsExternal,
     })
     const {
       circleTangency: eict,
       lineTangency: eilt,
       theta: eit,
     } = getTangentCircle({
-      cx, cy, radius: innerRadius, angle: endAngle, sign: -sign, isExternal: true, cornerRadius, cornerIsExternal,
+      cx,
+      cy,
+      radius: innerRadius,
+      angle: endAngle,
+      sign: -sign,
+      isExternal: true,
+      cornerRadius,
+      cornerIsExternal,
     })
     const innerArcAngle = cornerIsExternal
       ? Math.abs(startAngle - endAngle)
@@ -189,10 +214,15 @@ export const Sector = defineComponent<SectorPropsWithSVG>({
 
       if (cr > 0 && Math.abs(startAngle - endAngle) < 360) {
         path = getSectorWithCorner(
-          cx, cy, innerRadius, outerRadius,
+          cx,
+          cy,
+          innerRadius,
+          outerRadius,
           Math.min(cr, deltaRadius / 2),
-          forceCornerRadius, cornerIsExternal,
-          startAngle, endAngle,
+          forceCornerRadius,
+          cornerIsExternal,
+          startAngle,
+          endAngle,
         )
       }
       else {

@@ -1,8 +1,3 @@
-/**
- * @fileOverview 一些公用的运算方法
- * @author xile611
- * @date 2015-09-17
- */
 import Decimal from 'decimal.js-light'
 import { curry } from './utils'
 
