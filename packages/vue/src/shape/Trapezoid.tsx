@@ -1,0 +1,46 @@
+import type { PropType } from 'vue'
+import { defineComponent } from 'vue'
+import type { WithSVGProps } from '@/types'
+
+const TrapezoidVueProps = {
+  className: { type: String as PropType<string>, default: undefined },
+  x: { type: Number as PropType<number>, default: 0 },
+  y: { type: Number as PropType<number>, default: 0 },
+  upperWidth: { type: Number as PropType<number>, default: 0 },
+  lowerWidth: { type: Number as PropType<number>, default: 0 },
+  height: { type: Number as PropType<number>, default: 0 },
+}
+
+export type TrapezoidComponentProps = WithSVGProps<typeof TrapezoidVueProps>
+
+function getTrapezoidPath(x: number, y: number, upperWidth: number, lowerWidth: number, height: number): string {
+  const upperLeft = x
+  const upperRight = x + upperWidth
+  const lowerLeft = x + (upperWidth - lowerWidth) / 2
+  const lowerRight = x + (upperWidth + lowerWidth) / 2
+  const bottom = y + height
+
+  return `M ${upperLeft},${y} L ${upperRight},${y} L ${lowerRight},${bottom} L ${lowerLeft},${bottom} Z`
+}
+
+export const Trapezoid = defineComponent<TrapezoidComponentProps>({
+  name: 'Trapezoid',
+  props: TrapezoidVueProps,
+  setup(props, { attrs }) {
+    return () => {
+      const { x, y, upperWidth, lowerWidth, height, className } = props
+
+      if (x !== +x! || y !== +y! || upperWidth !== +upperWidth! || lowerWidth !== +lowerWidth! || height !== +height! || height === 0) {
+        return null
+      }
+
+      return (
+        <path
+          {...attrs}
+          class={['v-charts-trapezoid', className]}
+          d={getTrapezoidPath(x, y, upperWidth, lowerWidth, height)}
+        />
+      )
+    }
+  },
+})

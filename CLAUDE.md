@@ -57,12 +57,12 @@ pnpm test packages/vue/src/chart/__tests__/AreaChart.spec.tsx
 
 ```
 packages/vue/src/           # Main library source (vccs)
-├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid, ZAxis
+├── cartesian/              # Area, Bar, Line, Scatter, Axis, Brush, CartesianGrid, ZAxis; funnel/ subdirectory contains Funnel component
 ├── polar/                  # Pie, Radar, RadialBar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
-├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, etc.)
+├── chart/                  # Chart containers (AreaChart, BarChart, LineChart, ComposedChart, FunnelChart, etc.)
 ├── components/             # Legend, Tooltip, Text, Label, Cell
 ├── container/              # ResponsiveContainer, Surface, Layer
-├── shape/                  # Rectangle, Symbols, Dot, Sector, Cross, Curve (all exported from barrel)
+├── shape/                  # Rectangle, Symbols, Dot, Sector, Cross, Curve, Trapezoid (all exported from barrel)
 ├── state/                  # Redux store, slices, middleware, selectors
 ├── animation/              # Animate component, motion-v utilities
 ├── context/                # provide/inject context providers
@@ -263,6 +263,17 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Does NOT use `useSetupGraphicalItem` — registers via `SetPolarGraphicalItem` directly
 - `cornerRadius`/`forceCornerRadius`/`cornerIsExternal` forwarded to background sectors
 
+### Funnel
+- `FunnelChart`: created via `generateCategoricalChart({ defaultTooltipEventType: 'item', validateTooltipEventTypes: ['item'], tooltipPayloadSearcher: arrayTooltipSearcher })`
+- `Funnel` is a polar-style graphical item: registers via `SetPolarGraphicalItem` with `type: 'funnel'`; does NOT use `useSetupGraphicalItem`
+- Layout computed by `selectFunnelTrapezoids` selector; renders `<Trapezoid>` per data item inside `<Layer class="v-charts-funnel">`
+- Animation: `<Animate from={0} to={1} transition={{ duration: 1.5 }}>` — interpolates `height` and `lowerWidth` per trapezoid
+- `Cell` children supported via `extractCellProps(slots.default?.())` for per-item `fill`/`stroke` overrides
+- `#shape` slot receives `FunnelTrapezoidItem` props for fully custom trapezoid rendering
+- Key props: `dataKey` (required), `nameKey` (default `'name'`), `lastShapeType` (`'triangle'|'rectangle'`, default `'triangle'`), `reversed` (default `false`), `fill` (default `'#808080'`), `width`
+- `FunnelTrapezoidItem`: extends `TrapezoidProps` + `{ value, payload, isActive, tooltipPosition, parentViewBox, labelViewBox }`
+- `Trapezoid` shape (`shape/Trapezoid.tsx`): renders `<path class="v-charts-trapezoid">` from `getTrapezoidPath(x, y, upperWidth, lowerWidth, height)` (M top-left L top-right L bottom-right L bottom-left Z); returns null for zero height or NaN dims; passes SVG attrs through
+
 ### YAxis / XAxis Internal Architecture
 - Both split into three tiers: `{X|Y}AxisImpl` (reads Redux state, renders `<CartesianAxis>`) + `{X|Y}AxisSettingsDispatcher` (dispatches `add{X|Y}Axis`/`remove{X|Y}Axis` via `watchEffect`) + public `{X|Y}Axis`
 - `{X|Y}AxisImpl` returns `null` when `axisSize` or `position` is not yet available from the store
@@ -307,7 +318,7 @@ Customization uses **named slots**: `shape`, `activeBar`, `dot`, `activeDot`, `l
 - Tests written as render functions (arrow function JSX, not SFC): `render(() => <Component />)`
 - Public API imports from `@/index`; internal component imports use direct paths (e.g. `@/chart/RadarChart`)
 - Layout context assertions: `defineComponent` + `useViewBox()`, `useChartWidth()`, `useChartHeight()`, `useClipPathId()` from `@/context/chartLayoutContext` / `@/chart/provideClipPathId`
-- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; bar: `.v-charts-bar-rectangle` (each individual bar's `<Layer>` wrapper); tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
+- CSS class selectors by component: `.v-charts-cross`, `.v-charts-dot`, `.v-charts-symbols`, `.v-charts-line`/`.v-charts-line-curve`/`.v-charts-line-dots`/`.v-charts-line-dot`, `.v-charts-area`/`.v-charts-area-area`/`.v-charts-area-curve`/`.v-charts-area-dots`/`.v-charts-area-dot`, `.v-charts-radar-polygon path`/`.v-charts-radar-dots`, `.v-charts-scatter`/`.v-charts-scatter-symbol`/`.v-charts-scatter-line`, `.v-charts-sector`, `.v-charts-polar-grid`/`.v-charts-polar-angle-axis`/`.v-charts-polar-angle-axis-tick`/`.v-charts-polar-radius-axis`, `.v-charts-xAxis`/`.v-charts-yAxis`; axis sub-elements: `.v-charts-cartesian-axis-tick`/`.v-charts-cartesian-axis-tick-line`/`.v-charts-cartesian-axis-line`, `.v-charts-brush`, `.v-charts-reference-area`/`.v-charts-reference-line`, `.v-charts-label`, `.v-charts-legend-wrapper`/`.v-charts-legend-item`/`.v-charts-legend-item-text`, `.v-charts-text`; bar: `.v-charts-bar-rectangle` (each individual bar's `<Layer>` wrapper); funnel: `.v-charts-funnel` (Funnel Layer wrapper), `.v-charts-trapezoid` (each individual trapezoid `<path>`); tooltip: `.v-charts-tooltip-wrapper` (hidden via `style.visibility='hidden'` when inactive), `.v-charts-tooltip-content`, `.v-charts-tooltip-item`, `.v-charts-tooltip-item-name`, `.v-charts-tooltip-item-value`, `.v-charts-tooltip-label`; **ResponsiveContainer** uses `vcharts-` prefix (not `v-charts-`): `.vcharts-responsive-container`
 - Line test helpers: `getLineCurves(container)` = `container.querySelectorAll('.v-charts-line .v-charts-line-curve')`; dots: `dot={true}` renders `.v-charts-line-dots` wrapper + `.v-charts-line-dot` per data point; single data point renders dot but no curve
 - Line curve type detection via path `d` attribute: monotone → contains `'C'` (cubic bezier); step/linear → no `'C'`, contains `'L'`; connectNulls=false → 2 `'M'` commands in `d`; connectNulls=true → 1 `'M'` command
 - Line `#activeDot` slot: dot only appears after `fireEvent(chart, new MouseEvent('mousemove', {...}))` (no extra `nextTick` needed unlike Tooltip defaultIndex)
