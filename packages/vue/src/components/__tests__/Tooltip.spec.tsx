@@ -154,6 +154,10 @@ describe('tooltip', () => {
 
       expect(container.querySelector('.vcharts-surface')).toBeTruthy()
     })
+
+    it('exposes transition prop for tooltip animation', () => {
+      expect((Tooltip as any).props.transition).toBeDefined()
+    })
   })
 
   describe('mouse interaction', () => {

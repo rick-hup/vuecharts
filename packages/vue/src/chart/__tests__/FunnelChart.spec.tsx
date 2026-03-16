@@ -54,6 +54,24 @@ describe('FunnelChart', () => {
       expect(trapezoids.length).toBe(1)
     })
 
+    it('does not generate NaN path values when all funnel values are zero', () => {
+      const zeroData = [
+        { value: 0, name: 'Visit' },
+        { value: 0, name: 'Cart' },
+        { value: 0, name: 'Checkout' },
+      ]
+      const { container } = render(() => (
+        <FunnelChart width={500} height={300}>
+          <Funnel dataKey="value" data={zeroData} isAnimationActive={false} />
+        </FunnelChart>
+      ))
+      const trapezoids = Array.from(container.querySelectorAll('.v-charts-trapezoid'))
+      expect(trapezoids.length).toBe(3)
+      for (const trapezoid of trapezoids) {
+        expect(trapezoid.getAttribute('d')).not.toContain('NaN')
+      }
+    })
+
     it('renders no trapezoids when hide is true', () => {
       const { container } = render(() => (
         <FunnelChart width={500} height={300}>

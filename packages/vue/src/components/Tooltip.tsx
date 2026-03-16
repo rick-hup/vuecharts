@@ -422,6 +422,10 @@ const TooltipVueProps = {
     type: Boolean,
     default: true,
   },
+  transition: {
+    type: Object as PropType<AnimationOptions>,
+    default: () => ({ duration: 0.4, ease: 'easeOut' }),
+  },
   offset: {
     type: Number,
     default: 10,
@@ -612,6 +616,7 @@ export const Tooltip = defineComponent({
               <TooltipBoundingBox
                 allowEscapeViewBox={props.allowEscapeViewBox}
                 isAnimationActive={props.isAnimationActive}
+                transition={props.transition}
                 active={finalIsActive.value}
                 coordinate={coordinate.value}
                 hasPayload={hasPayload.value}

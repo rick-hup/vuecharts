@@ -49,6 +49,8 @@ export function computeFunnelTrapezoids({
     null,
     displayedData.map((entry: any) => getValueByDataKey(entry, dataKey, 0)),
   )
+  const hasPositiveMaxValue = Number.isFinite(maxValue) && maxValue > 0
+  const centerX = left! + offsetX + realWidth / 2
   const len = displayedData.length
   const rowHeight = realHeight / len
   const parentViewBox = { x: offset.left, y: offset.top, width: offset.width, height: offset.height }
@@ -77,10 +79,12 @@ export function computeFunnelTrapezoids({
         nextVal = 0
       }
 
-      const x = ((maxValue - val) * realWidth) / (2 * maxValue) + left! + offsetX
+      const x = hasPositiveMaxValue
+        ? ((maxValue - val) * realWidth) / (2 * maxValue) + left! + offsetX
+        : centerX
       const y = rowHeight * i + top! + offsetY
-      const upperWidth = (val / maxValue) * realWidth
-      const lowerWidth = (nextVal / maxValue) * realWidth
+      const upperWidth = hasPositiveMaxValue ? (val / maxValue) * realWidth : 0
+      const lowerWidth = hasPositiveMaxValue ? (nextVal / maxValue) * realWidth : 0
 
       const tooltipPayload = [{ name, value: val, payload: entry, dataKey, type: tooltipType }]
       const tooltipPosition: Coordinate = {
