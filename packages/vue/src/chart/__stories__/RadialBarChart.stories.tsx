@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { defineComponent, ref } from 'vue'
 import { RadialBarChart } from '@/chart/RadialBarChart'
 import { RadialBar } from '@/polar/radial-bar/RadialBar'

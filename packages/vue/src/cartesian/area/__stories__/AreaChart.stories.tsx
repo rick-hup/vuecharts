@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryContext, StoryObj } from '@storybook/vue3-vite'
 import { AreaChart } from '@/chart/AreaChart'
 import { CartesianGrid } from '@/cartesian/cartesian-grid/CartesianGrid'
 import { XAxis, YAxis } from '@/cartesian/axis'

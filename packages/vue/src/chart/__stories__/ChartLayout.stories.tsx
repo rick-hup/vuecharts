@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { defineComponent } from 'vue'
 import { BarChart } from '@/chart/BarChart'
 import { useChartWidth, useChartHeight } from '@/context/chartLayoutContext'

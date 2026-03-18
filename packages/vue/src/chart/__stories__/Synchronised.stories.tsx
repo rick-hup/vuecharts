@@ -1,4 +1,4 @@
-import type { StoryObj } from '@storybook/vue3'
+import type { StoryObj } from '@storybook/vue3-vite'
 import { AreaChart } from '@/chart/AreaChart'
 import { BarChart } from '@/chart/BarChart'
 import { LineChart } from '@/chart/LineChart'
