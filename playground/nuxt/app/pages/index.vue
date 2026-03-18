@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Filter, LineChart as LineChartIcon, MessageSquare, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Crosshair, Filter, LineChart as LineChartIcon, MessageSquare, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -50,6 +50,13 @@ const routes = [
     description: 'Simple, label, custom colors, rectangle, reversed, legend and more.',
     icon: Filter,
     count: 6,
+  },
+  {
+    path: '/reference-dot-charts',
+    name: 'Reference Dot Charts',
+    description: 'Basic, multiple, combined with ReferenceLine annotations.',
+    icon: Crosshair,
+    count: 3,
   },
   {
     path: '/tooltip-charts',
