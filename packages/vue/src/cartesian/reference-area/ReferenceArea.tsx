@@ -9,27 +9,9 @@ import type { AxisId } from '@/state/cartesianAxisSlice'
 import { selectAxisScale } from '@/state/selectors/axisSelectors'
 import { useClipPathId } from '@/chart/provideClipPathId'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
-import { isNumOrStr, isWellBehavedNumber } from '@/utils'
+import { isNumOrStr } from '@/utils'
+import { rangeMax, rangeMin, scaleValue } from '@/utils/scale'
 import type { IfOverflow } from '@/types'
-import type { RechartsScale } from '@/types/scale'
-
-function scaleValue(scale: RechartsScale, value: number | string, position: 'start' | 'end'): number | undefined {
-  const coord = scale(value) as number
-  if (!isWellBehavedNumber(coord))
-    return undefined
-  const bandwidth = scale.bandwidth?.() ?? 0
-  return position === 'start' ? coord : coord + bandwidth
-}
-
-function rangeMin(scale: RechartsScale): number {
-  const r = scale.range() as number[]
-  return Math.min(r[0], r[1])
-}
-
-function rangeMax(scale: RechartsScale): number {
-  const r = scale.range() as number[]
-  return Math.max(r[0], r[1])
-}
 
 export const ReferenceAreaVueProps = {
   x1: { type: [Number, String] as PropType<number | string>, default: undefined },
