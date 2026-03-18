@@ -251,8 +251,8 @@ describe('<ReferenceDot />', () => {
     })
   })
 
-  describe('className', () => {
-    it('applies custom className to the reference dot layer', () => {
+  describe('class', () => {
+    it('applies custom class to the reference dot layer', () => {
       const { container } = render(() => (
         <BarChart
           width={1100}
@@ -263,7 +263,7 @@ describe('<ReferenceDot />', () => {
           <XAxis dataKey="name" />
           <YAxis />
           <Bar dataKey="uv" isAnimationActive={false} />
-          <ReferenceDot x="201106" y={1.29} r={10} className="custom-dot" />
+          <ReferenceDot x="201106" y={1.29} r={10} class="custom-dot" />
         </BarChart>
       ))
       expect(container.querySelectorAll('.custom-dot')).toHaveLength(1)

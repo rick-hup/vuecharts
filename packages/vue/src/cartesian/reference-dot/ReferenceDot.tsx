@@ -23,7 +23,6 @@ export const ReferenceDotVueProps = {
   stroke: { type: String, default: '#ccc' },
   label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
-  className: { type: String, default: undefined },
 }
 
 export const ReferenceDot = defineComponent({
@@ -83,8 +82,9 @@ export const ReferenceDot = defineComponent({
       const { cx, cy } = coord
       const clipPath = props.ifOverflow === 'hidden' ? `url(#${clipPathId})` : undefined
 
+      const { class: userClass, ...restAttrs } = attrs
       const svgAttrs: SVGAttributes = {
-        ...attrs,
+        ...restAttrs,
         fill: props.fill,
         stroke: props.stroke,
       }
@@ -102,7 +102,7 @@ export const ReferenceDot = defineComponent({
         : {}
 
       return (
-        <Layer class={['v-charts-reference-dot', props.className]}>
+        <Layer class={['v-charts-reference-dot', userClass]}>
           <Dot
             {...svgAttrs}
             cx={cx}
