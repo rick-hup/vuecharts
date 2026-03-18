@@ -106,7 +106,7 @@ export const SVGElementPropKeys = [
   'target',
   'width',
   'role',
-  'tabIndex',
+  'tabindex',
   'accentHeight',
   'accumulate',
   'additive',
