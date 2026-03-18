@@ -42,7 +42,7 @@ export interface Payload<TValue extends ValueType, TName extends NameType> {
   stroke?: string
   strokeDasharray?: string | number
   strokeWidth?: number | string
-  className?: string
+  class?: string
   hide?: boolean
   formatter?: Formatter<TValue, TName>
 

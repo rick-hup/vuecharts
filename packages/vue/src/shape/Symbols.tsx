@@ -63,7 +63,7 @@ const calculateAreaSize = (size: number, sizeType: SizeType, type: SymbolType): 
 }
 
 export interface SymbolsProps {
-  className?: string
+  class?: string
   type?: SymbolType
   cx?: number
   cy?: number
@@ -81,7 +81,7 @@ export function Symbols(props: SymbolsProps) {
     sizeType = 'area',
     cx,
     cy,
-    className,
+    class: className,
     ...rest
   } = props
 

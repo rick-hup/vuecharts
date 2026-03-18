@@ -7,7 +7,6 @@ import type { VuePropsToType, WithSVGProps } from '@/types'
 import type { RectRadius } from '@/types/bar'
 
 const RectangleVueProps = {
-  className: { type: String as PropType<string>, default: undefined },
   x: { type: Number as PropType<number>, default: 0 },
   y: { type: Number as PropType<number>, default: 0 },
   width: { type: Number as PropType<number>, default: 0 },

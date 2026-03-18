@@ -23,7 +23,7 @@ export const PieVueProps = {
   activeIndex: { type: Number, default: -1 },
   isAnimationActive: { type: Boolean, default: true },
   label: { type: Boolean, default: false },
-  className: { type: String, default: undefined },
+  class: { type: [String, Array, Object] as PropType<unknown>, default: undefined },
 }
 
 export type PieProps = VuePropsToType<typeof PieVueProps>

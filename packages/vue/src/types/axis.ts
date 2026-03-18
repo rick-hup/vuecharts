@@ -125,7 +125,7 @@ export interface XAxisProps {
   angle?: number
   minTickGap?: number
   label?: string | number | any // VNode or object
-  className?: string
+  class?: string
 }
 
 /**

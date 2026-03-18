@@ -10,7 +10,7 @@ export type MinPointSize = number | ((value: number, index: number) => number)
 export type NormalizedStackId = string
 
 export interface TrapezoidProps {
-  className?: string
+  class?: string
   x?: number
   y?: number
   width?: number

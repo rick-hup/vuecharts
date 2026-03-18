@@ -23,7 +23,7 @@ export const ReferenceLineVueProps = {
   fill: { type: String, default: 'none' },
   label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
-  className: { type: String, default: undefined },
+  class: { type: [String, Array, Object] as PropType<unknown>, default: undefined },
 }
 
 export const ReferenceLine = defineComponent({
@@ -127,7 +127,7 @@ export const ReferenceLine = defineComponent({
         : {}
 
       return (
-        <Layer class={['v-charts-reference-line', props.className]}>
+        <Layer class={['v-charts-reference-line', props.class]}>
           <line
             {...svgAttrs}
             clip-path={clipPath}

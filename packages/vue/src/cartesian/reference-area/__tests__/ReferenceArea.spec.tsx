@@ -248,8 +248,8 @@ describe('<ReferenceArea />', () => {
     })
   })
 
-  describe('className', () => {
-    it('applies custom className to the reference area layer', () => {
+  describe('class', () => {
+    it('applies custom class to the reference area layer', () => {
       const { container } = render(() => (
         <BarChart
           width={1100}
@@ -260,7 +260,7 @@ describe('<ReferenceArea />', () => {
           <XAxis dataKey="name" />
           <YAxis />
           <Bar dataKey="uv" isAnimationActive={false} />
-          <ReferenceArea x1="201106" x2="201110" className="custom-area" />
+          <ReferenceArea x1="201106" x2="201110" class="custom-area" />
         </BarChart>
       ))
       expect(container.querySelectorAll('.custom-area')).toHaveLength(1)

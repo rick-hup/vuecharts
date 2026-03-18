@@ -233,8 +233,8 @@ describe('<ReferenceLine />', () => {
     })
   })
 
-  describe('className', () => {
-    it('applies custom className to the reference line layer', () => {
+  describe('class', () => {
+    it('applies custom class to the reference line layer', () => {
       const { container } = render(() => (
         <BarChart
           width={1100}
@@ -245,7 +245,7 @@ describe('<ReferenceLine />', () => {
           <XAxis dataKey="name" />
           <YAxis />
           <Bar dataKey="uv" isAnimationActive={false} />
-          <ReferenceLine y={0} className="custom-line" />
+          <ReferenceLine y={0} class="custom-line" />
         </BarChart>
       ))
       expect(container.querySelectorAll('.custom-line')).toHaveLength(1)

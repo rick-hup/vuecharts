@@ -21,7 +21,7 @@ export interface LineProps {
   animationDuration?: AnimationDuration
   animationEasing?: AnimationEasing
   animationId?: string
-  className?: string
+  class?: string
   connectNulls?: boolean
   data?: any[]
   dataKey: DataKey<any>

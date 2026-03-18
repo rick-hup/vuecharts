@@ -11,7 +11,6 @@ const props = withDefaults(defineProps<{
   hideLabel?: boolean
   hideIndicator?: boolean
   labelKey?: string
-  className?: string
 }>(), {
   indicator: 'dot',
 })
@@ -82,9 +81,6 @@ const nestLabel = computed(() => {
   <div
     v-if="active && payload?.length"
     class="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl"
-    :class="[
-      className,
-    ]"
   >
     <div
       v-if="!hideLabel && formattedLabel && indicator !== 'line'"

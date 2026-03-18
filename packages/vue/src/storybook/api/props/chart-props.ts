@@ -132,7 +132,7 @@ toggling between multiple dataKey.`,
       category: 'General',
     },
   },
-  className: {
+  class: {
     table: {
       category: 'Internal',
     },

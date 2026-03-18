@@ -137,7 +137,7 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
       const stroke = (attrs.stroke as string) ?? props.stroke
 
       return (
-        <Layer class={['v-charts-funnel', props.className]}>
+        <Layer class={['v-charts-funnel', props.class]}>
           <Animate
             isActive={props.isAnimationActive}
             from={0}

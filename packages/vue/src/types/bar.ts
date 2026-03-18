@@ -22,7 +22,7 @@ export type RectRadius = [number, number, number, number]
 export type AnimationEasing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear'
 
 interface RectangleProps {
-  className?: string
+  class?: string
   x?: number
   y?: number
   width?: number
