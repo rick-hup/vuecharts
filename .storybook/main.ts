@@ -8,6 +8,9 @@ const config: StorybookConfig = {
     '../packages/**/*.mdx',
     '../packages/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
+  addons: [
+    '@storybook/addon-docs',
+  ],
   framework: {
     name: '@storybook/vue3-vite',
     options: {},
