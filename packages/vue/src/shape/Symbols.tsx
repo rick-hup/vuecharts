@@ -11,6 +11,7 @@ import {
 import type { SymbolType as D3SymbolType } from 'victory-vendor/d3-shape'
 import { upperFirst } from 'es-toolkit/compat'
 import { isNumber } from '@/utils/validate'
+import type { VueClassValue } from '@/types/common'
 
 export type SymbolType = 'circle' | 'cross' | 'diamond' | 'square' | 'star' | 'triangle' | 'wye'
 
@@ -63,7 +64,7 @@ const calculateAreaSize = (size: number, sizeType: SizeType, type: SymbolType): 
 }
 
 export interface SymbolsProps {
-  class?: string
+  class?: VueClassValue
   type?: SymbolType
   cx?: number
   cy?: number

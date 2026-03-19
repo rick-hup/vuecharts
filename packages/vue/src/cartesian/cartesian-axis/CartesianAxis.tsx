@@ -2,6 +2,7 @@
  * @fileOverview Cartesian Axis
  */
 import type { CartesianViewBox } from '@/cartesian/type'
+import type { VueClassValue } from '@/types/common'
 import type { AxisInterval } from '@/types/axis'
 import type { RechartsScale } from '@/types/scale'
 import type { CartesianTickItem } from '@/types/tick'
@@ -23,7 +24,7 @@ export type Unit = string | number
 export type TickFormatter = (value: any, index: number) => string
 
 export interface CartesianAxisProps {
-  class?: string
+  class?: VueClassValue
   x?: number
   y?: number
   width?: number

@@ -1,4 +1,5 @@
 import type { AnimationEasing } from '@/types/bar'
+import type { VueClassValue } from '@/types/common'
 
 export interface Point {
   readonly x: number
@@ -10,7 +11,7 @@ export type MinPointSize = number | ((value: number, index: number) => number)
 export type NormalizedStackId = string
 
 export interface TrapezoidProps {
-  class?: string
+  class?: VueClassValue
   x?: number
   y?: number
   width?: number

@@ -4,6 +4,7 @@
 import type { CSSProperties, PropType, SVGAttributes } from 'vue'
 import { defineComponent } from 'vue'
 import { classProp } from '@/types'
+import type { VueClassValue } from '@/types'
 
 interface ViewBox {
   x?: number
@@ -17,7 +18,7 @@ const Surface = defineComponent<Omit<SVGAttributes, 'viewBox'>
     width: number
     height: number
     viewBox?: ViewBox
-    class?: string
+    class?: VueClassValue
     style?: CSSProperties
     title?: string
     desc?: string

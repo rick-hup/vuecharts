@@ -1,4 +1,4 @@
-import type { Coordinate } from '@/types/common'
+import type { Coordinate, VueClassValue } from '@/types/common'
 import type { CartesianViewBox } from '@/cartesian/type'
 
 export type BarPositionPosition = {
@@ -22,7 +22,7 @@ export type RectRadius = [number, number, number, number]
 export type AnimationEasing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear'
 
 interface RectangleProps {
-  class?: string
+  class?: VueClassValue
   x?: number
   y?: number
   width?: number

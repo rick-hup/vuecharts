@@ -2,6 +2,7 @@ import type { ChartData } from '@/state/chartDataSlice'
 import type {
   DataKey,
   TooltipType,
+  VueClassValue,
   VuePropsToType,
   WithSVGProps,
 } from '@/types'
@@ -97,5 +98,5 @@ export interface AreaDotSlotProps {
   strokeWidth?: number
   fillOpacity?: number
   clipDot?: boolean
-  class?: string
+  class?: VueClassValue
 }

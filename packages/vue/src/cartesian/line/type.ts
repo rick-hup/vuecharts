@@ -1,4 +1,4 @@
-import type { AnimationDuration, DataKey, LayoutType, TooltipType, VuePropsToType, WithSVGProps } from '@/types'
+import type { AnimationDuration, DataKey, LayoutType, TooltipType, VueClassValue, VuePropsToType, WithSVGProps } from '@/types'
 import type { AxisId } from '@/types/axis'
 import type { AnimationEasing } from '@/types/bar'
 import type { AnimationOptions } from 'motion-v'
@@ -22,7 +22,7 @@ export interface LineProps {
   animationDuration?: AnimationDuration
   animationEasing?: AnimationEasing
   animationId?: string
-  class?: string
+  class?: VueClassValue
   connectNulls?: boolean
   data?: any[]
   dataKey: DataKey<any>
