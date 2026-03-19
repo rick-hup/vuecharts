@@ -148,3 +148,12 @@ export type AllowInDimension = {
   x?: boolean
   y?: boolean
 }
+
+/** Vue class binding type: string, string[], or { [className]: boolean } */
+export type VueClassValue = string | string[] | Record<string, boolean>
+
+/** Shared Vue prop definition for `class` — use in VueProps objects to avoid repetition */
+export const classProp = {
+  type: [String, Array, Object] as PropType<VueClassValue>,
+  default: undefined,
+}

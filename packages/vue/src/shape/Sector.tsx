@@ -3,6 +3,7 @@
  */
 import type { PropType } from 'vue'
 import { defineComponent } from 'vue'
+import { classProp } from '@/types'
 import type { VuePropsToType, WithSVGProps } from '@/types'
 import { getPercentValue, mathSign } from '@/utils/data'
 import { RADIAN, polarToCartesian } from '@/utils/polar'
@@ -17,7 +18,7 @@ const SectorVueProps = {
   cornerRadius: { type: [Number, String] as PropType<number | string>, default: 0 },
   forceCornerRadius: { type: Boolean as PropType<boolean>, default: false },
   cornerIsExternal: { type: Boolean as PropType<boolean>, default: false },
-  class: { type: [String, Array, Object] as PropType<unknown>, default: undefined },
+  class: classProp,
 }
 
 export type SectorProps = VuePropsToType<typeof SectorVueProps>

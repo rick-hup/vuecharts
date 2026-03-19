@@ -1,4 +1,5 @@
 import type { PropType, SVGAttributes } from 'vue'
+import { classProp } from '@/types'
 import { computed, defineComponent, onMounted, onUnmounted, reactive } from 'vue'
 import { Layer } from '@/container/Layer'
 import { Label } from '@/components/label/Label'
@@ -27,7 +28,7 @@ export const ReferenceAreaVueProps = {
   label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
   radius: { type: [Number, Array] as PropType<number | [number, number, number, number]>, default: 0 },
-  class: { type: [String, Array, Object] as PropType<unknown>, default: undefined },
+  class: classProp,
 }
 
 export const ReferenceArea = defineComponent({

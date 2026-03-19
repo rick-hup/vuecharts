@@ -7,6 +7,7 @@ import type { CurveFactory } from 'victory-vendor/d3-shape'
 import type { CurveType, Point } from '@/shape/Curve'
 import type { PropType } from 'vue'
 import { CurveVueProps } from '@/shape/Curve'
+import { classProp } from '@/types'
 
 export interface LinePointItem extends Point {
   readonly value?: number
@@ -89,7 +90,7 @@ export const LineVueProps = {
   width: { type: Number, default: 0 },
   height: { type: Number, default: 0 },
   name: { type: [String, Number] },
-  class: { type: String },
+  class: classProp,
 }
 
 export type LinePropsInternal = VuePropsToType<typeof LineVueProps>

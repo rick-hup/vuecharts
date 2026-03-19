@@ -1,4 +1,5 @@
 import type { PropType } from 'vue'
+import { classProp } from '@/types'
 import type { DataKey, VuePropsToType, WithSVGProps } from '@/types'
 import type { LegendType } from '@/types/legend'
 import type { TooltipType } from '@/types/tooltip'
@@ -23,7 +24,7 @@ export const PieVueProps = {
   activeIndex: { type: Number, default: -1 },
   isAnimationActive: { type: Boolean, default: true },
   label: { type: Boolean, default: false },
-  class: { type: [String, Array, Object] as PropType<unknown>, default: undefined },
+  class: classProp,
 }
 
 export type PieProps = VuePropsToType<typeof PieVueProps>

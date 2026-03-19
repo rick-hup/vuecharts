@@ -1,5 +1,6 @@
 import type { PropType } from 'vue'
 import { defineComponent, watchEffect } from 'vue'
+import { classProp } from '@/types'
 import type { StackOffsetType, SyncMethod } from '@/types'
 import { useAppDispatch } from './hooks'
 import { updateOptions } from './rootPropsSlice'
@@ -23,10 +24,7 @@ export default defineComponent({
       type: [String, Number],
       default: undefined,
     },
-    class: {
-      type: String,
-      default: undefined,
-    },
+    class: classProp,
     maxBarSize: {
       type: Number,
       default: undefined,

@@ -1,4 +1,5 @@
 import { defineComponent } from 'vue'
+import { classProp } from '@/types'
 import type { WithSVGProps } from '@/types'
 
 const TrapezoidVueProps = {
@@ -7,7 +8,7 @@ const TrapezoidVueProps = {
   upperWidth: { type: Number as PropType<number>, default: 0 },
   lowerWidth: { type: Number as PropType<number>, default: 0 },
   height: { type: Number as PropType<number>, default: 0 },
-  class: { type: [String, Array, Object] as PropType<unknown>, default: undefined },
+  class: classProp,
 }
 
 export type TrapezoidComponentProps = WithSVGProps<typeof TrapezoidVueProps>
