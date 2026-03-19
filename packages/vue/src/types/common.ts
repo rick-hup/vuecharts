@@ -142,10 +142,7 @@ export type VuePropsToType<Props> = {
   [K in keyof Props as Props[K] extends { required: boolean } ? never : K]?: VuePropField<Props[K]>
 }
 
-export type WithSVGProps<T> =
-  Omit<VuePropsToType<T>, 'class'>
-  & ('class' extends keyof T ? { class?: VueClassValue } : {})
-  & Omit<SVGAttributes, keyof T>
+export type WithSVGProps<T> = VuePropsToType<T> & Omit<SVGAttributes, keyof T>
 
 export type AllowInDimension = {
   x?: boolean
@@ -155,11 +152,8 @@ export type AllowInDimension = {
 /** Vue class binding type: string, string[], or { [className]: boolean } */
 export type VueClassValue = string | string[] | Record<string, boolean>
 
-/**
- * Shared Vue prop definition for `class` — use in VueProps objects to avoid repetition.
- *  PropType<string> because Vue normalizes class to string before passing to props.
- */
+/** Shared Vue prop definition for `class` — use in VueProps objects to avoid repetition */
 export const classProp = {
-  type: [String, Array, Object] as PropType<string>,
+  type: [String, Array, Object] as PropType<VueClassValue>,
   default: undefined,
 }
