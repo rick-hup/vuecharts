@@ -1,4 +1,4 @@
-import type { PropType, SVGAttributes } from 'vue'
+import type { PropType, SVGAttributes, SlotsType } from 'vue'
 import { computed, defineComponent, onMounted, onUnmounted, reactive } from 'vue'
 import { Layer } from '@/container/Layer'
 import { Dot } from '@/shape/Dot'
@@ -13,6 +13,20 @@ import { isNumOrStr } from '@/utils'
 import { isInRange, scaleCoord } from '@/utils/scale'
 import type { IfOverflow } from '@/types'
 
+export interface ReferenceDotShapeProps {
+  cx: number
+  cy: number
+  r: number
+  fill: string
+  stroke: string
+  clipPath?: string
+  [key: string]: any
+}
+
+export interface ReferenceDotSlots {
+  shape?: (props: ReferenceDotShapeProps) => any
+}
+
 export const ReferenceDotVueProps = {
   x: { type: [Number, String] as PropType<number | string>, default: undefined },
   y: { type: [Number, String] as PropType<number | string>, default: undefined },
@@ -25,11 +39,12 @@ export const ReferenceDotVueProps = {
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
 }
 
-export const ReferenceDot = defineComponent({
+const _ReferenceDot = defineComponent({
   name: 'ReferenceDot',
   props: ReferenceDotVueProps,
   inheritAttrs: false,
-  setup(props, { attrs }) {
+  slots: Object as SlotsType<ReferenceDotSlots>,
+  setup(props, { attrs, slots }) {
     const dispatch = useAppDispatch()
     const isPanorama = useIsPanorama()
     const clipPathId = useClipPathId()
@@ -101,15 +116,27 @@ export const ReferenceDot = defineComponent({
         ? labelValue
         : {}
 
+      const shapeProps: ReferenceDotShapeProps = {
+        ...svgAttrs,
+        cx,
+        cy,
+        r: props.r,
+        clipPath,
+      }
+
       return (
         <Layer class={['v-charts-reference-dot', userClass]}>
-          <Dot
-            {...svgAttrs}
-            cx={cx}
-            cy={cy}
-            r={props.r}
-            clip-path={clipPath}
-          />
+          {slots.shape
+            ? slots.shape(shapeProps)
+            : (
+              <Dot
+                {...svgAttrs}
+                cx={cx}
+                cy={cy}
+                r={props.r}
+                clip-path={clipPath}
+              />
+              )}
           {labelValue != null && labelValue !== false && (
             <Label
               viewBox={labelViewBox}
@@ -122,3 +149,7 @@ export const ReferenceDot = defineComponent({
     }
   },
 })
+
+export const ReferenceDot = _ReferenceDot as typeof _ReferenceDot & {
+  new (): { $slots: ReferenceDotSlots }
+}
