@@ -197,7 +197,7 @@ export function generateCategoricalChart({
         }
 
         if (props.accessibilityLayer) {
-          attributes.tabIndex = props.tabIndex ?? 0
+          attributes.tabindex = props.tabIndex ?? 0
           attributes.role = props.role ?? 'application'
         }
 
