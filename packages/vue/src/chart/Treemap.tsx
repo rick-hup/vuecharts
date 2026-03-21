@@ -126,6 +126,8 @@ const TreemapInner = defineComponent({
     // Nest mode state
     const breadcrumbTrail = ref<BreadcrumbEntry[]>([])
     const currentData = ref<Record<string, any>[] | null>(null)
+    // Increment to re-trigger entrance animation on nest navigation
+    const animationKey = ref(0)
 
     const isNestMode = computed(() => props.type === 'nest')
 
@@ -212,6 +214,7 @@ const TreemapInner = defineComponent({
           { name: clickedItem[props.nameKey] ?? clickedItem.name, data: sourceData },
         ]
         currentData.value = clickedItem.children
+        animationKey.value++
       }
 
       props.onClick?.(node, _index, e)
@@ -227,6 +230,7 @@ const TreemapInner = defineComponent({
         currentData.value = entry.data
         breadcrumbTrail.value = breadcrumbTrail.value.slice(0, index)
       }
+      animationKey.value++
     }
 
     function getNodeFill(node: TreemapLayoutNode) {
@@ -364,6 +368,7 @@ const TreemapInner = defineComponent({
         <Surface width={props.width} height={props.height}>
           <Layer class="v-charts-treemap">
             <Animate
+              key={animationKey.value}
               isActive={props.isAnimationActive}
               from={0}
               to={1}
