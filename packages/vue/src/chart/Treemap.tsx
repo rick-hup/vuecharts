@@ -1,4 +1,6 @@
 import { computed, defineComponent, type PropType, ref, type SlotsType } from 'vue'
+import type { AnimationOptions } from 'motion-v'
+import { Animate } from '@/animation/Animate'
 import { Layer } from '@/container/Layer'
 import Surface from '@/container/Surface'
 import { computeTreemapLayout, type TreemapLayoutNode } from './treemapUtils'
@@ -46,8 +48,7 @@ export const TreemapVueProps = {
   type: { type: String as PropType<'flat' | 'nest'>, default: 'flat' },
   colorPanel: { type: Array as PropType<string[]>, default: undefined },
   isAnimationActive: { type: Boolean, default: true },
-  animationDuration: { type: Number, default: 1500 },
-  animationEasing: { type: String, default: 'linear' },
+  transition: { type: Object as PropType<AnimationOptions>, default: () => ({ duration: 0.8, ease: 'easeOut' as const }) },
   onClick: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
   onMouseEnter: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
   onMouseLeave: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
@@ -136,34 +137,31 @@ export const Treemap = defineComponent({
       return node.color ?? props.fill
     }
 
-    function renderNodes() {
-      return nodes.value.map((node, index) => {
-        const nodeFill = getNodeFill(node)
-        const nodeProps: TreemapContentSlotProps = {
-          ...node,
-          index,
-          fill: nodeFill,
-          stroke: props.stroke,
-        }
+    function renderNodeAtProgress(node: TreemapLayoutNode, index: number, progress: number) {
+      const nodeFill = getNodeFill(node)
 
-        const clickHandler = isNestMode.value
-          ? (e: MouseEvent) => handleNestClick(node, index, e)
-          : (e: MouseEvent) => props.onClick?.(node, index, e)
+      // Animate: scale width/height from center
+      const animW = node.width * progress
+      const animH = node.height * progress
+      const animX = node.x + (node.width - animW) / 2
+      const animY = node.y + (node.height - animH) / 2
 
-        if (slots.content) {
-          return (
-            <g
-              key={`node-${index}`}
-              class="v-charts-treemap-node"
-              onClick={clickHandler}
-              onMouseenter={(e: MouseEvent) => props.onMouseEnter?.(node, index, e)}
-              onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
-            >
-              {slots.content(nodeProps)}
-            </g>
-          )
-        }
+      const nodeProps: TreemapContentSlotProps = {
+        ...node,
+        x: animX,
+        y: animY,
+        width: animW,
+        height: animH,
+        index,
+        fill: nodeFill,
+        stroke: props.stroke,
+      }
 
+      const clickHandler = isNestMode.value
+        ? (e: MouseEvent) => handleNestClick(node, index, e)
+        : (e: MouseEvent) => props.onClick?.(node, index, e)
+
+      if (slots.content) {
         return (
           <g
             key={`node-${index}`}
@@ -172,29 +170,41 @@ export const Treemap = defineComponent({
             onMouseenter={(e: MouseEvent) => props.onMouseEnter?.(node, index, e)}
             onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
           >
-            <rect
-              x={node.x}
-              y={node.y}
-              width={node.width}
-              height={node.height}
-              fill={nodeFill}
-              stroke={props.stroke}
-            />
-            {node.width > 40 && node.height > 20 && (
-              <text
-                x={node.x + node.width / 2}
-                y={node.y + node.height / 2}
-                text-anchor="middle"
-                dominant-baseline="central"
-                fill="#fff"
-                font-size={12}
-              >
-                {node.name}
-              </text>
-            )}
+            {slots.content(nodeProps)}
           </g>
         )
-      })
+      }
+
+      return (
+        <g
+          key={`node-${index}`}
+          class="v-charts-treemap-node"
+          onClick={clickHandler}
+          onMouseenter={(e: MouseEvent) => props.onMouseEnter?.(node, index, e)}
+          onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
+        >
+          <rect
+            x={animX}
+            y={animY}
+            width={animW}
+            height={animH}
+            fill={nodeFill}
+            stroke={props.stroke}
+          />
+          {animW > 40 && animH > 20 && (
+            <text
+              x={animX + animW / 2}
+              y={animY + animH / 2}
+              text-anchor="middle"
+              dominant-baseline="central"
+              fill="#fff"
+              font-size={12}
+            >
+              {node.name}
+            </text>
+          )}
+        </g>
+      )
     }
 
     function renderBreadcrumb() {
@@ -233,7 +243,17 @@ export const Treemap = defineComponent({
           {renderBreadcrumb()}
           <Surface width={props.width} height={props.height}>
             <Layer class="v-charts-treemap">
-              {renderNodes()}
+              <Animate
+                isActive={props.isAnimationActive}
+                from={0}
+                to={1}
+                transition={props.transition}
+              >
+                {(progress: number) =>
+                  nodes.value.map((node, index) =>
+                    renderNodeAtProgress(node, index, progress),
+                  )}
+              </Animate>
             </Layer>
           </Surface>
         </div>
