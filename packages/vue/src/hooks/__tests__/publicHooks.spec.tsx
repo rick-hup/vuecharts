@@ -2,14 +2,16 @@ import { fireEvent, render } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, nextTick, ref } from 'vue'
 import { BarChart } from '@/chart/BarChart'
+import { LineChart } from '@/chart/LineChart'
 import { Bar } from '@/cartesian/bar/Bar'
+import { Line } from '@/cartesian/line/Line'
 import { XAxis } from '@/cartesian/axis/XAxis'
 import { YAxis } from '@/cartesian/axis/YAxis'
 import { Tooltip } from '@/components/Tooltip'
 import { Customized } from '@/components/Customized'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
 import { assertNotNull } from '@/test/helper'
-import { useIsTooltipActive, useActiveTooltipCoordinate, useActiveTooltipLabel, usePlotArea } from '../publicHooks'
+import { useIsTooltipActive, useActiveTooltipCoordinate, useActiveTooltipLabel, usePlotArea, useXAxisDomain, useYAxisDomain, useXAxisTicks, useYAxisTicks } from '../publicHooks'
 
 describe('publicHooks - tooltip hooks', () => {
   beforeEach(() => {
@@ -206,6 +208,154 @@ describe('Layout public hooks', () => {
       // height should be positive but less than chart height
       expect(height).toBeGreaterThan(0)
       expect(height).toBeLessThan(300)
+    })
+  })
+})
+
+describe('Axis public hooks', () => {
+  beforeEach(() => {
+    mockGetBoundingClientRect({ width: 500, height: 300 })
+  })
+
+  const data = [
+    { name: 'A', value: 100 },
+    { name: 'B', value: 200 },
+    { name: 'C', value: 300 },
+  ]
+
+  describe('useXAxisDomain', () => {
+    it('returns categorical domain matching data keys', async () => {
+      let domain: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const d = useXAxisDomain()
+          return () => {
+            domain = d.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(domain).toEqual(['A', 'B', 'C'])
+    })
+  })
+
+  describe('useYAxisDomain', () => {
+    it('returns numerical domain covering data range', async () => {
+      let domain: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const d = useYAxisDomain()
+          return () => {
+            domain = d.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(domain).toBeDefined()
+      expect(Array.isArray(domain)).toBe(true)
+      expect(domain.length).toBe(2)
+      expect(domain[0]).toBeLessThanOrEqual(100)
+      expect(domain[1]).toBeGreaterThanOrEqual(300)
+    })
+  })
+
+  describe('useXAxisTicks', () => {
+    it('returns tick items matching data point count', async () => {
+      let ticks: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const t = useXAxisTicks()
+          return () => {
+            ticks = t.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(ticks).toBeDefined()
+      expect(Array.isArray(ticks)).toBe(true)
+      expect(ticks.length).toBe(3)
+    })
+  })
+
+  describe('useYAxisTicks', () => {
+    it('returns tick items with length > 0', async () => {
+      let ticks: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const t = useYAxisTicks()
+          return () => {
+            ticks = t.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(ticks).toBeDefined()
+      expect(Array.isArray(ticks)).toBe(true)
+      expect(ticks.length).toBeGreaterThan(0)
     })
   })
 })

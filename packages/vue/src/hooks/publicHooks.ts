@@ -1,7 +1,9 @@
 import { computed } from 'vue'
 import { useAppSelector } from '@/state/hooks'
 import { selectActiveLabel, selectActiveTooltipCoordinate, selectIsTooltipActive } from '@/state/selectors/tooltipSelectors'
+import { selectAxisDomain, selectTicksOfAxis } from '@/state/selectors/axisSelectors'
 import { useChartHeight, useChartWidth, useMargin, useOffset } from '@/context/chartLayoutContext'
+import type { AxisId } from '@/state/cartesianAxisSlice'
 
 // Re-export existing layout hooks
 export { useChartWidth, useChartHeight, useMargin, useOffset }
@@ -63,4 +65,44 @@ export function usePlotArea() {
       height: o.height,
     }
   })
+}
+
+/**
+ * Returns the computed domain of an X axis.
+ *
+ * @param axisId - The axis ID (defaults to 0)
+ * @returns A reactive domain (categorical or numerical) or undefined
+ */
+export function useXAxisDomain(axisId: AxisId = 0) {
+  return useAppSelector(state => selectAxisDomain(state, 'xAxis', axisId, false))
+}
+
+/**
+ * Returns the computed domain of a Y axis.
+ *
+ * @param axisId - The axis ID (defaults to 0)
+ * @returns A reactive domain (categorical or numerical) or undefined
+ */
+export function useYAxisDomain(axisId: AxisId = 0) {
+  return useAppSelector(state => selectAxisDomain(state, 'yAxis', axisId, false))
+}
+
+/**
+ * Returns the computed tick items of an X axis.
+ *
+ * @param axisId - The axis ID (defaults to 0)
+ * @returns A reactive array of TickItem or undefined
+ */
+export function useXAxisTicks(axisId: AxisId = 0) {
+  return useAppSelector(state => selectTicksOfAxis(state, 'xAxis', axisId, false))
+}
+
+/**
+ * Returns the computed tick items of a Y axis.
+ *
+ * @param axisId - The axis ID (defaults to 0)
+ * @returns A reactive array of TickItem or undefined
+ */
+export function useYAxisTicks(axisId: AxisId = 0) {
+  return useAppSelector(state => selectTicksOfAxis(state, 'yAxis', axisId, false))
 }
