@@ -189,60 +189,26 @@ describe('Treemap component', () => {
   })
 })
 
-describe('tooltip', () => {
-  it('shows default tooltip on hover', async () => {
-    const { container } = render(() => (
-      <Treemap data={flatData} dataKey="value" width={600} height={400} isAnimationActive={false} />
-    ))
+describe('tooltip integration', () => {
+  it('supports Tooltip as child component', async () => {
+    const { Tooltip } = await import('@/components/Tooltip')
 
-    // No tooltip initially
-    expect(container.querySelector('.v-charts-treemap-tooltip')).toBeNull()
-
-    // Hover a node
-    const node = container.querySelector('.v-charts-treemap-node')!
-    await fireEvent(node, new MouseEvent('mouseenter', { clientX: 100, clientY: 100, bubbles: true }))
-    await nextTick()
-
-    const tooltip = container.querySelector('.v-charts-treemap-tooltip')
-    expect(tooltip).toBeTruthy()
-    expect(tooltip!.querySelector('.v-charts-treemap-tooltip-content')).toBeTruthy()
-  })
-
-  it('hides tooltip on mouse leave', async () => {
-    const { container } = render(() => (
-      <Treemap data={flatData} dataKey="value" width={600} height={400} isAnimationActive={false} />
-    ))
-
-    const node = container.querySelector('.v-charts-treemap-node')!
-    await fireEvent(node, new MouseEvent('mouseenter', { clientX: 100, clientY: 100, bubbles: true }))
-    await nextTick()
-    expect(container.querySelector('.v-charts-treemap-tooltip')).toBeTruthy()
-
-    await fireEvent(node, new MouseEvent('mouseleave', { bubbles: true }))
-    await nextTick()
-    expect(container.querySelector('.v-charts-treemap-tooltip')).toBeNull()
-  })
-
-  it('renders custom tooltip via #tooltip slot', async () => {
     const { container } = render(() => (
       <Treemap data={flatData} dataKey="value" width={600} height={400} isAnimationActive={false}>
-        {{
-          tooltip: (props: any) => (
-            <div class="custom-tooltip">
-              {props.active ? `Active: ${props.node?.name}` : 'Inactive'}
-            </div>
-          ),
-        }}
+        <Tooltip />
       </Treemap>
     ))
 
-    const node = container.querySelector('.v-charts-treemap-node')!
-    await fireEvent(node, new MouseEvent('mouseenter', { clientX: 100, clientY: 100, bubbles: true }))
-    await nextTick()
+    // RechartsWrapper should be rendered
+    const wrapper = container.querySelector('.v-charts-wrapper')
+    expect(wrapper).toBeTruthy()
 
-    const tooltip = container.querySelector('.custom-tooltip')
-    expect(tooltip).toBeTruthy()
-    expect(tooltip!.textContent).toContain('Active:')
+    // Tooltip wrapper renders into portal (document.body or wrapper)
+    await nextTick()
+    await nextTick()
+    const tooltipWrapper = document.body.querySelector('.v-charts-tooltip-wrapper')
+      ?? container.querySelector('.v-charts-tooltip-wrapper')
+    expect(tooltipWrapper).toBeTruthy()
   })
 })
 

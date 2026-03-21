@@ -1,8 +1,17 @@
-import { computed, defineComponent, type PropType, ref, type SlotsType } from 'vue'
+import { computed, defineComponent, type PropType, ref, type SlotsType, watchEffect } from 'vue'
+import { get } from 'lodash-es'
 import type { AnimationOptions } from 'motion-v'
+import { provideStore } from '@reduxjs/vue-redux'
 import { Animate } from '@/animation/Animate'
 import { Layer } from '@/container/Layer'
 import Surface from '@/container/Surface'
+import { RechartsWrapper } from './RechartsWrapper'
+import { createRechartsStore } from '@/state/store'
+import { useAppDispatch } from '@/state/hooks'
+import { setActiveMouseOverItemIndex, setActiveClickItemIndex, addTooltipEntrySettings, removeTooltipEntrySettings } from '@/state/tooltipSlice'
+import type { ChartOptions, TooltipPayloadSearcher } from '@/state/store'
+import type { TooltipIndex, TooltipPayloadConfiguration } from '@/state/tooltipSlice'
+import type { Coordinate } from '@/types'
 import { computeTreemapLayout, type TreemapLayoutNode } from './treemapUtils'
 
 const DEFAULT_COLORS = [
@@ -16,15 +25,9 @@ export interface TreemapContentSlotProps extends TreemapLayoutNode {
   stroke: string
 }
 
-export interface TreemapTooltipSlotProps {
-  active: boolean
-  node: TreemapLayoutNode | null
-  fill: string
-}
-
 export interface TreemapSlots {
   content?: (props: TreemapContentSlotProps) => any
-  tooltip?: (props: TreemapTooltipSlotProps) => any
+  default?: () => any
 }
 
 interface BreadcrumbEntry {
@@ -41,6 +44,54 @@ function sumValues(item: Record<string, any>, dataKey: string): number {
   }
   const val = item[dataKey]
   return typeof val === 'number' && val > 0 ? val : 0
+}
+
+/**
+ * Tooltip payload searcher for Treemap — navigates nested node structure
+ * using a path string like 'children[0].children[1]'.
+ */
+export const treemapPayloadSearcher: TooltipPayloadSearcher = (
+  data: unknown,
+  activeIndex: TooltipIndex,
+) => {
+  if (!data || !activeIndex) return undefined
+  return get(data, activeIndex)
+}
+
+const treemapOptions: ChartOptions = {
+  chartName: 'Treemap',
+  defaultTooltipEventType: 'item',
+  validateTooltipEventTypes: ['item'],
+  tooltipPayloadSearcher: treemapPayloadSearcher,
+  eventEmitter: undefined,
+}
+
+/**
+ * Build a hierarchical node structure with tooltipIndex paths for tooltip lookup.
+ */
+function buildNodeTree(
+  data: Record<string, any>[],
+  dataKey: string,
+  nameKey: string,
+  parentIndex: string = '',
+): Record<string, any> {
+  const children = data.map((item, i) => {
+    const tooltipIndex = `${parentIndex}children[${i}]`
+    if (item.children && item.children.length > 0) {
+      const childTree = buildNodeTree(item.children, dataKey, nameKey, `${tooltipIndex}.`)
+      return {
+        ...item,
+        tooltipIndex,
+        ...childTree,
+      }
+    }
+    return {
+      ...item,
+      tooltipIndex,
+      value: sumValues(item, dataKey),
+    }
+  })
+  return { children, name: 'root', tooltipIndex: parentIndex }
 }
 
 export const TreemapVueProps = {
@@ -61,22 +112,20 @@ export const TreemapVueProps = {
   onMouseLeave: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
 }
 
-export const Treemap = defineComponent({
-  name: 'Treemap',
+/**
+ * Inner component that has access to the Redux store (provided by Treemap wrapper).
+ */
+const TreemapInner = defineComponent({
+  name: 'TreemapInner',
   props: TreemapVueProps,
   slots: Object as SlotsType<TreemapSlots>,
   setup(props, { slots }) {
+    const dispatch = useAppDispatch()
     const colors = computed(() => props.colorPanel ?? DEFAULT_COLORS)
 
     // Nest mode state
     const breadcrumbTrail = ref<BreadcrumbEntry[]>([])
     const currentData = ref<Record<string, any>[] | null>(null)
-
-    // Tooltip state
-    const activeNode = ref<TreemapLayoutNode | null>(null)
-    const activeNodeFill = ref('#808080')
-    const tooltipPosition = ref({ x: 0, y: 0 })
-    const containerRef = ref<HTMLDivElement | null>(null)
 
     const isNestMode = computed(() => props.type === 'nest')
 
@@ -85,10 +134,6 @@ export const Treemap = defineComponent({
       return currentData.value ?? props.data
     })
 
-    /**
-     * For nest mode: flatten current level items so each becomes a leaf node
-     * with its aggregate value.
-     */
     function computeNestLevelData(data: Record<string, any>[]): Record<string, any>[] {
       return data.map((item) => {
         const aggregatedValue = sumValues(item, props.dataKey)
@@ -112,6 +157,50 @@ export const Treemap = defineComponent({
         colorPanel: colors.value,
       })
     })
+
+    // Build node tree for tooltip payload lookup
+    const nodeTree = computed(() => {
+      const data = isNestMode.value ? (nestCurrentData.value ?? props.data) : props.data
+      return buildNodeTree(data, props.dataKey, props.nameKey)
+    })
+
+    // Register tooltip entry settings (like Funnel/Scatter do)
+    watchEffect((onCleanup) => {
+      const tooltipEntrySettings: TooltipPayloadConfiguration = {
+        dataDefinedOnItem: nodeTree.value,
+        settings: {
+          stroke: props.stroke,
+          strokeWidth: undefined,
+          fill: props.fill,
+          dataKey: props.dataKey,
+          nameKey: props.nameKey,
+          name: undefined,
+          hide: false,
+          type: undefined,
+          color: props.fill,
+          unit: '',
+        },
+      }
+      dispatch(addTooltipEntrySettings(tooltipEntrySettings))
+      onCleanup(() => {
+        dispatch(removeTooltipEntrySettings(tooltipEntrySettings))
+      })
+    })
+
+    // Map layout node name → tooltipIndex from nodeTree
+    function getTooltipIndex(node: TreemapLayoutNode): TooltipIndex {
+      const data = isNestMode.value ? (nestCurrentData.value ?? props.data) : props.data
+      const idx = data.findIndex(item => item[props.nameKey] === node.name)
+      if (idx >= 0) return `children[${idx}]`
+      // For flat mode with nested data, search leaves
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].children) {
+          const childIdx = data[i].children.findIndex((c: any) => c[props.nameKey] === node.name)
+          if (childIdx >= 0) return `children[${i}].children[${childIdx}]`
+        }
+      }
+      return `children[0]`
+    }
 
     function handleNestClick(node: TreemapLayoutNode, _index: number, e: MouseEvent) {
       const sourceData = nestCurrentData.value ?? props.data
@@ -145,40 +234,41 @@ export const Treemap = defineComponent({
     }
 
     function handleNodeMouseEnter(node: TreemapLayoutNode, index: number, e: MouseEvent) {
-      activeNode.value = node
-      activeNodeFill.value = getNodeFill(node)
-
-      // Position tooltip relative to container
-      if (containerRef.value) {
-        const rect = containerRef.value.getBoundingClientRect()
-        tooltipPosition.value = {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        }
+      const tooltipIndex = getTooltipIndex(node)
+      const activeCoordinate: Coordinate = {
+        x: node.x + node.width / 2,
+        y: node.y + node.height / 2,
       }
-
+      dispatch(setActiveMouseOverItemIndex({
+        activeIndex: tooltipIndex,
+        activeDataKey: props.dataKey,
+        activeCoordinate,
+      }))
       props.onMouseEnter?.(node, index, e)
     }
 
-    function handleNodeMouseMove(e: MouseEvent) {
-      if (containerRef.value && activeNode.value) {
-        const rect = containerRef.value.getBoundingClientRect()
-        tooltipPosition.value = {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        }
+    function handleNodeClick(node: TreemapLayoutNode, index: number, e: MouseEvent) {
+      if (isNestMode.value) {
+        handleNestClick(node, index, e)
       }
-    }
-
-    function handleNodeMouseLeave(node: TreemapLayoutNode, index: number, e: MouseEvent) {
-      activeNode.value = null
-      props.onMouseLeave?.(node, index, e)
+      else {
+        const tooltipIndex = getTooltipIndex(node)
+        const activeCoordinate: Coordinate = {
+          x: node.x + node.width / 2,
+          y: node.y + node.height / 2,
+        }
+        dispatch(setActiveClickItemIndex({
+          activeIndex: tooltipIndex,
+          activeDataKey: props.dataKey,
+          activeCoordinate,
+        }))
+        props.onClick?.(node, index, e)
+      }
     }
 
     function renderNodeAtProgress(node: TreemapLayoutNode, index: number, progress: number) {
       const nodeFill = getNodeFill(node)
 
-      // Animate: scale width/height from center
       const animW = node.width * progress
       const animH = node.height * progress
       const animX = node.x + (node.width - animW) / 2
@@ -195,19 +285,14 @@ export const Treemap = defineComponent({
         stroke: props.stroke,
       }
 
-      const clickHandler = isNestMode.value
-        ? (e: MouseEvent) => handleNestClick(node, index, e)
-        : (e: MouseEvent) => props.onClick?.(node, index, e)
-
       if (slots.content) {
         return (
           <g
             key={`node-${index}`}
             class="v-charts-treemap-node"
-            onClick={clickHandler}
+            onClick={(e: MouseEvent) => handleNodeClick(node, index, e)}
             onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
-            onMousemove={handleNodeMouseMove}
-            onMouseleave={(e: MouseEvent) => handleNodeMouseLeave(node, index, e)}
+            onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
           >
             {slots.content(nodeProps)}
           </g>
@@ -218,10 +303,9 @@ export const Treemap = defineComponent({
         <g
           key={`node-${index}`}
           class="v-charts-treemap-node"
-          onClick={clickHandler}
+          onClick={(e: MouseEvent) => handleNodeClick(node, index, e)}
           onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
-          onMousemove={handleNodeMouseMove}
-          onMouseleave={(e: MouseEvent) => handleNodeMouseLeave(node, index, e)}
+          onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
         >
           <rect
             x={animX}
@@ -275,95 +359,62 @@ export const Treemap = defineComponent({
       )
     }
 
-    function renderDefaultTooltip(node: TreemapLayoutNode, fill: string) {
-      return (
-        <div
-          class="v-charts-treemap-tooltip-content"
-          style={{
-            background: '#fff',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            padding: '8px 12px',
-            fontSize: '13px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: fill, display: 'inline-block' }} />
-            <span style={{ fontWeight: '500' }}>{node.name}</span>
-          </div>
-          <div style={{ marginTop: '4px', color: '#666' }}>
-            {props.dataKey}: <span style={{ fontWeight: '500', color: '#333' }}>{node.value.toLocaleString()}</span>
-          </div>
-        </div>
-      )
-    }
+    return () => (
+      <>
+        {renderBreadcrumb()}
+        <Surface width={props.width} height={props.height}>
+          <Layer class="v-charts-treemap">
+            <Animate
+              isActive={props.isAnimationActive}
+              from={0}
+              to={1}
+              transition={props.transition}
+            >
+              {(progress: number) =>
+                nodes.value.map((node, index) =>
+                  renderNodeAtProgress(node, index, progress),
+                )}
+            </Animate>
+          </Layer>
+        </Surface>
+      </>
+    )
+  },
+})
 
-    function renderTooltip() {
-      const node = activeNode.value
-      const isActive = node != null
-
-      // If #tooltip slot exists, always render it (let consumer control visibility)
-      if (slots.tooltip) {
-        return (
-          <div
-            class="v-charts-treemap-tooltip"
-            style={{
-              position: 'absolute',
-              left: `${tooltipPosition.value.x + 12}px`,
-              top: `${tooltipPosition.value.y - 12}px`,
-              pointerEvents: 'none',
-              zIndex: 1000,
-              visibility: isActive ? 'visible' : 'hidden',
-            }}
-          >
-            {slots.tooltip({ active: isActive, node, fill: activeNodeFill.value })}
-          </div>
-        )
-      }
-
-      // Default tooltip: show when active
-      if (!isActive) return null
-
-      return (
-        <div
-          class="v-charts-treemap-tooltip"
-          style={{
-            position: 'absolute',
-            left: `${tooltipPosition.value.x + 12}px`,
-            top: `${tooltipPosition.value.y - 12}px`,
-            pointerEvents: 'none',
-            zIndex: 1000,
-          }}
-        >
-          {renderDefaultTooltip(node, activeNodeFill.value)}
-        </div>
-      )
-    }
+/**
+ * Treemap chart — hierarchical data visualization using nested rectangles.
+ *
+ * Supports `<Tooltip>` as a child component (same pattern as BarChart, LineChart, etc.).
+ *
+ * Usage:
+ * ```vue
+ * <Treemap :data="data" data-key="value" :width="600" :height="400">
+ *   <Tooltip />
+ * </Treemap>
+ * ```
+ */
+export const Treemap = defineComponent({
+  name: 'Treemap',
+  props: TreemapVueProps,
+  slots: Object as SlotsType<TreemapSlots>,
+  setup(props, { slots }) {
+    const store = createRechartsStore({ options: treemapOptions }, 'Treemap')
+    provideStore({ store })
 
     return () => {
       if (!props.data || props.data.length === 0) return null
 
       return (
-        <div class="v-charts-treemap-container" ref={containerRef} style={{ position: 'relative' }}>
-          {renderBreadcrumb()}
-          <Surface width={props.width} height={props.height}>
-            <Layer class="v-charts-treemap">
-              <Animate
-                isActive={props.isAnimationActive}
-                from={0}
-                to={1}
-                transition={props.transition}
-              >
-                {(progress: number) =>
-                  nodes.value.map((node, index) =>
-                    renderNodeAtProgress(node, index, progress),
-                  )}
-              </Animate>
-            </Layer>
-          </Surface>
-          {renderTooltip()}
-        </div>
+        <RechartsWrapper
+          width={props.width}
+          height={props.height}
+        >
+          <TreemapInner {...props}>
+            {{ content: slots.content }}
+          </TreemapInner>
+          {slots.default?.()}
+        </RechartsWrapper>
       )
     }
   },

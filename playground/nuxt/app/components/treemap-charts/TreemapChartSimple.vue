@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Treemap } from 'vccs'
+import { Tooltip, Treemap } from 'vccs'
 
 const chartData = [
   {
@@ -57,7 +57,9 @@ const chartData = [
         :data="chartData"
         data-key="value"
         stroke="#fff"
-      />
+      >
+        <Tooltip />
+      </Treemap>
     </CardContent>
   </Card>
 </template>
