@@ -1,4 +1,4 @@
-import type { Args } from '@storybook/vue3'
+import type { Args } from '@storybook/vue3-vite'
 
 /*
  * This is the type as defined here: https://storybook.js.org/docs/react/api/arg-types#argtypes

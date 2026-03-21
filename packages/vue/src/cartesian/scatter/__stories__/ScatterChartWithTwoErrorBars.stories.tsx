@@ -1,4 +1,4 @@
-import type { StoryObj } from '@storybook/vue3'
+import type { StoryObj } from '@storybook/vue3-vite'
 import { ScatterChart } from '@/chart/ScatterChart'
 import { Scatter } from '@/cartesian/scatter'
 import { ErrorBar } from '@/cartesian/error-bar'

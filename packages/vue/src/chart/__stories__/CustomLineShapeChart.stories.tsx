@@ -1,4 +1,4 @@
-import type { StoryObj } from '@storybook/vue3'
+import type { StoryObj } from '@storybook/vue3-vite'
 import { LineChart } from '@/chart/LineChart'
 import { Line } from '@/cartesian/line'
 import { XAxis, YAxis } from '@/cartesian/axis'

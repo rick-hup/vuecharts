@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { defineComponent, ref } from 'vue'
 import { BarChart } from '@/chart/BarChart'
 import { Bar } from '@/cartesian/bar/Bar'

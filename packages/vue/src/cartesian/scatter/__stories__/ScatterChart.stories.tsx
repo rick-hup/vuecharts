@@ -1,4 +1,4 @@
-import type { StoryObj } from '@storybook/vue3'
+import type { StoryObj } from '@storybook/vue3-vite'
 import { defineComponent, ref } from 'vue'
 import { ComposedChart } from '@/chart/ComposedChart'
 import { ScatterChart } from '@/chart/ScatterChart'
