@@ -16,8 +16,15 @@ export interface TreemapContentSlotProps extends TreemapLayoutNode {
   stroke: string
 }
 
+export interface TreemapTooltipSlotProps {
+  active: boolean
+  node: TreemapLayoutNode | null
+  fill: string
+}
+
 export interface TreemapSlots {
   content?: (props: TreemapContentSlotProps) => any
+  tooltip?: (props: TreemapTooltipSlotProps) => any
 }
 
 interface BreadcrumbEntry {
@@ -65,6 +72,12 @@ export const Treemap = defineComponent({
     const breadcrumbTrail = ref<BreadcrumbEntry[]>([])
     const currentData = ref<Record<string, any>[] | null>(null)
 
+    // Tooltip state
+    const activeNode = ref<TreemapLayoutNode | null>(null)
+    const activeNodeFill = ref('#808080')
+    const tooltipPosition = ref({ x: 0, y: 0 })
+    const containerRef = ref<HTMLDivElement | null>(null)
+
     const isNestMode = computed(() => props.type === 'nest')
 
     const nestCurrentData = computed(() => {
@@ -79,7 +92,6 @@ export const Treemap = defineComponent({
     function computeNestLevelData(data: Record<string, any>[]): Record<string, any>[] {
       return data.map((item) => {
         const aggregatedValue = sumValues(item, props.dataKey)
-        // Create a copy without children so computeTreemapLayout treats it as a leaf
         const { children: _, ...rest } = item
         return { ...rest, [props.dataKey]: aggregatedValue }
       })
@@ -103,12 +115,9 @@ export const Treemap = defineComponent({
 
     function handleNestClick(node: TreemapLayoutNode, _index: number, e: MouseEvent) {
       const sourceData = nestCurrentData.value ?? props.data
-      // Match by name because computeTreemapLayout sorts nodes by value (d3-hierarchy .sort()),
-      // so the rendering index doesn't correspond to the original data index.
       const clickedItem = sourceData.find(item => item[props.nameKey] === node.name)
 
       if (clickedItem?.children && clickedItem.children.length > 0) {
-        // Push current level to breadcrumb trail
         breadcrumbTrail.value = [
           ...breadcrumbTrail.value,
           { name: clickedItem[props.nameKey] ?? clickedItem.name, data: sourceData },
@@ -116,25 +125,54 @@ export const Treemap = defineComponent({
         currentData.value = clickedItem.children
       }
 
-      props.onClick?.(node, index, e)
+      props.onClick?.(node, _index, e)
     }
 
     function navigateToBreadcrumb(index: number) {
       if (index < 0) {
-        // Navigate to root
         currentData.value = null
         breadcrumbTrail.value = []
       }
       else {
         const entry = breadcrumbTrail.value[index]
         currentData.value = entry.data
-        // Keep only breadcrumb entries before the clicked one
         breadcrumbTrail.value = breadcrumbTrail.value.slice(0, index)
       }
     }
 
     function getNodeFill(node: TreemapLayoutNode) {
       return node.color ?? props.fill
+    }
+
+    function handleNodeMouseEnter(node: TreemapLayoutNode, index: number, e: MouseEvent) {
+      activeNode.value = node
+      activeNodeFill.value = getNodeFill(node)
+
+      // Position tooltip relative to container
+      if (containerRef.value) {
+        const rect = containerRef.value.getBoundingClientRect()
+        tooltipPosition.value = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        }
+      }
+
+      props.onMouseEnter?.(node, index, e)
+    }
+
+    function handleNodeMouseMove(e: MouseEvent) {
+      if (containerRef.value && activeNode.value) {
+        const rect = containerRef.value.getBoundingClientRect()
+        tooltipPosition.value = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        }
+      }
+    }
+
+    function handleNodeMouseLeave(node: TreemapLayoutNode, index: number, e: MouseEvent) {
+      activeNode.value = null
+      props.onMouseLeave?.(node, index, e)
     }
 
     function renderNodeAtProgress(node: TreemapLayoutNode, index: number, progress: number) {
@@ -167,8 +205,9 @@ export const Treemap = defineComponent({
             key={`node-${index}`}
             class="v-charts-treemap-node"
             onClick={clickHandler}
-            onMouseenter={(e: MouseEvent) => props.onMouseEnter?.(node, index, e)}
-            onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
+            onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
+            onMousemove={handleNodeMouseMove}
+            onMouseleave={(e: MouseEvent) => handleNodeMouseLeave(node, index, e)}
           >
             {slots.content(nodeProps)}
           </g>
@@ -180,8 +219,9 @@ export const Treemap = defineComponent({
           key={`node-${index}`}
           class="v-charts-treemap-node"
           onClick={clickHandler}
-          onMouseenter={(e: MouseEvent) => props.onMouseEnter?.(node, index, e)}
-          onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
+          onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
+          onMousemove={handleNodeMouseMove}
+          onMouseleave={(e: MouseEvent) => handleNodeMouseLeave(node, index, e)}
         >
           <rect
             x={animX}
@@ -235,11 +275,77 @@ export const Treemap = defineComponent({
       )
     }
 
+    function renderDefaultTooltip(node: TreemapLayoutNode, fill: string) {
+      return (
+        <div
+          class="v-charts-treemap-tooltip-content"
+          style={{
+            background: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            padding: '8px 12px',
+            fontSize: '13px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: fill, display: 'inline-block' }} />
+            <span style={{ fontWeight: '500' }}>{node.name}</span>
+          </div>
+          <div style={{ marginTop: '4px', color: '#666' }}>
+            {props.dataKey}: <span style={{ fontWeight: '500', color: '#333' }}>{node.value.toLocaleString()}</span>
+          </div>
+        </div>
+      )
+    }
+
+    function renderTooltip() {
+      const node = activeNode.value
+      const isActive = node != null
+
+      // If #tooltip slot exists, always render it (let consumer control visibility)
+      if (slots.tooltip) {
+        return (
+          <div
+            class="v-charts-treemap-tooltip"
+            style={{
+              position: 'absolute',
+              left: `${tooltipPosition.value.x + 12}px`,
+              top: `${tooltipPosition.value.y - 12}px`,
+              pointerEvents: 'none',
+              zIndex: 1000,
+              visibility: isActive ? 'visible' : 'hidden',
+            }}
+          >
+            {slots.tooltip({ active: isActive, node, fill: activeNodeFill.value })}
+          </div>
+        )
+      }
+
+      // Default tooltip: show when active
+      if (!isActive) return null
+
+      return (
+        <div
+          class="v-charts-treemap-tooltip"
+          style={{
+            position: 'absolute',
+            left: `${tooltipPosition.value.x + 12}px`,
+            top: `${tooltipPosition.value.y - 12}px`,
+            pointerEvents: 'none',
+            zIndex: 1000,
+          }}
+        >
+          {renderDefaultTooltip(node, activeNodeFill.value)}
+        </div>
+      )
+    }
+
     return () => {
       if (!props.data || props.data.length === 0) return null
 
       return (
-        <div class="v-charts-treemap-container">
+        <div class="v-charts-treemap-container" ref={containerRef} style={{ position: 'relative' }}>
           {renderBreadcrumb()}
           <Surface width={props.width} height={props.height}>
             <Layer class="v-charts-treemap">
@@ -256,6 +362,7 @@ export const Treemap = defineComponent({
               </Animate>
             </Layer>
           </Surface>
+          {renderTooltip()}
         </div>
       )
     }
