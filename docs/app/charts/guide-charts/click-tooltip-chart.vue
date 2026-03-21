@@ -24,7 +24,15 @@ const data = [
       <Tooltip
         trigger="click"
         :cursor="false"
-      />
+      >
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Bar
         data-key="uv"
         fill="#8884d8"

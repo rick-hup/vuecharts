@@ -26,7 +26,15 @@ const data = [
         stroke="green"
       />
       <YAxis />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <CartesianGrid
         stroke="red"
         stroke-dasharray="5 5"

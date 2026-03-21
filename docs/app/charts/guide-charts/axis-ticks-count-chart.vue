@@ -23,7 +23,15 @@ const data = [
         :tick-count="5"
       />
       <YAxis :tick-count="5" />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
       <Line
         type="monotone"
         data-key="y"

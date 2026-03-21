@@ -31,7 +31,15 @@ const solarSystem = [
         data-key="massKg"
         unit="kg"
       />
-      <Tooltip />
+      <Tooltip :cursor="false">
+        <template #content="{ active, payload, label }">
+          <ChartTooltipContent
+            :active="active"
+            :payload="payload"
+            :label="label"
+          />
+        </template>
+      </Tooltip>
     </BarChart>
   </ResponsiveContainer>
 </template>
