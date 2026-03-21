@@ -63,9 +63,11 @@ export function useLegend(props: LegendProps) {
 
   // Calculate outer style
   const outerStyle = computed((): CSSProperties => {
+    const userStyle = props.wrapperStyle ? { ...props.wrapperStyle } : {}
+
     // If user supplies their own portal, only use their defined wrapper styles
     if (props.portal) {
-      return props.wrapperStyle || {}
+      return userStyle
     }
 
     const baseStyle: CSSProperties = {
@@ -75,14 +77,14 @@ export function useLegend(props: LegendProps) {
     }
 
     const positionStyle = getDefaultPosition(
-      props.wrapperStyle,
+      userStyle,
       props,
       margin.value,
       chartWidth.value,
       chartHeight.value,
       boundingBox.value,
     )
-    return Object.assign({}, baseStyle, positionStyle, props.wrapperStyle || {})
+    return { ...baseStyle, ...positionStyle, ...userStyle }
   })
 
   // Determine portal target
