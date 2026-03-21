@@ -1,4 +1,5 @@
-import { render } from '@testing-library/vue'
+import { fireEvent, render } from '@testing-library/vue'
+import { nextTick } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { computeTreemapLayout } from '../treemapUtils'
 import { Treemap } from '../Treemap'
@@ -185,5 +186,67 @@ describe('Treemap component', () => {
 
     const wrappers = container.querySelectorAll('.v-charts-treemap-node')
     expect(wrappers).toHaveLength(3)
+  })
+})
+
+describe('nest mode', () => {
+  const nestData = [
+    {
+      name: 'Group 1',
+      children: [
+        { name: 'A', value: 100 },
+        { name: 'B', value: 200 },
+      ],
+    },
+    {
+      name: 'Group 2',
+      children: [
+        { name: 'C', value: 300 },
+      ],
+    },
+  ]
+
+  it('renders top-level groups initially', () => {
+    const { container } = render(() => (
+      <Treemap width={600} height={400} data={nestData} dataKey="value"
+        type="nest" isAnimationActive={false} />
+    ))
+    const rects = container.querySelectorAll('.v-charts-treemap-node')
+    expect(rects.length).toBe(2) // 2 top-level groups
+  })
+
+  it('drills down on click and shows breadcrumb', async () => {
+    const { container } = render(() => (
+      <Treemap width={600} height={400} data={nestData} dataKey="value"
+        type="nest" isAnimationActive={false} />
+    ))
+    const firstGroup = container.querySelector('.v-charts-treemap-node')!
+    await fireEvent.click(firstGroup)
+    await nextTick()
+
+    const rects = container.querySelectorAll('.v-charts-treemap-node')
+    expect(rects.length).toBe(2) // A and B
+
+    const breadcrumb = container.querySelector('.v-charts-treemap-breadcrumb')
+    expect(breadcrumb).toBeTruthy()
+  })
+
+  it('navigates back via breadcrumb click', async () => {
+    const { container } = render(() => (
+      <Treemap width={600} height={400} data={nestData} dataKey="value"
+        type="nest" isAnimationActive={false} />
+    ))
+    // Drill down
+    const firstGroup = container.querySelector('.v-charts-treemap-node')!
+    await fireEvent.click(firstGroup)
+    await nextTick()
+
+    // Click root breadcrumb
+    const breadcrumbRoot = container.querySelector('.v-charts-treemap-breadcrumb-item')!
+    await fireEvent.click(breadcrumbRoot)
+    await nextTick()
+
+    const rects = container.querySelectorAll('.v-charts-treemap-node')
+    expect(rects.length).toBe(2) // back to 2 groups
   })
 })
