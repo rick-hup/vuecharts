@@ -13,14 +13,13 @@ import { isNumOrStr } from '@/utils'
 import { isInRange, scaleCoord } from '@/utils/scale'
 import type { IfOverflow } from '@/types'
 
-export interface ReferenceDotShapeProps {
+export interface ReferenceDotShapeProps extends SVGAttributes {
   cx: number
   cy: number
   r: number
   fill: string
   stroke: string
   clipPath?: string
-  [key: string]: any
 }
 
 export interface ReferenceDotSlots {
