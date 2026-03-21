@@ -163,6 +163,9 @@ importers:
       '@vueuse/core':
         specifier: ^13.1.0
         version: 13.1.0(vue@3.5.18(typescript@5.9.3))
+      d3-hierarchy:
+        specifier: ^3.1.2
+        version: 3.1.2
       decimal.js-light:
         specifier: ^2.5.1
         version: 2.5.1

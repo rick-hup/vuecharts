@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Crosshair, Filter, LineChart as LineChartIcon, MessageSquare, PencilRuler, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Crosshair, Filter, LayoutGrid, LineChart as LineChartIcon, MessageSquare, PencilRuler, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -64,6 +64,13 @@ const routes = [
     description: 'Render custom SVG elements using chart internal state.',
     icon: PencilRuler,
     count: 2,
+  },
+  {
+    path: '/treemap-charts',
+    name: 'Treemap Charts',
+    description: 'Hierarchical data as nested rectangles, custom content, nest drill-down.',
+    icon: LayoutGrid,
+    count: 4,
   },
   {
     path: '/tooltip-charts',
