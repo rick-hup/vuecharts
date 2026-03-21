@@ -5,6 +5,7 @@ import { provideStore } from '@reduxjs/vue-redux'
 import { Animate } from '@/animation/Animate'
 import { Layer } from '@/container/Layer'
 import Surface from '@/container/Surface'
+import { getStringSize } from '@/utils/attrs'
 import { RechartsWrapper } from './RechartsWrapper'
 import { createRechartsStore } from '@/state/store'
 import { useAppDispatch } from '@/state/hooks'
@@ -300,6 +301,40 @@ const TreemapInner = defineComponent({
         )
       }
 
+      // Check if this node has children in the original source data (for nest mode arrow)
+      const hasChildren = isNestMode.value && (() => {
+        const sourceData = nestCurrentData.value ?? props.data
+        const item = sourceData.find(d => d[props.nameKey] === node.name)
+        return item?.children && item.children.length > 0
+      })()
+
+      // Arrow indicator for nest mode nodes with children
+      const arrow = hasChildren && node.width > 10 && node.height > 10
+        ? (
+            <polygon
+              points={`${node.x + 2},${node.y + node.height / 2} ${node.x + 6},${node.y + node.height / 2 + 3} ${node.x + 2},${node.y + node.height / 2 + 6}`}
+              fill="#fff"
+            />
+          )
+        : null
+
+      // Text label — only render if text fits within node bounds
+      const nameSize = node.width > 20 && node.height > 20
+        ? getStringSize(node.name, { fontSize: '14px' })
+        : { width: Infinity, height: Infinity }
+      const text = node.width > 20 && node.height > 20 && nameSize.width < node.width && nameSize.height < node.height
+        ? (
+            <text
+              x={node.x + 8}
+              y={node.y + node.height / 2 + 7}
+              fill="#fff"
+              font-size={14}
+            >
+              {node.name}
+            </text>
+          )
+        : null
+
       return (
         <g
           key={`node-${index}`}
@@ -318,18 +353,8 @@ const TreemapInner = defineComponent({
             fill={nodeFill}
             stroke={props.stroke}
           />
-          {node.width > 40 && node.height > 20 && (
-            <text
-              x={node.x + node.width / 2}
-              y={node.y + node.height / 2}
-              text-anchor="middle"
-              dominant-baseline="central"
-              fill="#fff"
-              font-size={12}
-            >
-              {node.name}
-            </text>
-          )}
+          {arrow}
+          {text}
         </g>
       )
     }
