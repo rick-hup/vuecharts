@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Crosshair, Filter, LineChart as LineChartIcon, MessageSquare, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
+import { AreaChart as AreaChartIcon, ArrowRight, BarChart3, CircleDot, Crosshair, Filter, LineChart as LineChartIcon, MessageSquare, PencilRuler, PieChart as PieChartIcon, Radar as RadarIcon } from 'lucide-vue-next'
 
 const routes = [
   {
@@ -57,6 +57,13 @@ const routes = [
     description: 'Basic, multiple, combined with ReferenceLine annotations.',
     icon: Crosshair,
     count: 3,
+  },
+  {
+    path: '/customized-charts',
+    name: 'Customized Charts',
+    description: 'Render custom SVG elements using chart internal state.',
+    icon: PencilRuler,
+    count: 2,
   },
   {
     path: '/tooltip-charts',
