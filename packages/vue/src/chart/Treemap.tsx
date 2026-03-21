@@ -269,17 +269,12 @@ const TreemapInner = defineComponent({
     function renderNodeAtProgress(node: TreemapLayoutNode, index: number, progress: number) {
       const nodeFill = getNodeFill(node)
 
-      const animW = node.width * progress
-      const animH = node.height * progress
-      const animX = node.x + (node.width - animW) / 2
-      const animY = node.y + (node.height - animH) / 2
+      // Slide-in from left (matching Recharts): translate from (-x - width, 0) to (0, 0)
+      const translateX = (-node.x - node.width) * (1 - progress)
+      const transform = progress < 1 ? `translate(${translateX}, 0)` : undefined
 
       const nodeProps: TreemapContentSlotProps = {
         ...node,
-        x: animX,
-        y: animY,
-        width: animW,
-        height: animH,
         index,
         fill: nodeFill,
         stroke: props.stroke,
@@ -290,6 +285,8 @@ const TreemapInner = defineComponent({
           <g
             key={`node-${index}`}
             class="v-charts-treemap-node"
+            style={{ transformOrigin: `${node.x}px ${node.y}px` }}
+            transform={transform}
             onClick={(e: MouseEvent) => handleNodeClick(node, index, e)}
             onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
             onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
@@ -303,22 +300,24 @@ const TreemapInner = defineComponent({
         <g
           key={`node-${index}`}
           class="v-charts-treemap-node"
+          style={{ transformOrigin: `${node.x}px ${node.y}px` }}
+          transform={transform}
           onClick={(e: MouseEvent) => handleNodeClick(node, index, e)}
           onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
           onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
         >
           <rect
-            x={animX}
-            y={animY}
-            width={animW}
-            height={animH}
+            x={node.x}
+            y={node.y}
+            width={node.width}
+            height={node.height}
             fill={nodeFill}
             stroke={props.stroke}
           />
-          {animW > 40 && animH > 20 && (
+          {node.width > 40 && node.height > 20 && (
             <text
-              x={animX + animW / 2}
-              y={animY + animH / 2}
+              x={node.x + node.width / 2}
+              y={node.y + node.height / 2}
               text-anchor="middle"
               dominant-baseline="central"
               fill="#fff"
