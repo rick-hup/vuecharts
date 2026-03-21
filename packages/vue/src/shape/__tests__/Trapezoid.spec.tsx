@@ -66,9 +66,9 @@ describe('Trapezoid', () => {
     expect(d).toContain('110')
   })
 
-  it('supports custom className', () => {
+  it('supports custom class', () => {
     const { container } = render(() => (
-      <Trapezoid x={0} y={0} upperWidth={100} lowerWidth={80} height={40} className="custom" />
+      <Trapezoid x={0} y={0} upperWidth={100} lowerWidth={80} height={40} class="custom" />
     ))
     const path = container.querySelector('.v-charts-trapezoid.custom')
     expect(path).toBeTruthy()

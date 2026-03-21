@@ -1,4 +1,5 @@
 import { createRechartsStore } from '@/state/store'
+import { classProp } from '@/types'
 import type { DataKey, LayoutType, Margin, StackOffsetType, SyncMethod, VuePropsToType, WithSVGProps } from '@/types'
 import { validateWidthHeight } from '@/utils'
 import { provideStore } from '@reduxjs/vue-redux'
@@ -37,9 +38,7 @@ export const CategoricalProps = {
   barSize: {
     type: [Number, String],
   },
-  class: {
-    type: String,
-  },
+  class: classProp,
   compact: {
     type: Boolean,
   },
@@ -197,7 +196,7 @@ export function generateCategoricalChart({
         }
 
         if (props.accessibilityLayer) {
-          attributes.tabIndex = props.tabIndex ?? 0
+          attributes.tabindex = props.tabIndex ?? 0
           attributes.role = props.role ?? 'application'
         }
 

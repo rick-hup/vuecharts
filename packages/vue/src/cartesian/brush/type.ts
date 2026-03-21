@@ -1,4 +1,5 @@
 import type { BrushStartEndIndex } from '@/state/chartDataSlice'
+import { classProp } from '../../types/common'
 import type { DataKey, Padding, VuePropsToType, WithSVGProps } from '../../types/common'
 import type { PropType } from 'vue'
 
@@ -52,9 +53,7 @@ export const BrushVueProps = {
   ariaLabel: {
     type: String,
   },
-  class: {
-    type: String,
-  },
+  class: classProp,
   data: {
     type: Array as PropType<any[]>,
   },

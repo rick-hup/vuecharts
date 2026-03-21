@@ -2,6 +2,7 @@ import type { ChartData } from '@/state/chartDataSlice'
 import type {
   DataKey,
   TooltipType,
+  VueClassValue,
   VuePropsToType,
   WithSVGProps,
 } from '@/types'
@@ -11,6 +12,7 @@ import type { AxisId } from '@/types/axis'
 import type { LegendType } from '@/types/legend'
 import type { PropType } from 'vue'
 import { CurveVueProps } from '@/shape/Curve'
+import { classProp } from '@/types'
 
 export const AreaVueProps = {
   ...CurveVueProps,
@@ -79,7 +81,7 @@ export const AreaVueProps = {
   width: { type: Number, default: 0 },
   height: { type: Number, default: 0 },
   name: { type: [String, Number] as PropType<string | number> },
-  class: { type: String, default: undefined },
+  class: classProp,
 }
 
 export type AreaProps = VuePropsToType<typeof AreaVueProps>
@@ -96,5 +98,5 @@ export interface AreaDotSlotProps {
   strokeWidth?: number
   fillOpacity?: number
   clipDot?: boolean
-  class?: string
+  class?: VueClassValue
 }

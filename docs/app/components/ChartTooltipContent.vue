@@ -7,7 +7,6 @@ const props = withDefaults(defineProps<{
   indicator?: 'dot' | 'line' | 'dashed'
   hideLabel?: boolean
   hideIndicator?: boolean
-  className?: string
 }>(), {
   indicator: 'dot',
 })
@@ -38,7 +37,6 @@ const nestLabel = computed(() => {
   <div
     v-if="active && payload?.length"
     class="chart-tooltip"
-    :class="[className]"
   >
     <div
       v-if="!hideLabel && formattedLabel && indicator !== 'line'"

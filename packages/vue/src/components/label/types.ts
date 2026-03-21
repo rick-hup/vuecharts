@@ -1,4 +1,5 @@
 import type { ViewBox } from '@/cartesian/type'
+import { classProp } from '@/types'
 import type { DataKey, VuePropsToType } from '@/types'
 import { last } from 'es-toolkit/compat'
 import type { PropType, VNode } from 'vue'
@@ -77,10 +78,7 @@ export const LabelVueProps = {
   id: {
     type: String,
   },
-  class: {
-    type: String,
-    default: '',
-  },
+  class: { ...classProp, default: '' },
   viewBox: {
     type: Object as PropType<ViewBox>,
   },

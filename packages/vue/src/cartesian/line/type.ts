@@ -1,4 +1,4 @@
-import type { AnimationDuration, DataKey, LayoutType, TooltipType, VuePropsToType, WithSVGProps } from '@/types'
+import type { AnimationDuration, DataKey, LayoutType, TooltipType, VueClassValue, VuePropsToType, WithSVGProps } from '@/types'
 import type { AxisId } from '@/types/axis'
 import type { AnimationEasing } from '@/types/bar'
 import type { AnimationOptions } from 'motion-v'
@@ -7,6 +7,7 @@ import type { CurveFactory } from 'victory-vendor/d3-shape'
 import type { CurveType, Point } from '@/shape/Curve'
 import type { PropType } from 'vue'
 import { CurveVueProps } from '@/shape/Curve'
+import { classProp } from '@/types'
 
 export interface LinePointItem extends Point {
   readonly value?: number
@@ -21,7 +22,7 @@ export interface LineProps {
   animationDuration?: AnimationDuration
   animationEasing?: AnimationEasing
   animationId?: string
-  className?: string
+  class?: VueClassValue
   connectNulls?: boolean
   data?: any[]
   dataKey: DataKey<any>
@@ -89,7 +90,7 @@ export const LineVueProps = {
   width: { type: Number, default: 0 },
   height: { type: Number, default: 0 },
   name: { type: [String, Number] },
-  class: { type: String },
+  class: classProp,
 }
 
 export type LinePropsInternal = VuePropsToType<typeof LineVueProps>

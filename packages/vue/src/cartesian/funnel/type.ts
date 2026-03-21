@@ -1,5 +1,6 @@
 import type { AnimationOptions } from 'motion-v'
 import type { PropType } from 'vue'
+import { classProp } from '@/types'
 import type { ViewBox } from '@/cartesian/type'
 import type { TrapezoidProps } from '@/shape'
 import type { Coordinate, DataKey, TooltipType, WithSVGProps } from '@/types'
@@ -16,7 +17,6 @@ export interface FunnelTrapezoidItem extends TrapezoidProps {
 
 export interface FunnelProps {
   // activeShape?: ActiveShape<FunnelTrapezoidItem, SVGPathElement>
-  className?: string
   data?: any[]
   dataKey: DataKey<any>
   hide?: boolean
@@ -55,8 +55,8 @@ export const FunnelVueProps = {
   },
   onAnimationStart: { type: Function as PropType<() => void>, default: undefined },
   onAnimationEnd: { type: Function as PropType<() => void>, default: undefined },
-  className: { type: String, default: undefined },
   width: { type: [Number, String] as PropType<number | string>, default: undefined },
+  class: classProp,
 }
 
 export type FunnelPropsWithSVG = WithSVGProps<typeof FunnelVueProps>

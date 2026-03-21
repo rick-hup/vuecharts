@@ -1,4 +1,5 @@
 import type { PropType, SVGAttributes } from 'vue'
+import { classProp } from '@/types'
 import { computed, defineComponent, onMounted, onUnmounted, reactive } from 'vue'
 import { Layer } from '@/container/Layer'
 import { Label } from '@/components/label/Label'
@@ -10,24 +11,8 @@ import { useViewBox } from '@/context/chartLayoutContext'
 import { useClipPathId } from '@/chart/provideClipPathId'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
 import { isNumOrStr, isWellBehavedNumber } from '@/utils'
+import { isInRange, scaleCoord } from '@/utils/scale'
 import type { IfOverflow } from '@/types'
-import type { RechartsScale } from '@/types/scale'
-
-function scaleCoord(scale: RechartsScale, value: number | string): number | undefined {
-  const coord = scale(value) as number
-  if (!isWellBehavedNumber(coord)) {
-    return undefined
-  }
-  const bandwidth = scale.bandwidth?.() ?? 0
-  return coord + bandwidth / 2
-}
-
-function isInRange(scale: RechartsScale, coord: number): boolean {
-  const r = scale.range() as number[]
-  const min = Math.min(r[0], r[1])
-  const max = Math.max(r[0], r[1])
-  return coord >= min && coord <= max
-}
 
 export const ReferenceLineVueProps = {
   x: { type: [Number, String] as PropType<number | string>, default: undefined },
@@ -39,7 +24,7 @@ export const ReferenceLineVueProps = {
   fill: { type: String, default: 'none' },
   label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
-  className: { type: String, default: undefined },
+  class: classProp,
 }
 
 export const ReferenceLine = defineComponent({
@@ -76,12 +61,15 @@ export const ReferenceLine = defineComponent({
       const vb = viewBox.value
       const xScale = xAxisScale.value
       const yScale = yAxisScale.value
-      if (!vb || !xScale || !yScale) return null
+      if (!vb || !xScale || !yScale)
+        return null
 
       if (isNumOrStr(props.y)) {
         const coord = scaleCoord(yScale, props.y!)
-        if (coord == null) return null
-        if (props.ifOverflow === 'discard' && !isInRange(yScale, coord)) return null
+        if (coord == null)
+          return null
+        if (props.ifOverflow === 'discard' && !isInRange(yScale, coord))
+          return null
         const yOrientation = yAxisSettings.value?.orientation
         const points = [
           { x: vb.x + vb.width, y: coord },
@@ -92,8 +80,10 @@ export const ReferenceLine = defineComponent({
 
       if (isNumOrStr(props.x)) {
         const coord = scaleCoord(xScale, props.x!)
-        if (coord == null) return null
-        if (props.ifOverflow === 'discard' && !isInRange(xScale, coord)) return null
+        if (coord == null)
+          return null
+        if (props.ifOverflow === 'discard' && !isInRange(xScale, coord))
+          return null
         const xOrientation = xAxisSettings.value?.orientation
         const points = [
           { x: coord, y: vb.y + vb.height },
@@ -107,7 +97,8 @@ export const ReferenceLine = defineComponent({
 
     return () => {
       const pts = endPoints.value
-      if (!pts || pts.length < 2) return null
+      if (!pts || pts.length < 2)
+        return null
 
       const [p1, p2] = pts
       if (!isWellBehavedNumber(p1.x) || !isWellBehavedNumber(p1.y)
@@ -119,9 +110,9 @@ export const ReferenceLine = defineComponent({
 
       const svgAttrs: SVGAttributes = {
         ...attrs,
-        stroke: props.stroke,
+        'stroke': props.stroke,
         'stroke-width': props.strokeWidth,
-        fill: props.fill,
+        'fill': props.fill,
       }
 
       const labelViewBox = {
@@ -137,7 +128,7 @@ export const ReferenceLine = defineComponent({
         : {}
 
       return (
-        <Layer class={['v-charts-reference-line', props.className]}>
+        <Layer class={['v-charts-reference-line', props.class]}>
           <line
             {...svgAttrs}
             clip-path={clipPath}

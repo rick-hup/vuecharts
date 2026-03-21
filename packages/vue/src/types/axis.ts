@@ -1,4 +1,4 @@
-import type { DataKey } from './common'
+import type { DataKey, VueClassValue } from './common'
 import type { RechartsScale, ScaleType } from './scale'
 import type { TickFormatter, TicksSettings } from './tick'
 
@@ -125,7 +125,7 @@ export interface XAxisProps {
   angle?: number
   minTickGap?: number
   label?: string | number | any // VNode or object
-  className?: string
+  class?: VueClassValue
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { PropType, SVGAttributes } from 'vue'
+import { classProp } from '@/types'
 import { computed, defineComponent, onMounted, onUnmounted, reactive } from 'vue'
 import { Layer } from '@/container/Layer'
 import { Label } from '@/components/label/Label'
@@ -9,27 +10,9 @@ import type { AxisId } from '@/state/cartesianAxisSlice'
 import { selectAxisScale } from '@/state/selectors/axisSelectors'
 import { useClipPathId } from '@/chart/provideClipPathId'
 import { useIsPanorama } from '@/context/PanoramaContextProvider'
-import { isNumOrStr, isWellBehavedNumber } from '@/utils'
+import { isNumOrStr } from '@/utils'
+import { rangeMax, rangeMin, scaleValue } from '@/utils/scale'
 import type { IfOverflow } from '@/types'
-import type { RechartsScale } from '@/types/scale'
-
-function scaleValue(scale: RechartsScale, value: number | string, position: 'start' | 'end'): number | undefined {
-  const coord = scale(value) as number
-  if (!isWellBehavedNumber(coord))
-    return undefined
-  const bandwidth = scale.bandwidth?.() ?? 0
-  return position === 'start' ? coord : coord + bandwidth
-}
-
-function rangeMin(scale: RechartsScale): number {
-  const r = scale.range() as number[]
-  return Math.min(r[0], r[1])
-}
-
-function rangeMax(scale: RechartsScale): number {
-  const r = scale.range() as number[]
-  return Math.max(r[0], r[1])
-}
 
 export const ReferenceAreaVueProps = {
   x1: { type: [Number, String] as PropType<number | string>, default: undefined },
@@ -44,8 +27,8 @@ export const ReferenceAreaVueProps = {
   fillOpacity: { type: Number, default: 0.5 },
   label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
-  className: { type: String, default: undefined },
   radius: { type: [Number, Array] as PropType<number | [number, number, number, number]>, default: 0 },
+  class: classProp,
 }
 
 export const ReferenceArea = defineComponent({
@@ -128,7 +111,7 @@ export const ReferenceArea = defineComponent({
         : {}
 
       return (
-        <Layer class={['v-charts-reference-area', props.className]}>
+        <Layer class={['v-charts-reference-area', props.class]}>
           <Rectangle
             {...svgAttrs}
             clip-path={clipPath}

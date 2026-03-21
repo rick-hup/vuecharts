@@ -1,5 +1,5 @@
-import { Fragment, computed, defineComponent, shallowRef } from 'vue'
-import type { SlotsType, VNode } from 'vue'
+import { computed, defineComponent, shallowRef } from 'vue'
+import type { SlotsType } from 'vue'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { Layer } from '@/container/Layer'
 import { Trapezoid } from '@/shape/Trapezoid'
@@ -9,41 +9,11 @@ import { SetLegendPayload } from '@/state/SetLegendPayload'
 import { SetTooltipEntrySettings } from '@/state/SetTooltipEntrySettings'
 import { type ResolvedFunnelSettings, selectFunnelTrapezoids } from '@/state/selectors/funnelSelectors'
 import { mouseLeaveItem, setActiveMouseOverItemIndex } from '@/state/tooltipSlice'
-import { Cell } from '@/components/Cell'
 import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
 import { useIsAnimating } from '@/hooks/useIsAnimating'
+import { extractCellProps, filterOutCells } from '@/utils/cell'
 import type { FunnelPropsWithSVG, FunnelTrapezoidItem } from './type'
 import { FunnelVueProps } from './type'
-
-function extractCellProps(vnodes: VNode[]): Record<string, any>[] {
-  const result: Record<string, any>[] = []
-  for (const vnode of vnodes) {
-    if (vnode.type === Cell) {
-      result.push(vnode.props ?? {})
-    }
-    else if (vnode.type === Fragment && Array.isArray(vnode.children)) {
-      result.push(...extractCellProps(vnode.children as VNode[]))
-    }
-  }
-  return result
-}
-
-function filterOutCells(vnodes: VNode[]): VNode[] {
-  const result: VNode[] = []
-  for (const vnode of vnodes) {
-    if (vnode.type === Cell) {
-      continue
-    }
-    if (vnode.type === Fragment && Array.isArray(vnode.children)) {
-      // Recursively filter Fragment children instead of dropping the whole Fragment
-      result.push(...filterOutCells(vnode.children as VNode[]))
-    }
-    else {
-      result.push(vnode)
-    }
-  }
-  return result
-}
 
 export const Funnel = defineComponent<FunnelPropsWithSVG>({
   name: 'Funnel',
@@ -84,11 +54,11 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
     const composedData = useAppSelector(state => selectFunnelTrapezoids(state, funnelSettings.value))
 
     const trapezoids = computed(() => composedData.value?.trapezoids ?? [])
-
     // Legend payload: built from trapezoids, with Cell fill overrides applied
     const legendPayload = computed(() => {
       const trapList = trapezoids.value
-      if (!trapList || trapList.length === 0) return []
+      if (!trapList || trapList.length === 0)
+        return []
       const cells = cellPropsRef.value
       return trapList.map((trap: any, i: number) => ({
         type: props.legendType,
@@ -167,7 +137,7 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
       const stroke = (attrs.stroke as string) ?? props.stroke
 
       return (
-        <Layer class={['v-charts-funnel', props.className]}>
+        <Layer class={['v-charts-funnel', props.class]}>
           <Animate
             isActive={props.isAnimationActive}
             from={0}

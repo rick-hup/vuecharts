@@ -1,5 +1,5 @@
-import type { SVGAttributes, SlotsType, VNode } from 'vue'
-import { Fragment, Teleport, computed, defineComponent } from 'vue'
+import type { SVGAttributes, SlotsType } from 'vue'
+import { Teleport, computed, defineComponent } from 'vue'
 import type { BarProps, BarPropsWithSVG } from './type'
 import { BarVueProps } from './type'
 import { useBar } from '@/cartesian/bar/hooks/useBar'
@@ -17,7 +17,7 @@ import type { BarRectangleItem } from '@/types/bar'
 import { getValueByDataKey } from '@/utils/chart'
 import { useGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import { provideCartesianLabelListData } from '@/context/cartesianLabelListContext'
-import { Cell } from '@/components/Cell'
+import { extractCellProps, filterOutCells } from '@/utils/cell'
 
 const errorBarDataPointFormatter: ErrorBarDataPointFormatter<BarRectangleItem> = (
   dataPoint,
@@ -83,36 +83,6 @@ export const Bar = defineComponent<BarPropsWithSVG>({
     provideCartesianLabelListData(labelListData)
 
     const graphicalLayerRef = useGraphicalLayerRef(null)
-
-    // Extract Cell VNode props from a VNode tree (handles Fragment wrapping from v-for)
-    const extractCellProps = (vnodes: VNode[]): Record<string, any>[] => {
-      const result: Record<string, any>[] = []
-      for (const vnode of vnodes) {
-        if (vnode.type === Cell) {
-          result.push(vnode.props ?? {})
-        }
-        else if (vnode.type === Fragment && Array.isArray(vnode.children)) {
-          result.push(...extractCellProps(vnode.children as VNode[]))
-        }
-      }
-      return result
-    }
-
-    const filterOutCells = (vnodes: VNode[]): VNode[] => {
-      const result: VNode[] = []
-      for (const vnode of vnodes) {
-        if (vnode.type === Cell) {
-          continue
-        }
-        if (vnode.type === Fragment && Array.isArray(vnode.children)) {
-          result.push(...filterOutCells(vnode.children as VNode[]))
-        }
-        else {
-          result.push(vnode)
-        }
-      }
-      return result
-    }
 
     return () => {
       if (!shouldRender.value) {

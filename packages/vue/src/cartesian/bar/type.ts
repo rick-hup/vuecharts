@@ -11,6 +11,7 @@ import type { AxisId } from '@/types/axis'
 import type { PropType } from 'vue'
 import type { LegendType } from '@/types/legend'
 import type { MinPointSize } from '@/shape'
+import { classProp } from '@/types'
 
 export type Rectangle = {
   x: number | null
@@ -31,7 +32,7 @@ export type BarRectangleItem = {
 }
 
 export const BarVueProps = {
-  class: { type: String, default: undefined },
+  class: classProp,
   barSize: { type: [String, Number] as PropType<string | number> },
   data: { type: Array as PropType<ChartData>, default: undefined },
   dataKey: {

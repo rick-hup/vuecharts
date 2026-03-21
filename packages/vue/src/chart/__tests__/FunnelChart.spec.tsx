@@ -1,5 +1,5 @@
-import { render, fireEvent } from '@testing-library/vue'
-import { nextTick, defineComponent } from 'vue'
+import { fireEvent, render } from '@testing-library/vue'
+import { defineComponent, nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FunnelChart } from '@/chart/FunnelChart'
 import { Funnel } from '@/cartesian/funnel/Funnel'
@@ -7,11 +7,10 @@ import { Tooltip } from '@/components/Tooltip'
 import { Legend } from '@/components/legend'
 import { Cell } from '@/components/Cell'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
-import { useViewBox } from '@/context/chartLayoutContext'
+import { useChartHeight, useChartWidth, useViewBox } from '@/context/chartLayoutContext'
 import { useClipPathId } from '@/chart/provideClipPathId'
-import { useChartHeight, useChartWidth } from '@/context/chartLayoutContext'
 
-describe('FunnelChart', () => {
+describe('funnelChart', () => {
   beforeEach(() => {
     mockGetBoundingClientRect({ width: 500, height: 500 })
   })
@@ -101,8 +100,8 @@ describe('FunnelChart', () => {
     })
   })
 
-  describe('Cell overrides', () => {
-    it('Cell v-for overrides per-trapezoid fill', () => {
+  describe('cell overrides', () => {
+    it('cell v-for overrides per-trapezoid fill', () => {
       const COLORS = ['#ff0000', '#00ff00', '#0000ff', '#ffff00']
       const { container } = render(() => (
         <FunnelChart width={500} height={300}>
