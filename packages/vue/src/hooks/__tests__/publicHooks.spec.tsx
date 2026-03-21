@@ -9,7 +9,7 @@ import { Tooltip } from '@/components/Tooltip'
 import { Customized } from '@/components/Customized'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
 import { assertNotNull } from '@/test/helper'
-import { useIsTooltipActive, useActiveTooltipCoordinate, useActiveTooltipLabel } from '../publicHooks'
+import { useIsTooltipActive, useActiveTooltipCoordinate, useActiveTooltipLabel, usePlotArea } from '../publicHooks'
 
 describe('publicHooks - tooltip hooks', () => {
   beforeEach(() => {
@@ -144,6 +144,68 @@ describe('publicHooks - tooltip hooks', () => {
       expect(y).not.toBe('')
       expect(Number(x)).not.toBeNaN()
       expect(Number(y)).not.toBeNaN()
+    })
+  })
+})
+
+describe('Layout public hooks', () => {
+  beforeEach(() => {
+    mockGetBoundingClientRect({ width: 500, height: 300 })
+  })
+
+  const data = [
+    { name: 'Page A', uv: 400 },
+    { name: 'Page B', uv: 300 },
+    { name: 'Page C', uv: 200 },
+  ]
+
+  describe('usePlotArea', () => {
+    it('returns plot area rectangle with positive dimensions inside axes', async () => {
+      const SpyComponent = defineComponent({
+        setup() {
+          const plotArea = usePlotArea()
+          return () => (
+            <text
+              data-testid="plot-spy"
+              data-x={plotArea.value?.x ?? ''}
+              data-y={plotArea.value?.y ?? ''}
+              data-width={plotArea.value?.width ?? ''}
+              data-height={plotArea.value?.height ?? ''}
+            />
+          )
+        },
+      })
+
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Bar dataKey="uv" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </BarChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      const spy = container.querySelector('[data-testid="plot-spy"]')
+      assertNotNull(spy)
+
+      const x = Number(spy.getAttribute('data-x'))
+      const y = Number(spy.getAttribute('data-y'))
+      const width = Number(spy.getAttribute('data-width'))
+      const height = Number(spy.getAttribute('data-height'))
+
+      // x > 0 because YAxis takes space on the left
+      expect(x).toBeGreaterThan(0)
+      // width should be positive but less than chart width
+      expect(width).toBeGreaterThan(0)
+      expect(width).toBeLessThan(500)
+      // height should be positive but less than chart height
+      expect(height).toBeGreaterThan(0)
+      expect(height).toBeLessThan(300)
     })
   })
 })
