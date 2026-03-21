@@ -229,6 +229,87 @@ describe('<ReferenceDot />', () => {
     })
   })
 
+  describe('#shape slot', () => {
+    it('renders custom shape when shape slot is provided', () => {
+      const { container } = render(() => (
+        <BarChart
+          width={1100}
+          height={250}
+          data={data}
+          margin={{ top: 20, right: 60, bottom: 0, left: 20 }}
+        >
+          <XAxis dataKey="name" />
+          <YAxis tickCount={7} />
+          <Bar dataKey="uv" isAnimationActive={false} />
+          <ReferenceDot x="201106" y={1.29} r={10}>
+            {{
+              shape: (props: any) => (
+                <rect
+                  class="custom-shape"
+                  x={props.cx - 5}
+                  y={props.cy - 5}
+                  width={10}
+                  height={10}
+                  fill={props.fill}
+                  stroke={props.stroke}
+                />
+              ),
+            }}
+          </ReferenceDot>
+        </BarChart>
+      ))
+      expect(container.querySelectorAll('.v-charts-reference-dot .custom-shape')).toHaveLength(1)
+      expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(0)
+    })
+
+    it('passes cx, cy, r, fill, stroke to shape slot', () => {
+      let receivedProps: any = null
+      render(() => (
+        <BarChart
+          width={1100}
+          height={250}
+          data={data}
+          margin={{ top: 20, right: 60, bottom: 0, left: 20 }}
+        >
+          <XAxis dataKey="name" />
+          <YAxis tickCount={7} />
+          <Bar dataKey="uv" isAnimationActive={false} />
+          <ReferenceDot x="201106" y={1.29} r={15} fill="#ff0000" stroke="#00ff00">
+            {{
+              shape: (props: any) => {
+                receivedProps = props
+                return <circle cx={props.cx} cy={props.cy} r={props.r} />
+              },
+            }}
+          </ReferenceDot>
+        </BarChart>
+      ))
+      expect(receivedProps).toBeTruthy()
+      expect(receivedProps.cx).toBeTypeOf('number')
+      expect(receivedProps.cy).toBeTypeOf('number')
+      expect(receivedProps.r).toBe(15)
+      expect(receivedProps.fill).toBe('#ff0000')
+      expect(receivedProps.stroke).toBe('#00ff00')
+    })
+
+    it('renders default Dot when shape slot is not provided', () => {
+      const { container } = render(() => (
+        <BarChart
+          width={1100}
+          height={250}
+          data={data}
+          margin={{ top: 20, right: 60, bottom: 0, left: 20 }}
+        >
+          <XAxis dataKey="name" />
+          <YAxis tickCount={7} />
+          <Bar dataKey="uv" isAnimationActive={false} />
+          <ReferenceDot x="201106" y={1.29} r={10} />
+        </BarChart>
+      ))
+      expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(1)
+    })
+  })
+
   describe('fill and stroke', () => {
     it('applies custom fill and stroke', () => {
       const { container } = render(() => (
