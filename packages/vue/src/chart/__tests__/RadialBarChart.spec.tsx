@@ -168,7 +168,7 @@ describe('RadialBarChart', () => {
       expect(backgroundSectors.length).toBe(7)
     })
 
-    it('renders background with custom className', () => {
+    it('renders background with custom class', () => {
       const { container } = render(() => (
         <RadialBarChart
           width={500}
@@ -181,7 +181,7 @@ describe('RadialBarChart', () => {
           data={data}
         >
           <RadialBar
-            background={{ className: 'test-custom-background' }}
+            background={{ class: 'test-custom-background' }}
             dataKey="uv"
             isAnimationActive={false}
           />
@@ -192,8 +192,8 @@ describe('RadialBarChart', () => {
     })
   })
 
-  describe('className prop', () => {
-    it('adds className when set on RadialBar', () => {
+  describe('class prop', () => {
+    it('adds class when set on RadialBar', () => {
       const { container } = render(() => (
         <RadialBarChart
           width={500}

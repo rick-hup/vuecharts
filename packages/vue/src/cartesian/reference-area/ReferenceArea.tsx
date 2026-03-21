@@ -1,4 +1,5 @@
 import type { PropType, SVGAttributes } from 'vue'
+import { classProp } from '@/types'
 import { computed, defineComponent, onMounted, onUnmounted, reactive } from 'vue'
 import { Layer } from '@/container/Layer'
 import { Label } from '@/components/label/Label'
@@ -26,8 +27,8 @@ export const ReferenceAreaVueProps = {
   fillOpacity: { type: Number, default: 0.5 },
   label: { type: [String, Number, Boolean, Object] as PropType<string | number | boolean | Record<string, any>>, default: undefined },
   ifOverflow: { type: String as PropType<IfOverflow>, default: 'discard' },
-  className: { type: String, default: undefined },
   radius: { type: [Number, Array] as PropType<number | [number, number, number, number]>, default: 0 },
+  class: classProp,
 }
 
 export const ReferenceArea = defineComponent({
@@ -110,7 +111,7 @@ export const ReferenceArea = defineComponent({
         : {}
 
       return (
-        <Layer class={['v-charts-reference-area', props.className]}>
+        <Layer class={['v-charts-reference-area', props.class]}>
           <Rectangle
             {...svgAttrs}
             clip-path={clipPath}

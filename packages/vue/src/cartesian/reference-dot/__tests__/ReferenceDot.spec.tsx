@@ -1,5 +1,5 @@
 import { render } from '@testing-library/vue'
-import { beforeEach, describe, expect, it, test } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Bar, BarChart, Line, LineChart, XAxis, YAxis } from '@/index'
 import { ReferenceDot } from '../ReferenceDot'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
@@ -23,7 +23,7 @@ describe('<ReferenceDot />', () => {
     { name: '201112', uv: 4.3, pv: 0 },
   ]
 
-  test('Renders a dot at specified x and y coordinates', () => {
+  it('renders a dot at specified x and y coordinates', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -43,7 +43,7 @@ describe('<ReferenceDot />', () => {
     expect(container.querySelectorAll('.v-charts-label')).toHaveLength(1)
   })
 
-  test('Renders multiple dots', () => {
+  it('renders multiple dots', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -61,7 +61,7 @@ describe('<ReferenceDot />', () => {
     expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(2)
   })
 
-  test("Don't render dot when x or y is missing", () => {
+  it('don\'t render dot when x or y is missing', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -79,7 +79,7 @@ describe('<ReferenceDot />', () => {
     expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(0)
   })
 
-  test("Don't render dot when coordinates are outside domain (default ifOverflow='discard')", () => {
+  it('don\'t render dot when coordinates are outside domain (default ifOverflow=\'discard\')', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -96,7 +96,7 @@ describe('<ReferenceDot />', () => {
     expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(0)
   })
 
-  test('Render dot when ifOverflow is "extendDomain"', () => {
+  it('render dot when ifOverflow is "extendDomain"', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -113,7 +113,7 @@ describe('<ReferenceDot />', () => {
     expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(1)
   })
 
-  test('Render dot when ifOverflow is "visible" even if outside domain', () => {
+  it('render dot when ifOverflow is "visible" even if outside domain', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -130,7 +130,7 @@ describe('<ReferenceDot />', () => {
     expect(container.querySelectorAll('.v-charts-reference-dot .v-charts-dot')).toHaveLength(1)
   })
 
-  test('Applies custom r (radius) to the dot', () => {
+  it('applies custom r (radius) to the dot', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -149,7 +149,7 @@ describe('<ReferenceDot />', () => {
     expect(dot!.getAttribute('r')).toBe('20')
   })
 
-  test('Applies clip-path when ifOverflow is "hidden"', () => {
+  it('applies clip-path when ifOverflow is "hidden"', () => {
     const { container } = render(() => (
       <BarChart
         width={1100}
@@ -270,7 +270,7 @@ describe('<ReferenceDot />', () => {
     })
   })
 
-  test('Works in a LineChart', () => {
+  it('works in a LineChart', () => {
     const { container } = render(() => (
       <LineChart
         width={1100}

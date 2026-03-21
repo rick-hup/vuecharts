@@ -6,6 +6,7 @@ import { useSynchronisedEventsFromOtherCharts } from '@/events/useChartSynchroni
 import { focusAction, keyDownAction } from '../state/keyboardEventsMiddleware'
 import { externalEventAction } from '../state/externalEventsMiddleware'
 import { touchEventAction } from '../state/touchEventsMiddleware'
+import { classProp } from '@/types'
 import type { CategoricalChartFunc } from '@/types'
 import { useReportScale } from '@/state/utils/useReportScale'
 import { providePortalRaw } from '@/chart/TooltipPortalContext'
@@ -15,7 +16,7 @@ import { getChartPointer } from '@/utils/chart'
 export const RechartsWrapper = defineComponent({
   name: 'RechartsWrapper',
   props: {
-    class: { type: String },
+    class: classProp,
     height: { type: Number, required: true },
     onClick: { type: Function as PropType<CategoricalChartFunc> },
     onContextMenu: { type: Function as PropType<CategoricalChartFunc> },

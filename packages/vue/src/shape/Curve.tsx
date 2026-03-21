@@ -21,6 +21,7 @@ import {
   area as shapeArea,
   line as shapeLine,
 } from 'victory-vendor/d3-shape'
+import { classProp } from '@/types'
 import type { LayoutType, VuePropsToType, WithSVGProps } from '@/types'
 import { upperFirst } from 'es-toolkit/compat'
 import { isNumber } from '@/utils'
@@ -144,7 +145,7 @@ export const CurveVueProps = {
   points: { type: Array as PropType<ReadonlyArray<Point>> },
   connectNulls: { type: Boolean },
   path: { type: String },
-  class: { type: [String, Array] },
+  class: classProp,
 }
 
 export type CurvePropsWithOutSVG = VuePropsToType<typeof CurveVueProps>

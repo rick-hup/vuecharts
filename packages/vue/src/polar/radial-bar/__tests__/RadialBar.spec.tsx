@@ -91,10 +91,10 @@ describe('RadialBar', () => {
       expect(backgroundSectors.length).toBe(7)
     })
 
-    it('renders background with custom className', () => {
+    it('renders background with custom class', () => {
       const { container } = render(() => (
         <RadialBarChart width={500} height={300} cx={150} cy={150} innerRadius={20} outerRadius={140} barSize={10} data={data}>
-          <RadialBar background={{ className: 'test-custom-background' }} dataKey="uv" isAnimationActive={false} />
+          <RadialBar background={{ class: 'test-custom-background' }} dataKey="uv" isAnimationActive={false} />
         </RadialBarChart>
       ))
       expect(container.querySelectorAll('.test-custom-background').length).toBe(7)

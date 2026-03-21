@@ -54,11 +54,11 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
     const composedData = useAppSelector(state => selectFunnelTrapezoids(state, funnelSettings.value))
 
     const trapezoids = computed(() => composedData.value?.trapezoids ?? [])
-
     // Legend payload: built from trapezoids, with Cell fill overrides applied
     const legendPayload = computed(() => {
       const trapList = trapezoids.value
-      if (!trapList || trapList.length === 0) return []
+      if (!trapList || trapList.length === 0)
+        return []
       const cells = cellPropsRef.value
       return trapList.map((trap: any, i: number) => ({
         type: props.legendType,
@@ -137,7 +137,7 @@ export const Funnel = defineComponent<FunnelPropsWithSVG>({
       const stroke = (attrs.stroke as string) ?? props.stroke
 
       return (
-        <Layer class={['v-charts-funnel', props.className]}>
+        <Layer class={['v-charts-funnel', props.class]}>
           <Animate
             isActive={props.isAnimationActive}
             from={0}

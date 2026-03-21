@@ -68,9 +68,9 @@ describe('<Symbols />', () => {
     }
   })
 
-  it('Merges custom className', () => {
+  it('Merges custom class', () => {
     const { container } = render(() => (
-      <Symbols type="circle" cx={100} cy={100} className="custom-symbol" />
+      <Symbols type="circle" cx={100} cy={100} class="custom-symbol" />
     ))
 
     const path = container.querySelector('.v-charts-symbols.custom-symbol')
