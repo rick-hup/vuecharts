@@ -43,7 +43,7 @@ const colors = ['#f97316', '#14b8a6', '#f59e0b']
         :data="chartData"
         data-key="value"
         :color-panel="colors"
-        :is-animation-active="false"
+        :is-animation-active="true"
       >
         <template #content="props">
           <g>
