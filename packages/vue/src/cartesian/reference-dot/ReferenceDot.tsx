@@ -128,13 +128,13 @@ const _ReferenceDot = defineComponent({
           {slots.shape
             ? slots.shape(shapeProps)
             : (
-              <Dot
-                {...svgAttrs}
-                cx={cx}
-                cy={cy}
-                r={props.r}
-                clip-path={clipPath}
-              />
+                <Dot
+                  {...svgAttrs}
+                  cx={cx}
+                  cy={cy}
+                  r={props.r}
+                  clip-path={clipPath}
+                />
               )}
           {labelValue != null && labelValue !== false && (
             <Label

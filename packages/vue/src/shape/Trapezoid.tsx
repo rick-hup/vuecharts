@@ -3,11 +3,11 @@ import { classProp } from '@/types'
 import type { WithSVGProps } from '@/types'
 
 const TrapezoidVueProps = {
-  x: { type: Number as PropType<number>, default: 0 },
-  y: { type: Number as PropType<number>, default: 0 },
-  upperWidth: { type: Number as PropType<number>, default: 0 },
-  lowerWidth: { type: Number as PropType<number>, default: 0 },
-  height: { type: Number as PropType<number>, default: 0 },
+  x: { type: Number, default: 0 },
+  y: { type: Number, default: 0 },
+  upperWidth: { type: Number, default: 0 },
+  lowerWidth: { type: Number, default: 0 },
+  height: { type: Number, default: 0 },
   class: classProp,
 }
 
