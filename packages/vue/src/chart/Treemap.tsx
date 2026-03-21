@@ -100,9 +100,11 @@ export const Treemap = defineComponent({
       })
     })
 
-    function handleNestClick(node: TreemapLayoutNode, index: number, e: MouseEvent) {
+    function handleNestClick(node: TreemapLayoutNode, _index: number, e: MouseEvent) {
       const sourceData = nestCurrentData.value ?? props.data
-      const clickedItem = sourceData[index]
+      // Match by name because computeTreemapLayout sorts nodes by value (d3-hierarchy .sort()),
+      // so the rendering index doesn't correspond to the original data index.
+      const clickedItem = sourceData.find(item => item[props.nameKey] === node.name)
 
       if (clickedItem?.children && clickedItem.children.length > 0) {
         // Push current level to breadcrumb trail
