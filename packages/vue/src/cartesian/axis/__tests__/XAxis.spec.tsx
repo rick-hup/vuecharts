@@ -172,6 +172,34 @@ describe('xAxis', () => {
       const axisLine = container.querySelector('.v-charts-xAxis .v-charts-cartesian-axis-line')
       expect(axisLine).toBeFalsy()
     })
+
+    it('applies camelCase SVG attributes from axisLine object to the line element', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" axisLine={{ stroke: 'red', strokeWidth: '4' }} />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const axisLine = container.querySelector('.v-charts-xAxis .v-charts-cartesian-axis-line')
+      expect(axisLine).toBeTruthy()
+      expect(axisLine?.getAttribute('stroke')).toBe('red')
+      expect(axisLine?.getAttribute('stroke-width')).toBe('4')
+    })
+
+    it('applies kebab-case SVG attributes from axisLine object to the line element', () => {
+      const { container } = render(() => (
+        <BarChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" axisLine={{ stroke: 'blue', 'stroke-width': '3' }} />
+          <Bar dataKey="uv" fill="#8884d8" isAnimationActive={false} />
+        </BarChart>
+      ))
+
+      const axisLine = container.querySelector('.v-charts-xAxis .v-charts-cartesian-axis-line')
+      expect(axisLine).toBeTruthy()
+      expect(axisLine?.getAttribute('stroke')).toBe('blue')
+      expect(axisLine?.getAttribute('stroke-width')).toBe('3')
+    })
   })
 
   describe('orientation prop', () => {
