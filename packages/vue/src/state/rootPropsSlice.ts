@@ -1,4 +1,4 @@
-import type { StackOffsetType, SyncMethod } from '@/types'
+import type { StackOffsetType, SyncMethod, VueClassValue } from '@/types'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -15,7 +15,7 @@ export type UpdatableChartOptions = {
    * Useful for debugging which chart is which when synchronising.
    * The className is also passed to the root element of the chart but that's done in the JSX, not through Redux.
    */
-  class: string | undefined
+  class: VueClassValue | undefined
   maxBarSize: number | undefined
   stackOffset: StackOffsetType
   /**
