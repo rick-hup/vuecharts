@@ -8,21 +8,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
--   feat(hooks): add 9 scale hooks to publicHooks.ts
--   feat: add createCategoricalInverse utility and inverse scale selectors
+-   feat: implement Treemap component with flat mode, nest mode (breadcrumb navigation), built-in tooltip, entrance animation, and arrow indicator for nest nodes
+-   feat: add treemap layout utility (d3-hierarchy squarify)
+-   feat: implement ReferenceDot component with `#shape` slot
+-   feat: implement Customized component
+-   feat: implement Polygon shape component
+-   feat: export Treemap, Text, and Customized from public API
+-   feat: add public hooks — tooltip (`useIsTooltipActive`, `useActiveTooltipCoordinate`, `useActiveTooltipLabel`), layout (`usePlotArea`, `useChartWidth`, `useChartHeight`), axis (`useXAxisDomain`, `useYAxisDomain`, `useXAxisTicks`, `useYAxisTicks`), and 9 scale hooks
+-   feat: add `createCategoricalInverse` utility and inverse scale selectors
 
 ### Fixed
 
--   fix(Treemap): align event API with Recharts and fix onMouseLeave hover
+-   fix: legend is not taking into account user assign style (by @zernonia)
+-   fix: tabindex typo and fixing accessibility layer (by @zernonia)
+-   fix(Treemap): align event API with Recharts and fix onMouseLeave hover state
 -   fix(Treemap): correct type imports and add missing positions field
--   fix(ReferenceDot): make fill and stroke optional in ReferenceDotShape
+-   fix: treemap nest mode drills into wrong group due to d3 sort reorder
+-   fix: re-trigger slide-in animation on nest mode navigation
+-   fix: align treemap animation with recharts — slide-in from left instead of center-scale
+-   fix(ReferenceDot): make fill and stroke optional in ReferenceDotShapeProps
 -   fix(rootProps): widen class prop type from string to VueClassValue
+-   fix: align class type interfaces to VueClassValue across all components
 
 ### Changed
 
--   refactor: replace legacy animationDuration/Easing/Begin props with transition
--   docs(Treemap): move to 3.charts section and update event prop description
--   docs: simplify CLAUDE.md by removing derivable implementation details
+-   refactor: replace legacy `animationDuration`/`animationEasing`/`animationBegin` props with `transition`
+-   refactor: replace `className` prop with native Vue `class` across all components
+-   refactor: align Treemap with Recharts architecture — Redux store + standard Tooltip
+-   refactor: extract shared `classProp` and `VueClassValue` type
+-   refactor: extract duplicated scale and cell utils into shared modules
 
 ## [0.2.0] - 2025-03-15
 
