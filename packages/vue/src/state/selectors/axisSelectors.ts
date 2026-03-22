@@ -48,6 +48,8 @@ import type { AxisTick, StackId } from '@/types/tick'
 import { getPercentValue, hasDuplicate, mathSign } from '@/utils/data'
 import { isWellFormedNumberDomain, numericalDomainSpecifiedWithoutRequiringData, parseNumericalUserDomain } from '@/utils/isDomainSpecifiedByUser'
 import type { RechartsScale } from '@/types/scale'
+import { combineInverseScaleFunction, createCategoricalInverse } from '@/utils/createCategoricalInverse'
+import type { InverseScaleFunction } from '@/utils/createCategoricalInverse'
 import type { AxisPropsForCartesianGridTicksGeneration } from '@/cartesian/cartesian-grid/type'
 import { selectChartLayout } from '@/state/selectors/common'
 import { getNiceTickValues, getTickValuesFixedDomain } from '@/utils/scale/getNiceTickValues'
@@ -1175,6 +1177,47 @@ export const selectAxisScale = createSelector(
   combineScaleFunction,
 )
 
+function sortBy(a: unknown, b: unknown): number {
+  const aNum = Number(a)
+  const bNum = Number(b)
+  if (Number.isNaN(aNum) && Number.isNaN(bNum)) {
+    return 0
+  }
+  if (Number.isNaN(aNum)) {
+    return -1
+  }
+  if (Number.isNaN(bNum)) {
+    return 1
+  }
+  return aNum - bNum
+}
+
+export const selectSortedDataPoints: (
+  state: RechartsRootState,
+  axisType: XorYorZType,
+  axisId: AxisId,
+  isPanorama: boolean,
+) => ReadonlyArray<unknown> | undefined = createSelector([selectAllAppliedValues], (appliedData) => {
+  return appliedData?.map(item => item.value).sort(sortBy)
+})
+
+export const selectAxisInverseScale: (
+  state: RechartsRootState,
+  axisType: XorYorZType,
+  axisId: AxisId,
+  isPanorama: boolean,
+) => InverseScaleFunction | undefined = createSelector([selectAxisScale], combineInverseScaleFunction)
+
+export const selectAxisInverseDataSnapScale: (
+  state: RechartsRootState,
+  axisType: XorYorZType,
+  axisId: AxisId,
+  isPanorama: boolean,
+) => InverseScaleFunction | undefined = createSelector(
+  [selectAxisScale, selectSortedDataPoints],
+  createCategoricalInverse,
+)
+
 export const selectErrorBarsSettings = createSelector(
   selectCartesianItemsSettings,
   pickAxisType,
@@ -1554,6 +1597,34 @@ export const selectTicksOfAxis = createSelector(
     pickAxisType,
   ],
   combineAxisTicks,
+)
+
+export const selectAxisInverseTickSnapScale: (
+  state: RechartsRootState,
+  axisType: XorYorZType,
+  axisId: AxisId,
+  isPanorama: boolean,
+) => InverseScaleFunction | undefined = createSelector(
+  [selectTicksOfAxis],
+  (ticks: ReadonlyArray<TickItem> | undefined): InverseScaleFunction | undefined => {
+    if (!ticks || ticks.length === 0) {
+      return undefined
+    }
+
+    return (pixelValue: number) => {
+      let minDistance = Infinity
+      let closestTick = ticks[0]
+
+      for (const tick of ticks) {
+        const distance = Math.abs(tick.coordinate - pixelValue)
+        if (distance < minDistance) {
+          minDistance = distance
+          closestTick = tick
+        }
+      }
+      return closestTick?.value
+    }
+  },
 )
 
 export function combineGraphicalItemTicks(layout: LayoutType, axis: AxisWithTicksSettings, scale: RechartsScale | undefined, axisRange: AxisRange | undefined, duplicateDomain: ReadonlyArray<unknown> | undefined, categoricalDomain: ReadonlyArray<unknown> | undefined, axisType: XorYType): TickItem[] | null {
