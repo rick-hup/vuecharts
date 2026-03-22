@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-03-23
+
+### Added
+
+-   feat(text): support default slot as text content
+-   feat(tooltip): type cursor slot props and align with Recharts
+
+### Fixed
+
+-   fix(axis): revert attrs forwarding in CartesianAxis
+-   fix(axis): remove duplicate class and forward style in XAxis/YAxis
+-   fix(axis): correct axisLine prop type to boolean | SVGAttributes
+-   fix(filterProps): add kebab-case stroke attribute keys to SVGElementProps
+-   fix(cartesian-axis): correct axisLine prop type from string to boolean
+
 ## [0.3.0] - 2026-03-22
 
 ### Added
