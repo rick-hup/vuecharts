@@ -88,8 +88,6 @@ export interface Size {
   height: number
 }
 
-export type AnimationDuration = number
-
 /**
  * Coordinates relative to the top-left corner of the chart.
  * Also include scale which means that a chart that's scaled will return the same coordinates as a chart that's not scaled.

@@ -1,6 +1,5 @@
-import type { AnimationDuration, DataKey, LayoutType, TooltipType, VueClassValue, VuePropsToType, WithSVGProps } from '@/types'
+import type { DataKey, LayoutType, TooltipType, VueClassValue, VuePropsToType, WithSVGProps } from '@/types'
 import type { AxisId } from '@/types/axis'
-import type { AnimationEasing } from '@/types/bar'
 import type { AnimationOptions } from 'motion-v'
 import type { LegendType } from '@/types/legend'
 import type { CurveFactory } from 'victory-vendor/d3-shape'
@@ -18,9 +17,6 @@ export interface LinePointItem extends Point {
 export interface LineProps {
   activeDot?: any
   animateNewValues?: boolean
-  animationBegin?: number
-  animationDuration?: AnimationDuration
-  animationEasing?: AnimationEasing
   animationId?: string
   class?: VueClassValue
   connectNulls?: boolean
@@ -50,9 +46,6 @@ export interface LineProps {
 export const LineVueProps = {
   ...CurveVueProps,
   activeDot: { type: [Boolean, Object, Function], default: true },
-  animationDuration: { type: Number },
-  animationEasing: { type: String },
-  animationBegin: { type: Number, default: 0 },
   animationId: { type: String },
   isAnimationActive: { type: Boolean, default: true },
   connectNulls: { type: Boolean, default: false },

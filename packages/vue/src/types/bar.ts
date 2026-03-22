@@ -19,8 +19,6 @@ export type BarPositionPosition = {
 
 export type RectRadius = [number, number, number, number]
 
-export type AnimationEasing = 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear'
-
 interface RectangleProps {
   class?: VueClassValue
   x?: number
@@ -30,9 +28,6 @@ interface RectangleProps {
   radius?: number | RectRadius
   isAnimationActive?: boolean
   isUpdateAnimationActive?: boolean
-  animationBegin?: number
-  animationDuration?: number
-  animationEasing?: AnimationEasing
 }
 
 export interface BarRectangleItem extends RectangleProps {
