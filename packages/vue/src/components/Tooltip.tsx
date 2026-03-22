@@ -21,6 +21,7 @@ import type { AxisId } from '@/state/cartesianAxisSlice'
 import type {
   ChartCoordinate,
   Coordinate,
+  LayoutType,
   NameType,
   Payload,
   ValueType,
@@ -56,6 +57,55 @@ export type TooltipContentProps = {
 }
 
 type AllowInDimension = { x: boolean, y: boolean }
+
+// Cursor slot prop types — mirror Recharts cursorProps shape
+// All variants include: offset fields (left/top/width/height), payload, payloadIndex
+type CursorSlotCommon = {
+  class: string | string[]
+  style: { pointerEvents: 'none' }
+  /** Chart area offset — same fields spread by Recharts: left, top, width, height */
+  left: number
+  top: number
+  width: number
+  height: number
+  payload: TooltipPayload
+  /** Active tooltip index — named payloadIndex to match Recharts */
+  payloadIndex: string | undefined
+  [key: string]: any
+}
+
+export type CrossCursorSlotProps = CursorSlotCommon & {
+  stroke: string
+  fill: string
+  x: number
+  y: number
+}
+
+export type RectangleCursorSlotProps = CursorSlotCommon & {
+  stroke: string
+  fill: string
+  x: number
+  y: number
+}
+
+export type SectorCursorSlotProps = CursorSlotCommon & {
+  stroke: string
+  fill: string
+  cx: number
+  cy: number
+  startAngle: number
+  endAngle: number
+  innerRadius: number
+  outerRadius: number
+}
+
+export type CurveCursorSlotProps = CursorSlotCommon & {
+  stroke: string
+  layout: LayoutType
+  points: ReadonlyArray<Point>
+}
+
+export type CursorSlotProps = CrossCursorSlotProps | RectangleCursorSlotProps | SectorCursorSlotProps | CurveCursorSlotProps
 
 // Default uniq function
 function defaultUniqBy<TValue extends ValueType, TName extends NameType>(entry: Payload<TValue, TName>) {
@@ -290,7 +340,7 @@ const Cursor = defineComponent({
   name: 'Cursor',
   props: {
     cursor: [Boolean, Object],
-    cursorSlot: Function as PropType<(props: Record<string, any>) => VNode>,
+    cursorSlot: Function as PropType<(props: CursorSlotProps) => VNode>,
     tooltipEventType: String,
     coordinate: Object as PropType<ChartCoordinate>,
     payload: Array as PropType<TooltipPayload>,
@@ -318,17 +368,17 @@ const Cursor = defineComponent({
       let cursorElement: VNode
       if (isScatterChart) {
         const { offset: _offset, ...coord } = props.coordinate!
-        const { top, left, width, height } = offset.value
+        const off = offset.value
         const crossProps = {
           stroke: '#ccc',
           fill: 'none',
+          // spread offset first (matches Recharts), then variant-specific props override
+          ...off,
           ...coord,
-          top,
-          left,
-          width,
-          height,
           class: 'v-charts-tooltip-cursor',
           style: { pointerEvents: 'none' as const },
+          payload: props.payload ?? [],
+          payloadIndex: props.index,
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(crossProps) : <Cross {...crossProps} />
@@ -339,6 +389,8 @@ const Cursor = defineComponent({
         const coord = props.coordinate!
         const off = offset.value
         const rectProps = {
+          // spread offset first (matches Recharts), then override with cursor-specific props
+          ...off,
           stroke: 'none',
           fill: '#ccc',
           x: layout.value === 'horizontal' ? coord.x - halfSize : off.left + 0.5,
@@ -347,34 +399,44 @@ const Cursor = defineComponent({
           height: layout.value === 'horizontal' ? off.height - 1 : bandSize,
           class: 'v-charts-tooltip-cursor',
           style: { pointerEvents: 'none' as const },
+          payload: props.payload ?? [],
+          payloadIndex: props.index,
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(rectProps) : <Rectangle {...rectProps} />
       }
       else if (layout.value === 'radial' && props.coordinate?.cx != null) {
         const radialPoints = points.value as RadialCursorPoints
+        const off = offset.value
         const sectorProps = {
+          stroke: '#ccc',
+          ...off,
           cx: radialPoints.cx,
           cy: radialPoints.cy,
           startAngle: radialPoints.startAngle,
           endAngle: radialPoints.endAngle,
           innerRadius: radialPoints.radius,
           outerRadius: radialPoints.radius,
-          stroke: '#ccc',
           fill: 'none',
           class: 'v-charts-tooltip-cursor',
           style: { pointerEvents: 'none' as const },
+          payload: props.payload ?? [],
+          payloadIndex: props.index,
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(sectorProps) : <Sector {...sectorProps} />
       }
       else {
+        const off = offset.value
         const cursorProps = {
           stroke: '#ccc',
-          class: ['v-charts-tooltip-cursor'],
+          ...off,
           layout: layout.value,
           points: points.value as ReadonlyArray<Point>,
+          class: ['v-charts-tooltip-cursor'],
           style: { pointerEvents: 'none' as const },
+          payload: props.payload ?? [],
+          payloadIndex: props.index,
           ...cursorSvgProps,
         }
         cursorElement = props.cursorSlot ? props.cursorSlot(cursorProps) : <Curve {...cursorProps} />
@@ -495,7 +557,7 @@ export const Tooltip = defineComponent({
   props: TooltipVueProps,
   slots: Object as SlotsType<{
     content?: (props: TooltipContentProps) => any
-    cursor?: (props: Record<string, any>) => any
+    cursor?: (props: CursorSlotProps) => any
     default?: () => any
   }>,
   setup(props, { slots }) {
