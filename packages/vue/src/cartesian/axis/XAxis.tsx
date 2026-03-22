@@ -193,7 +193,7 @@ export const XAxis = defineComponent({
       type: Array as PropType<AxisDomain>,
     },
     axisLine: {
-      type: Boolean,
+      type: [Boolean, Object],
       default: true,
     },
     ticks: {
