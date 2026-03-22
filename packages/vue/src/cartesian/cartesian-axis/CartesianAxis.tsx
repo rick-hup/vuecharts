@@ -6,6 +6,7 @@ import type { VueClassValue } from '@/types/common'
 import type { AxisInterval } from '@/types/axis'
 import type { RechartsScale } from '@/types/scale'
 import type { CartesianTickItem } from '@/types/tick'
+import type { SVGAttributes } from 'vue'
 import { isNumber } from '@/utils'
 import { filterProps } from '@/utils/VueUtils'
 import type { ComponentPublicInstance, PropType } from 'vue'
@@ -43,7 +44,7 @@ export interface CartesianAxisProps {
   interval?: AxisInterval
   angle?: number
   scale: RechartsScale
-  axisLine?: string
+  axisLine?: boolean | SVGAttributes
 }
 
 export const CartesianAxis = defineComponent({
@@ -57,7 +58,7 @@ export const CartesianAxis = defineComponent({
     orientation: { type: String, default: 'bottom' },
     viewBox: { type: Object, default: () => ({ x: 0, y: 0, width: 0, height: 0 }) },
     tick: { type: Boolean, default: true },
-    axisLine: { type: [Boolean, Object], default: () => true },
+    axisLine: { type: [Boolean, Object] as PropType<boolean | SVGAttributes>, default: () => true },
     tickLine: { type: [Boolean, Object], default: () => true },
     mirror: { type: Boolean, default: false },
     tickMargin: { type: Number, default: 2 },
