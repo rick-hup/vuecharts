@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type CSSProperties, computed, ref } from 'vue'
+import type { VueClassValue } from '@/types'
 import { provideCursorLayerRef } from '@/context/cursorLayerContext'
 import { provideGraphicalLayerRef } from '@/context/graphicalLayerContext'
 import { provideLabelLayerRef } from '@/context/labelLayerContext'
@@ -13,7 +14,7 @@ interface SurfaceProps {
     width?: number
     height?: number
   }
-  class?: string
+  class?: VueClassValue
   style?: CSSProperties
   title?: string
   desc?: string
