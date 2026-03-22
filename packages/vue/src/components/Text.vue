@@ -169,16 +169,18 @@ const transforms = computed(() => {
     class="v-charts-text"
     :style="props.style"
   >
-    <template
-      v-for="(line, index) in wordsByLines"
-      :key="index"
-    >
-      <tspan
-        :x="x"
-        :dy="index === 0 ? startDy : props.lineHeight"
+    <slot>
+      <template
+        v-for="(line, index) in wordsByLines"
+        :key="index"
       >
-        {{ line.words.join(props.breakAll ? '' : ' ') }}
-      </tspan>
-    </template>
+        <tspan
+          :x="x"
+          :dy="index === 0 ? startDy : props.lineHeight"
+        >
+          {{ line.words.join(props.breakAll ? '' : ' ') }}
+        </tspan>
+      </template>
+    </slot>
   </text>
 </template>

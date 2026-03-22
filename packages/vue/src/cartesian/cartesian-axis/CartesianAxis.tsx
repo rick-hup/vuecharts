@@ -6,10 +6,9 @@ import type { VueClassValue } from '@/types/common'
 import type { AxisInterval } from '@/types/axis'
 import type { RechartsScale } from '@/types/scale'
 import type { CartesianTickItem } from '@/types/tick'
-import type { SVGAttributes } from 'vue'
+import type { ComponentPublicInstance, PropType, SVGAttributes } from 'vue'
 import { isNumber } from '@/utils'
 import { filterProps } from '@/utils/VueUtils'
-import type { ComponentPublicInstance, PropType } from 'vue'
 import { defineComponent, reactive, ref } from 'vue'
 import { get } from 'es-toolkit/compat'
 import Text from '@/components/Text.vue'
@@ -73,9 +72,7 @@ export const CartesianAxis = defineComponent({
     scale: { type: [Function] as PropType<RechartsScale> },
     stroke: { type: String, default: '#666' },
   },
-  inheritAttrs: false,
-
-  setup(props, { attrs, slots }) {
+  setup(props, { slots }) {
     const state = reactive({
       fontSize: '',
       letterSpacing: '',
@@ -290,8 +287,7 @@ export const CartesianAxis = defineComponent({
       }
       return (
         <Layer
-          class={['v-charts-cartesian-axis', attrs.class]}
-          style={attrs.style}
+          class={['v-charts-cartesian-axis']}
           ref={(ref: ComponentPublicInstance) => {
             const elm = ref?.$el as HTMLElement
             if (elm) {
