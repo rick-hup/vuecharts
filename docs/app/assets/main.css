@@ -25,6 +25,11 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Match Recharts default axis tick font size */
+.v-charts-cartesian-axis-tick {
+  font-size: 0.75rem;
+}
+
 /* Focus-visible styles for keyboard navigation (WCAG 2.4.7) */
 :focus-visible {
   outline: 2px solid var(--chart-1, #f97316);
