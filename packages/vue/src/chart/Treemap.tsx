@@ -10,7 +10,8 @@ import { RechartsWrapper } from './RechartsWrapper'
 import { createRechartsStore } from '@/state/store'
 import { useAppDispatch } from '@/state/hooks'
 import { setActiveMouseOverItemIndex, setActiveClickItemIndex, addTooltipEntrySettings, removeTooltipEntrySettings } from '@/state/tooltipSlice'
-import type { ChartOptions, TooltipPayloadSearcher } from '@/state/store'
+import type { ChartOptions } from '@/state/optionsSlice'
+import type { TooltipPayloadSearcher } from '@/state/tooltipSlice'
 import type { TooltipIndex, TooltipPayloadConfiguration } from '@/state/tooltipSlice'
 import type { Coordinate } from '@/types'
 import { computeTreemapLayout, type TreemapLayoutNode } from './treemapUtils'
@@ -171,6 +172,7 @@ const TreemapInner = defineComponent({
     watchEffect((onCleanup) => {
       const tooltipEntrySettings: TooltipPayloadConfiguration = {
         dataDefinedOnItem: nodeTree.value,
+        positions: undefined,
         settings: {
           stroke: props.stroke,
           strokeWidth: undefined,
