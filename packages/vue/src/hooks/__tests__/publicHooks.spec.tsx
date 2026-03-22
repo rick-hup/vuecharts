@@ -11,7 +11,7 @@ import { Tooltip } from '@/components/Tooltip'
 import { Customized } from '@/components/Customized'
 import { mockGetBoundingClientRect } from '@/test/mockGetBoundingClientRect'
 import { assertNotNull } from '@/test/helper'
-import { useIsTooltipActive, useActiveTooltipCoordinate, useActiveTooltipLabel, usePlotArea, useXAxisDomain, useYAxisDomain, useXAxisTicks, useYAxisTicks } from '../publicHooks'
+import { useIsTooltipActive, useActiveTooltipCoordinate, useActiveTooltipLabel, usePlotArea, useXAxisDomain, useYAxisDomain, useXAxisTicks, useYAxisTicks, useXAxisScale, useYAxisScale, useXAxisInverseScale, useYAxisInverseScale, useXAxisInverseDataSnapScale, useYAxisInverseDataSnapScale, useXAxisInverseTickSnapScale, useYAxisInverseTickSnapScale, useCartesianScale } from '../publicHooks'
 
 describe('publicHooks - tooltip hooks', () => {
   beforeEach(() => {
@@ -356,6 +356,236 @@ describe('Axis public hooks', () => {
       expect(ticks).toBeDefined()
       expect(Array.isArray(ticks)).toBe(true)
       expect(ticks.length).toBeGreaterThan(0)
+    })
+  })
+})
+
+describe('Scale public hooks', () => {
+  beforeEach(() => {
+    mockGetBoundingClientRect({ width: 500, height: 300 })
+  })
+
+  const data = [
+    { name: 'A', value: 100 },
+    { name: 'B', value: 200 },
+    { name: 'C', value: 300 },
+  ]
+
+  describe('useXAxisScale', () => {
+    it('returns a function that maps data values to pixel coordinates', async () => {
+      let scaleFn: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const scale = useXAxisScale()
+          return () => {
+            scaleFn = scale.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(scaleFn).toBeDefined()
+      expect(typeof scaleFn).toBe('function')
+
+      const pixelA = scaleFn('A')
+      const pixelC = scaleFn('C')
+      expect(typeof pixelA).toBe('number')
+      expect(typeof pixelC).toBe('number')
+      expect(pixelA).toBeLessThan(pixelC!)
+    })
+  })
+
+  describe('useYAxisScale', () => {
+    it('returns a function that maps numeric values to pixel coordinates', async () => {
+      let scaleFn: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const scale = useYAxisScale()
+          return () => {
+            scaleFn = scale.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(scaleFn).toBeDefined()
+      const pixel100 = scaleFn(100)
+      const pixel300 = scaleFn(300)
+      expect(typeof pixel100).toBe('number')
+      // In SVG, higher values have lower y coordinates
+      expect(pixel100).toBeGreaterThan(pixel300!)
+    })
+  })
+
+  describe('useXAxisInverseScale', () => {
+    it('returns a function that maps pixel coordinates back to data values', async () => {
+      let scaleFn: any
+      let inverseFn: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const scale = useXAxisScale()
+          const inverse = useXAxisInverseScale()
+          return () => {
+            scaleFn = scale.value
+            inverseFn = inverse.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(inverseFn).toBeDefined()
+      const pixelA = scaleFn('A')
+      const result = inverseFn(pixelA)
+      expect(result).toBe('A')
+    })
+  })
+
+  describe('useXAxisInverseDataSnapScale', () => {
+    it('snaps to closest data point value', async () => {
+      let dataSnapFn: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const snap = useXAxisInverseDataSnapScale()
+          return () => {
+            dataSnapFn = snap.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(dataSnapFn).toBeDefined()
+      expect(typeof dataSnapFn).toBe('function')
+    })
+  })
+
+  describe('useXAxisInverseTickSnapScale', () => {
+    it('snaps to closest tick value', async () => {
+      let tickSnapFn: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const snap = useXAxisInverseTickSnapScale()
+          return () => {
+            tickSnapFn = snap.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(tickSnapFn).toBeDefined()
+      expect(typeof tickSnapFn).toBe('function')
+    })
+  })
+
+  describe('useCartesianScale', () => {
+    it('converts data point to pixel coordinates', async () => {
+      let coords: any
+
+      const SpyComponent = defineComponent({
+        setup() {
+          const c = useCartesianScale({ x: 'B', y: 200 })
+          return () => {
+            coords = c.value
+            return <text data-testid="spy" />
+          }
+        },
+      })
+
+      render(() => (
+        <LineChart width={500} height={300} data={data}>
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Line dataKey="value" isAnimationActive={false} />
+          <Customized>
+            {{ default: () => <SpyComponent /> }}
+          </Customized>
+        </LineChart>
+      ))
+
+      await nextTick()
+      await nextTick()
+
+      expect(coords).toBeDefined()
+      expect(typeof coords.x).toBe('number')
+      expect(typeof coords.y).toBe('number')
+      expect(coords.x).toBeGreaterThan(0)
+      expect(coords.x).toBeLessThan(500)
+      expect(coords.y).toBeGreaterThan(0)
+      expect(coords.y).toBeLessThan(300)
     })
   })
 })
