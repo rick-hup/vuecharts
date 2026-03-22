@@ -435,7 +435,7 @@ const ChangingDataKeyWrapper = defineComponent({
             stroke="#8884d8"
             stroke-dasharray="5 5"
             label={{ fill: 'red' }}
-            animationDuration={1000}
+            transition={{ duration: 1 }}
           />
         </BarChart>
       </div>

@@ -1,4 +1,4 @@
-import type { AnimationEasing } from '@/types/bar'
+import type { AnimationOptions } from 'motion-v'
 import type { VueClassValue } from '@/types/common'
 
 export interface Point {
@@ -20,7 +20,5 @@ export interface TrapezoidProps {
   height?: number
 
   isUpdateAnimationActive?: boolean
-  animationBegin?: number
-  animationDuration?: number
-  animationEasing?: AnimationEasing
+  transition?: AnimationOptions
 }
