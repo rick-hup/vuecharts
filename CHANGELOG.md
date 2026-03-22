@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-03-22
+
+### Added
+
+-   feat(hooks): add 9 scale hooks to publicHooks.ts
+-   feat: add createCategoricalInverse utility and inverse scale selectors
+
+### Fixed
+
+-   fix(Treemap): align event API with Recharts and fix onMouseLeave hover
+-   fix(Treemap): correct type imports and add missing positions field
+-   fix(ReferenceDot): make fill and stroke optional in ReferenceDotShape
+-   fix(rootProps): widen class prop type from string to VueClassValue
+
+### Changed
+
+-   refactor: replace legacy animationDuration/Easing/Begin props with transition
+-   docs(Treemap): move to 3.charts section and update event prop description
+-   docs: simplify CLAUDE.md by removing derivable implementation details
+
 ## [0.2.0] - 2025-03-15
 
 ### Added
