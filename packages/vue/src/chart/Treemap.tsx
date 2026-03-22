@@ -9,7 +9,7 @@ import { getStringSize } from '@/utils/attrs'
 import { RechartsWrapper } from './RechartsWrapper'
 import { createRechartsStore } from '@/state/store'
 import { useAppDispatch } from '@/state/hooks'
-import { setActiveMouseOverItemIndex, setActiveClickItemIndex, addTooltipEntrySettings, removeTooltipEntrySettings } from '@/state/tooltipSlice'
+import { setActiveMouseOverItemIndex, setActiveClickItemIndex, mouseLeaveItem, addTooltipEntrySettings, removeTooltipEntrySettings } from '@/state/tooltipSlice'
 import type { ChartOptions } from '@/state/optionsSlice'
 import type { TooltipPayloadSearcher } from '@/state/tooltipSlice'
 import type { TooltipIndex, TooltipPayloadConfiguration } from '@/state/tooltipSlice'
@@ -109,9 +109,9 @@ export const TreemapVueProps = {
   colorPanel: { type: Array as PropType<string[]>, default: undefined },
   isAnimationActive: { type: Boolean, default: true },
   transition: { type: Object as PropType<AnimationOptions>, default: () => ({ duration: 0.8, ease: 'easeOut' as const }) },
-  onClick: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
-  onMouseEnter: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
-  onMouseLeave: { type: Function as PropType<(node: any, index: number, e: MouseEvent) => void>, default: undefined },
+  onClick: { type: Function as PropType<(node: any, e: MouseEvent) => void>, default: undefined },
+  onMouseEnter: { type: Function as PropType<(node: any, e: MouseEvent) => void>, default: undefined },
+  onMouseLeave: { type: Function as PropType<(node: any, e: MouseEvent) => void>, default: undefined },
 }
 
 /**
@@ -207,7 +207,7 @@ const TreemapInner = defineComponent({
       return `children[0]`
     }
 
-    function handleNestClick(node: TreemapLayoutNode, _index: number, e: MouseEvent) {
+    function handleNestClick(node: TreemapLayoutNode, e: MouseEvent) {
       const sourceData = nestCurrentData.value ?? props.data
       const clickedItem = sourceData.find(item => item[props.nameKey] === node.name)
 
@@ -220,7 +220,7 @@ const TreemapInner = defineComponent({
         animationKey.value++
       }
 
-      props.onClick?.(node, _index, e)
+      props.onClick?.(node, e)
     }
 
     function navigateToBreadcrumb(index: number) {
@@ -240,7 +240,7 @@ const TreemapInner = defineComponent({
       return node.color ?? props.fill
     }
 
-    function handleNodeMouseEnter(node: TreemapLayoutNode, index: number, e: MouseEvent) {
+    function handleNodeMouseEnter(node: TreemapLayoutNode, e: MouseEvent) {
       const tooltipIndex = getTooltipIndex(node)
       const activeCoordinate: Coordinate = {
         x: node.x + node.width / 2,
@@ -251,12 +251,17 @@ const TreemapInner = defineComponent({
         activeDataKey: props.dataKey,
         activeCoordinate,
       }))
-      props.onMouseEnter?.(node, index, e)
+      props.onMouseEnter?.(node, e)
     }
 
-    function handleNodeClick(node: TreemapLayoutNode, index: number, e: MouseEvent) {
+    function handleNodeMouseLeave(node: TreemapLayoutNode, e: MouseEvent) {
+      dispatch(mouseLeaveItem())
+      props.onMouseLeave?.(node, e)
+    }
+
+    function handleNodeClick(node: TreemapLayoutNode, e: MouseEvent) {
       if (isNestMode.value) {
-        handleNestClick(node, index, e)
+        handleNestClick(node, e)
       }
       else {
         const tooltipIndex = getTooltipIndex(node)
@@ -269,7 +274,7 @@ const TreemapInner = defineComponent({
           activeDataKey: props.dataKey,
           activeCoordinate,
         }))
-        props.onClick?.(node, index, e)
+        props.onClick?.(node, e)
       }
     }
 
@@ -294,9 +299,9 @@ const TreemapInner = defineComponent({
             class="v-charts-treemap-node"
             style={{ transformOrigin: `${node.x}px ${node.y}px` }}
             transform={transform}
-            onClick={(e: MouseEvent) => handleNodeClick(node, index, e)}
-            onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
-            onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
+            onClick={(e: MouseEvent) => handleNodeClick(node, e)}
+            onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, e)}
+            onMouseleave={(e: MouseEvent) => handleNodeMouseLeave(node, e)}
           >
             {slots.content(nodeProps)}
           </g>
@@ -343,9 +348,9 @@ const TreemapInner = defineComponent({
           class="v-charts-treemap-node"
           style={{ transformOrigin: `${node.x}px ${node.y}px` }}
           transform={transform}
-          onClick={(e: MouseEvent) => handleNodeClick(node, index, e)}
-          onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, index, e)}
-          onMouseleave={(e: MouseEvent) => props.onMouseLeave?.(node, index, e)}
+          onClick={(e: MouseEvent) => handleNodeClick(node, e)}
+          onMouseenter={(e: MouseEvent) => handleNodeMouseEnter(node, e)}
+          onMouseleave={(e: MouseEvent) => handleNodeMouseLeave(node, e)}
         >
           <rect
             x={node.x}
