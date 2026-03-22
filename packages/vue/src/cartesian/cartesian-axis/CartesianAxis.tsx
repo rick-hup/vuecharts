@@ -291,6 +291,7 @@ export const CartesianAxis = defineComponent({
       return (
         <Layer
           class={['v-charts-cartesian-axis', attrs.class]}
+          style={attrs.style}
           ref={(ref: ComponentPublicInstance) => {
             const elm = ref?.$el as HTMLElement
             if (elm) {
