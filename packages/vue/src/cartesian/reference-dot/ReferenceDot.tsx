@@ -17,8 +17,8 @@ export interface ReferenceDotShapeProps extends SVGAttributes {
   cx: number
   cy: number
   r: number
-  fill: string
-  stroke: string
+  fill?: string
+  stroke?: string
   clipPath?: string
 }
 
